@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -48,6 +48,14 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState('');
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: Number(localStorage.getItem('pageSize') || 10),
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pageSize', pagination.pageSize);
+  }, [pagination.pageSize]);
 
   const table = useReactTable({
     data,
@@ -55,9 +63,11 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
     state: {
       sorting,
       globalFilter,
+      pagination,
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

@@ -9,11 +9,19 @@ export default function EditPatient({ record, onBack, onSave }) {
   };
 
   const handleFileChange = (e) => {
-    // For simplicity, storing the file name. 
-    // In a real app, this would be an API call to upload the file.
-    if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, scans: e.target.files[0].name });
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files).map(file => file.name);
+      // Assuming scans is stored as an array of strings
+      const currentScans = Array.isArray(formData.scans) ? formData.scans : (formData.scans ? [formData.scans] : []);
+      setFormData({ ...formData, scans: [...currentScans, ...newFiles] });
     }
+  };
+
+  const removeFile = (index) => {
+    setFormData({
+      ...formData,
+      scans: formData.scans.filter((_, i) => i !== index)
+    });
   };
 
   const handleSubmit = (e) => {
@@ -34,8 +42,14 @@ export default function EditPatient({ record, onBack, onSave }) {
         <input name="address" placeholder="Address" value={formData.address} onChange={handleChange} />
         <div style={{ marginTop: '1rem' }}>
           <label>Scans: </label>
-          <input type="file" onChange={handleFileChange} />
-          <p>Current: {formData.scans}</p>
+          <input type="file" multiple onChange={handleFileChange} />
+          <ul>
+            {(Array.isArray(formData.scans) ? formData.scans : [formData.scans]).filter(Boolean).map((file, index) => (
+              <li key={index}>
+                {file} <button type="button" onClick={() => removeFile(index)}>Remove</button>
+              </li>
+            ))}
+          </ul>
         </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button type="button" onClick={onBack}>Cancel</button>

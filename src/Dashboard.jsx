@@ -22,7 +22,10 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
     columnHelper.accessor('dob', { header: 'Date of Birth' }),
     columnHelper.accessor('age', { header: 'Age' }),
     columnHelper.accessor('address', { header: 'Address' }),
-    columnHelper.accessor('scans', { header: 'Scans' }),
+    columnHelper.accessor('scans', {
+    header: 'Scans',
+    cell: info => Array.isArray(info.getValue()) ? info.getValue().join(', ') : info.getValue()
+  }),
     columnHelper.display({
       id: 'actions',
       header: 'Actions',

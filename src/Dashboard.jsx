@@ -118,13 +118,29 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
         </tbody>
       </table>
 
-      <div style={{ marginTop: '1rem' }}>
+      <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
           Previous
         </button>
+        <span>
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+        </span>
         <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
           Next
         </button>
+        <select
+          value={table.getState().pagination.pageSize}
+          onChange={e => {
+            table.setPageSize(Number(e.target.value))
+          }}
+        >
+          {[10, 25, 50, 100].map(pageSize => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </select>
+        <span>Total Records: {table.getFilteredRowModel().rows.length}</span>
       </div>
     </div>
   );

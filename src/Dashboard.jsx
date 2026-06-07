@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -9,6 +9,7 @@ import {
   createColumnHelper,
 } from '@tanstack/react-table';
 import { mockData } from './mockData';
+import AddPatient from './AddPatient';
 
 const columnHelper = createColumnHelper();
 
@@ -24,7 +25,8 @@ const columns = [
 ];
 
 export default function Dashboard({ onLogout }) {
-  const [data] = useState(() => [...mockData]);
+  const [data, setData] = useState(() => [...mockData]);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
@@ -43,11 +45,26 @@ export default function Dashboard({ onLogout }) {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  if (showAddForm) {
+    return (
+      <AddPatient
+        onBack={() => setShowAddForm(false)}
+        onAdd={(newRecord) => {
+          setData([...data, newRecord]);
+          setShowAddForm(false);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="dashboard">
-      <div className="header">
+      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <h2>Dashboard</h2>
-        <button onClick={onLogout}>Logout</button>
+        <div>
+          <button onClick={() => setShowAddForm(true)} style={{ marginRight: '1rem' }}>Add New Patient Record</button>
+          <button onClick={onLogout}>Logout</button>
+        </div>
       </div>
 
       <input
@@ -82,7 +99,7 @@ export default function Dashboard({ onLogout }) {
         </tbody>
       </table>
 
-      <div>
+      <div style={{ marginTop: '1rem' }}>
         <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
           Previous
         </button>

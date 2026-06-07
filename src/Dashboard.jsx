@@ -30,7 +30,18 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <button onClick={() => onEdit(row.original)}>Edit</button>
+        <>
+          <button onClick={() => onEdit(row.original)} style={{ marginRight: '5px' }}>Edit</button>
+          <button
+            onClick={() => {
+              if (window.confirm('Are you sure you want to delete this patient record?')) {
+                setData(prevData => prevData.filter(item => item.mrNumber !== row.original.mrNumber));
+              }
+            }}
+          >
+            Delete
+          </button>
+        </>
       ),
     }),
   ];

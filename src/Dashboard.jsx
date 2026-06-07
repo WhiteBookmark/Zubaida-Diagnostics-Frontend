@@ -13,19 +13,24 @@ import AddPatient from './AddPatient';
 
 const columnHelper = createColumnHelper();
 
-const columns = [
-  columnHelper.accessor('mrNumber', { header: 'MR Number' }),
-  columnHelper.accessor('name', { header: 'Name' }),
-  columnHelper.accessor('fatherName', { header: 'Father Name' }),
-  columnHelper.accessor('motherName', { header: 'Mother Name' }),
-  columnHelper.accessor('dob', { header: 'Date of Birth' }),
-  columnHelper.accessor('age', { header: 'Age' }),
-  columnHelper.accessor('address', { header: 'Address' }),
-  columnHelper.accessor('scans', { header: 'Scans' }),
-];
-
-export default function Dashboard({ onLogout }) {
-  const [data, setData] = useState(() => [...mockData]);
+export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
+  const columns = [
+    columnHelper.accessor('mrNumber', { header: 'MR Number' }),
+    columnHelper.accessor('name', { header: 'Name' }),
+    columnHelper.accessor('fatherName', { header: 'Father Name' }),
+    columnHelper.accessor('motherName', { header: 'Mother Name' }),
+    columnHelper.accessor('dob', { header: 'Date of Birth' }),
+    columnHelper.accessor('age', { header: 'Age' }),
+    columnHelper.accessor('address', { header: 'Address' }),
+    columnHelper.accessor('scans', { header: 'Scans' }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <button onClick={() => onEdit(row.original)}>Edit</button>
+      ),
+    }),
+  ];
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [globalFilter, setGlobalFilter] = useState('');

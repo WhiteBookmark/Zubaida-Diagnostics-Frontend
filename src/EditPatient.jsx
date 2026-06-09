@@ -38,7 +38,7 @@ export default function EditPatient({ record, onBack, onSave }) {
         <input name="name" placeholder="Name" value={formData.name || ''} onChange={handleChange} />
         <input name="fatherName" placeholder="Father Name" value={formData.fatherName || ''} onChange={handleChange} />
         <input name="motherName" placeholder="Mother Name" value={formData.motherName || ''} onChange={handleChange} />
-        <input name="dob" type="date" placeholder="Date of Birth" value={formData.dob ? formData.dob.split('T')[0] : ''} onChange={handleChange} />
+        <input name="dateOfBirth" type="date" placeholder="Date of Birth" value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''} onChange={handleChange} />
         <input name="age" type="number" placeholder="Age" value={formData.age || ''} onChange={handleChange} />
         <input name="address" placeholder="Address" value={formData.address || ''} onChange={handleChange} />
         <input name="phone" placeholder="Phone" value={formData.phone || ''} onChange={handleChange} />

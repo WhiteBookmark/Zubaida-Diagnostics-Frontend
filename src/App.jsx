@@ -36,11 +36,18 @@ function App() {
             const response = await fetch(`/api/patients/${updatedRecord.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(updatedRecord)
+              body: JSON.stringify({
+                ...updatedRecord,
+                dateOfBirth: updatedRecord.dateOfBirth,
+                age: parseInt(updatedRecord.age),
+                weight: parseFloat(updatedRecord.weight) || null,
+                height: parseFloat(updatedRecord.height) || null,
+              })
             });
             if (response.ok) {
               const savedRecord = await response.json();
               setData(data.map(r => r.id === savedRecord.id ? savedRecord : r));
+              alert('Patient updated successfully!');
               setView('dashboard');
             } else {
               alert('Failed to update record');

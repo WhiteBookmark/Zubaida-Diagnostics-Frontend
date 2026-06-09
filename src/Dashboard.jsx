@@ -17,11 +17,12 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
   const columns = [
     columnHelper.accessor('mrNumber', { header: 'MR Number' }),
     columnHelper.accessor('name', { header: 'Name' }),
-    columnHelper.accessor('fatherName', { header: 'Father Name' }),
-    columnHelper.accessor('motherName', { header: 'Mother Name' }),
-    columnHelper.accessor('dob', { header: 'Date of Birth' }),
-    columnHelper.accessor('age', { header: 'Age' }),
-    columnHelper.accessor('address', { header: 'Address' }),
+    columnHelper.accessor('phone', { header: 'Phone' }),
+    columnHelper.accessor('email', { header: 'Email' }),
+    columnHelper.accessor('bloodGroup', { header: 'Blood Group' }),
+    columnHelper.accessor('weight', { header: 'Weight (kg)' }),
+    columnHelper.accessor('height', { header: 'Height (cm)' }),
+    columnHelper.accessor('smoker', { header: 'Smoker', cell: info => info.getValue() ? 'Yes' : 'No' }),
     columnHelper.accessor('scans', {
     header: 'Scans',
     cell: info => Array.isArray(info.getValue()) ? info.getValue().join(', ') : info.getValue()

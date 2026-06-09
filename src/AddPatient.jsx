@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { mockData } from './mockData';
 import './Auth.css';
 
 export default function AddPatient({ onBack, onAdd }) {
@@ -11,10 +12,40 @@ export default function AddPatient({ onBack, onAdd }) {
     age: '',
     address: '',
     phone: '',
+    email: '',
+    bloodGroup: '',
+    knownAllergies: '',
+    weight: '',
+    height: '',
+    notes: '',
+    smoker: false,
   });
 
+  const fillRandomData = () => {
+    const randomPatient = mockData[Math.floor(Math.random() * mockData.length)];
+    setFormData({
+      ...formData,
+      mrNumber: randomPatient.mrNumber,
+      name: randomPatient.name,
+      fatherName: randomPatient.fatherName,
+      motherName: randomPatient.motherName,
+      dob: randomPatient.dob,
+      age: randomPatient.age.toString(),
+      address: randomPatient.address,
+      phone: '555-' + Math.floor(1000 + Math.random() * 9000),
+      email: randomPatient.name.toLowerCase().replace(' ', '.') + '@example.com',
+      bloodGroup: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'][Math.floor(Math.random() * 8)],
+      knownAllergies: 'None',
+      weight: (50 + Math.random() * 50).toFixed(1),
+      height: (150 + Math.random() * 50).toFixed(1),
+      notes: 'Auto-filled test data.',
+      smoker: Math.random() > 0.5
+    });
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -33,7 +64,14 @@ export default function AddPatient({ onBack, onAdd }) {
           dateOfBirth: formData.dob,
           age: parseInt(formData.age),
           address: formData.address,
-          phone: formData.phone
+          phone: formData.phone,
+          email: formData.email,
+          bloodGroup: formData.bloodGroup,
+          knownAllergies: formData.knownAllergies,
+          weight: parseFloat(formData.weight),
+          height: parseFloat(formData.height),
+          notes: formData.notes,
+          smoker: formData.smoker
         }),
       });
 
@@ -54,16 +92,27 @@ export default function AddPatient({ onBack, onAdd }) {
     <div className="auth-container">
       <h2>Add New Patient Record</h2>
       <form onSubmit={handleSubmit} className="auth-form">
-        <input name="mrNumber" placeholder="MR Number" onChange={handleChange} required />
-        <input name="name" placeholder="Name" onChange={handleChange} required />
-        <input name="fatherName" placeholder="Father Name" onChange={handleChange} />
-        <input name="motherName" placeholder="Mother Name" onChange={handleChange} />
-        <input name="dob" type="date" placeholder="Date of Birth" onChange={handleChange} />
-        <input name="age" type="number" placeholder="Age" onChange={handleChange} />
-        <input name="address" placeholder="Address" onChange={handleChange} />
-        <input name="phone" placeholder="Phone" onChange={handleChange} />
+        <input name="mrNumber" value={formData.mrNumber} placeholder="MR Number" onChange={handleChange} required />
+        <input name="name" value={formData.name} placeholder="Name" onChange={handleChange} required />
+        <input name="fatherName" value={formData.fatherName} placeholder="Father Name" onChange={handleChange} />
+        <input name="motherName" value={formData.motherName} placeholder="Mother Name" onChange={handleChange} />
+        <input name="dob" type="date" value={formData.dob} placeholder="Date of Birth" onChange={handleChange} />
+        <input name="age" type="number" value={formData.age} placeholder="Age" onChange={handleChange} />
+        <input name="address" value={formData.address} placeholder="Address" onChange={handleChange} />
+        <input name="phone" value={formData.phone} placeholder="Phone" onChange={handleChange} />
+        <input name="email" type="email" value={formData.email} placeholder="Email" onChange={handleChange} />
+        <input name="bloodGroup" value={formData.bloodGroup} placeholder="Blood Group" onChange={handleChange} />
+        <input name="knownAllergies" value={formData.knownAllergies} placeholder="Known Allergies" onChange={handleChange} />
+        <input name="weight" type="number" step="0.1" value={formData.weight} placeholder="Weight (kg)" onChange={handleChange} />
+        <input name="height" type="number" step="0.1" value={formData.height} placeholder="Height (cm)" onChange={handleChange} />
+        <input name="notes" value={formData.notes} placeholder="Notes" onChange={handleChange} />
+        <label>
+          <input name="smoker" type="checkbox" checked={formData.smoker} onChange={handleChange} />
+          Smoker
+        </label>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button type="button" onClick={onBack}>Cancel</button>
+          <button type="button" onClick={fillRandomData}>Fill Random Data</button>
           <button type="submit">Add</button>
         </div>
       </form>

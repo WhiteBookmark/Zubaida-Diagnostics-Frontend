@@ -33,9 +33,21 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
         <>
           <button onClick={() => onEdit(row.original)} style={{ marginRight: '5px' }}>Edit</button>
           <button
-            onClick={() => {
+            onClick={async () => {
               if (window.confirm('Are you sure you want to delete this patient record?')) {
-                setData(prevData => prevData.filter(item => item.mrNumber !== row.original.mrNumber));
+                try {
+                  const response = await fetch(`/api/patients/${row.original.id}`, {
+                    method: 'DELETE',
+                  });
+                  if (response.ok) {
+                    setData(prevData => prevData.filter(item => item.id !== row.original.id));
+                  } else {
+                    alert('Failed to delete record');
+                  }
+                } catch (error) {
+                  console.error('Error deleting record:', error);
+                  alert('Error deleting record');
+                }
               }
             }}
           >

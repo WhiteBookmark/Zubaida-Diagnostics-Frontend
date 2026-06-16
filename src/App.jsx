@@ -15,6 +15,7 @@ function App() {
   const [username, setUsername] = useState('')
   const [currentPage, setCurrentPage] = useState('patients')
   const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument'
+  const [resetKey, setResetKey] = useState(0)
   const [data, setData] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [recordToEdit, setRecordToEdit] = useState(null)
@@ -64,6 +65,12 @@ function App() {
     setView('dashboard');
   }, []);
 
+  const handleNavigate = useCallback((pageId) => {
+    setCurrentPage(pageId);
+    setView('dashboard');
+    setResetKey(prev => prev + 1);
+  }, []);
+
   const handleSave = useCallback(async (updatedRecord) => {
     try {
       const response = await fetch(`/api/patients/${updatedRecord.id}`, {
@@ -97,6 +104,7 @@ function App() {
     if (view === 'edit') {
       return (
         <EditPatient
+          key={`edit-${resetKey}`}
           record={recordToEdit}
           onBack={handleBack}
           onSave={handleSave}
@@ -105,19 +113,20 @@ function App() {
     }
     
     if (view === 'addDocument') {
-        return <AddDocument onBack={handleBack} onSave={handleSaveDocument} />
+        return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
     }
 
     switch (currentPage) {
       case 'vitals':
-        return <VitalRecords />;
+        return <VitalRecords key={`vitals-${resetKey}`} />;
       case 'appointments':
-        return <AppointmentRecords />;
+        return <AppointmentRecords key={`appointments-${resetKey}`} />;
       case 'documents':
-        return <Documents onAddDocument={handleAddDocument} />;
+        return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} />;
       default:
         return (
           <Dashboard
+            key={`dashboard-${resetKey}`}
             onEdit={handleEdit}
             data={data}
             setData={setData}
@@ -130,7 +139,7 @@ function App() {
 
   return (
     <>
-      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} onLogout={handleLogout} username={username} />
+      <Header currentPage={currentPage} setCurrentPage={handleNavigate} onLogout={handleLogout} username={username} />
       {renderContent()}
     </>
   );

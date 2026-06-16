@@ -46,9 +46,25 @@ export default function AddVitalRecord({ onBack, onAdd }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onAdd(formData);
+    try {
+      const response = await fetch('/api/vitals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        const newRecord = await response.json();
+        onAdd(newRecord);
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to add vital record: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error adding vital record:', error);
+      alert('Error adding vital record: ' + error.message);
+    }
   };
 
   return (

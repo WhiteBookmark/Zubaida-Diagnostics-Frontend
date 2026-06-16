@@ -27,6 +27,12 @@ export default function VitalRecords({ onLogout }) {
     { accessorKey: 'patient.name', header: 'Patient Name' },
     { accessorKey: 'weight', header: 'Weight (kg)' },
     { accessorKey: 'height', header: 'Height (cm)' },
+    { accessorKey: 'bpSystolic', header: 'Systolic (mmHg)' },
+    { accessorKey: 'bpDiastolic', header: 'Diastolic (mmHg)' },
+    { accessorKey: 'temperature', header: 'Temp (°C)' },
+    { accessorKey: 'pulse', header: 'Pulse (bpm)' },
+    { accessorKey: 'respiratoryRate', header: 'Resp Rate' },
+    { accessorKey: 'oxygenSaturation', header: 'SpO2 (%)' },
     { accessorKey: 'notes', header: 'Notes' },
     {
       accessorKey: 'recordedAt',

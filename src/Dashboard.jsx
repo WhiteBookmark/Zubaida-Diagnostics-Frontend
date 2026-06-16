@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-table';
 import { mockData } from './mockData';
 import AddPatient from './AddPatient';
+import logo from './assets/Glassmorphism Logo ZD.png';
 
 const columnHelper = createColumnHelper();
 
@@ -98,9 +99,12 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
   }
 
   return (
-    <div className="dashboard">
-      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <h2>Dashboard</h2>
+    <div className="dashboard glass" style={{ padding: '20px', margin: '20px' }}>
+      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '50px' }} />
+          <h2>Dashboard</h2>
+        </div>
         <div>
           <button onClick={() => setShowAddForm(true)} style={{ marginRight: '1rem' }}>Add New Patient Record</button>
           <button onClick={onLogout}>Logout</button>
@@ -111,6 +115,7 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
         value={searchTerm ?? ''}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Search all columns..."
+        style={{ marginBottom: '1rem', width: '100%', padding: '8px' }}
       />
 
       <div style={{ overflowX: 'auto', width: '100%' }}>

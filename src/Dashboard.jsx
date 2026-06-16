@@ -31,15 +31,19 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
       { accessorKey: 'age', header: 'Age' },
       { accessorKey: 'address', header: 'Address' },
       { accessorKey: 'phone', header: 'Phone' },
+      { accessorKey: 'email', header: 'Email' },
+      { accessorKey: 'bloodGroup', header: 'Blood Group' },
+      { accessorKey: 'knownAllergies', header: 'Known Allergies' },
+      {
+        accessorKey: 'smoker',
+        header: 'Smoker',
+        cell: info => info.getValue() ? 'Yes' : 'No'
+      },
+      { accessorKey: 'notes', header: 'Doctor\'s Notes' },
       {
         accessorKey: 'createdAt',
         header: 'Created At',
         cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
-      },
-      {
-        accessorKey: 'scans',
-        header: 'Scans',
-        cell: info => Array.isArray(info.getValue()) ? info.getValue().join(', ') : (info.getValue() ?? '')
       },
       {
         id: 'actions',

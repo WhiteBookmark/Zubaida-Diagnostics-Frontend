@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logo from './assets/Glassmorphism Logo ZD.png';
 import './Auth.css';
 
 export default function Login({ onLogin }) {
@@ -18,19 +19,22 @@ export default function Login({ onLogin }) {
   return (
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
-        <h2>Login</h2>
-        {error && <p className="error">{error}</p>}
+        <img src={logo} alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
+        <h2 style={{ color: '#0f172a' }}>Welcome Back</h2>
+        {error && <p className="error" style={{ color: '#ef4444' }}>{error}</p>}
         <input
           type="text"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          className="glass-input"
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="glass-input"
         />
         <button type="submit">Sign In</button>
       </form>

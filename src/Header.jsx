@@ -10,8 +10,8 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
   ];
 
   return (
-    <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px', backgroundColor: '#f5f5f5', borderBottom: '1px solid #ddd' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <header className="glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px', margin: '20px', marginBottom: '30px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
         <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '40px' }} />
         <nav>
           <ul style={{ display: 'flex', listStyle: 'none', gap: '20px', margin: 0, padding: 0 }}>
@@ -23,8 +23,18 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    fontWeight: currentPage === link.id ? 'bold' : 'normal',
-                    color: currentPage === link.id ? '#007bff' : '#333'
+                    fontWeight: currentPage === link.id ? 'bold' : '500',
+                    color: currentPage === link.id ? '#2563eb' : '#334155',
+                    fontSize: '16px',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseOver={(e) => {
+                    if (currentPage !== link.id) e.target.style.background = 'rgba(255, 255, 255, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (currentPage !== link.id) e.target.style.background = 'none';
                   }}
                 >
                   {link.name}
@@ -35,8 +45,24 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
         </nav>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <span>Logged in as <strong>{username}</strong></span>
-        <button onClick={onLogout} style={{ padding: '5px 15px' }}>Logout</button>
+        <span style={{ color: '#334155' }}>Logged in as <strong>{username}</strong></span>
+        <button 
+          onClick={onLogout} 
+          style={{ 
+            padding: '8px 16px', 
+            borderRadius: '8px', 
+            border: '1px solid rgba(255, 255, 255, 0.6)', 
+            background: 'rgba(255, 255, 255, 0.3)',
+            color: '#0f172a',
+            cursor: 'pointer',
+            fontWeight: 600,
+            transition: 'background 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.6)'}
+          onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+        >
+          Logout
+        </button>
       </div>
     </header>
   );

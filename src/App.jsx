@@ -6,13 +6,14 @@ import Header from './Header'
 import VitalRecords from './VitalRecords'
 import AppointmentRecords from './AppointmentRecords'
 import Documents from './Documents'
+import AddDocument from './AddDocument'
 import './App.css'
 import './Auth.css'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [currentPage, setCurrentPage] = useState('patients')
-  const [view, setView] = useState('dashboard') // 'dashboard' or 'edit'
+  const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument'
   const [data, setData] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [recordToEdit, setRecordToEdit] = useState(null)
@@ -46,7 +47,15 @@ function App() {
     setView('edit');
   }, []);
 
+  const handleAddDocument = useCallback(() => {
+    setView('addDocument');
+  }, []);
+
   const handleBack = useCallback(() => setView('dashboard'), []);
+  
+  const handleSaveDocument = useCallback(() => {
+    setView('dashboard');
+  }, []);
 
   const handleSave = useCallback(async (updatedRecord) => {
     try {
@@ -88,13 +97,17 @@ function App() {
       );
     }
     
+    if (view === 'addDocument') {
+        return <AddDocument onBack={handleBack} onSave={handleSaveDocument} />
+    }
+
     switch (currentPage) {
       case 'vitals':
         return <VitalRecords onLogout={handleLogout} />;
       case 'appointments':
         return <AppointmentRecords />;
       case 'documents':
-        return <Documents />;
+        return <Documents onLogout={handleLogout} onAddDocument={handleAddDocument} />;
       default:
         return (
           <Dashboard

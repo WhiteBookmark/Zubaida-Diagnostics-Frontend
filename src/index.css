@@ -15,7 +15,7 @@
   --glass-border: rgba(255, 255, 255, 0.6);
   --glass-blur: blur(12px);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: Georgia, serif;
   --mono: ui-monospace, Consolas, monospace;
 

@@ -71,6 +71,8 @@ body {
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
   min-height: 100vh;
+  caret-color: red;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="red" stroke="white" stroke-width="1.5" d="M5.5 3.5 L5.5 19.5 L9.5 15.5 L13 21.5 L15 20.5 L11.5 14.5 L17.5 14.5 Z"/></svg>'), auto;
 }
 
 @keyframes gradientBG {

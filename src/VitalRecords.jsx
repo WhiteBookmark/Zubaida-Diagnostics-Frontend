@@ -10,7 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddVitalRecord from './AddVitalRecord';
 import logo from './assets/Glassmorphism Logo ZD.png';
 
-export default function VitalRecords({ onLogout }) {
+export default function VitalRecords() {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
@@ -90,7 +90,6 @@ export default function VitalRecords({ onLogout }) {
         <h2>Vital Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>
           <Button variant="contained" onClick={() => setShowAddForm(true)}>Add New Vital Record</Button>
-          <Button variant="outlined" onClick={onLogout}>Logout</Button>
         </Box>
       </div>
       <div style={{ overflowX: 'auto' }}>

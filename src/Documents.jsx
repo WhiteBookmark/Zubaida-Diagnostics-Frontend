@@ -8,7 +8,7 @@ import {
 import { Box, Button, Tooltip, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-export default function Documents({ onLogout, onAddDocument }) {
+export default function Documents({ onAddDocument }) {
   const [data, setData] = useState([]);
   const [sorting, setSorting] = useState([]);
 
@@ -95,7 +95,6 @@ export default function Documents({ onLogout, onAddDocument }) {
         <h2>Documents</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>
             <Button variant="contained" onClick={onAddDocument}>Add New Document</Button>
-            <Button variant="outlined" onClick={onLogout}>Logout</Button>
         </Box>
       </div>
       <table>

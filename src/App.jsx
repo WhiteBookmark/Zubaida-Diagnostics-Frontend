@@ -110,15 +110,14 @@ function App() {
 
     switch (currentPage) {
       case 'vitals':
-        return <VitalRecords onLogout={handleLogout} />;
+        return <VitalRecords />;
       case 'appointments':
         return <AppointmentRecords />;
       case 'documents':
-        return <Documents onLogout={handleLogout} onAddDocument={handleAddDocument} />;
+        return <Documents onAddDocument={handleAddDocument} />;
       default:
         return (
           <Dashboard
-            onLogout={handleLogout}
             onEdit={handleEdit}
             data={data}
             setData={setData}

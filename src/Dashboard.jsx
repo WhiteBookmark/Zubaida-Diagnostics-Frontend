@@ -13,7 +13,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddPatient from './AddPatient';
 import logo from './assets/Glassmorphism Logo ZD.png';
 
-export default function Dashboard({ onLogout, onEdit, data = [], setData, searchTerm, setSearchTerm }) {
+export default function Dashboard({ onEdit, data = [], setData, searchTerm, setSearchTerm }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
 
@@ -131,7 +131,6 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
           <Button variant="contained" onClick={handleShowAdd}>
             Add New Patient Record
           </Button>
-          <Button variant="outlined" onClick={onLogout}>Logout</Button>
         </Box>
       </div>
       <div style={{ overflowX: 'auto' }}>

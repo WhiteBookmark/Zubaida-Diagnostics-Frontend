@@ -9,7 +9,7 @@ import { Box, Button } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import logo from './assets/Glassmorphism Logo ZD.png';
 
-export default function AppointmentRecords({ onLogout }) {
+export default function AppointmentRecords() {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
@@ -58,7 +58,6 @@ export default function AppointmentRecords({ onLogout }) {
         <h2>Appointment Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>
           <Button variant="contained" onClick={() => setShowAddForm(true)}>Add New Appointment</Button>
-          <Button variant="outlined" onClick={onLogout}>Logout</Button>
         </Box>
       </div>
       <table>

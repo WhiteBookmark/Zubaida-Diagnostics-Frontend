@@ -29,13 +29,6 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
                     fontFamily: 'Georgia, serif',
                     padding: '8px 12px',
                     borderRadius: '8px',
-                    transition: 'background 0.2s',
-                  }}
-                  onMouseOver={(e) => {
-                    if (currentPage !== link.id) e.target.style.background = 'rgba(255, 255, 255, 0.4)';
-                  }}
-                  onMouseOut={(e) => {
-                    if (currentPage !== link.id) e.target.style.background = 'none';
                   }}
                 >
                   {link.name}

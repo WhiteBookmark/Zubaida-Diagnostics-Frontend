@@ -7,7 +7,6 @@ import {
 } from '@tanstack/react-table';
 import { Box, Button, Tooltip, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import logo from './assets/Glassmorphism Logo ZD.png';
 
 export default function Documents({ onLogout, onAddDocument }) {
   const [data, setData] = useState([]);
@@ -93,11 +92,9 @@ export default function Documents({ onLogout, onAddDocument }) {
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '20px' }}>
       <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-        <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '50px' }} />
         <h2>Documents</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>
             <Button variant="contained" onClick={onAddDocument}>Add New Document</Button>
-            <Button variant="contained" color="secondary" onClick={populateRandomData}>Populate Random Data</Button>
             <Button variant="outlined" onClick={onLogout}>Logout</Button>
         </Box>
       </div>

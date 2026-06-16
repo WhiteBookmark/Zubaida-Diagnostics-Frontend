@@ -120,12 +120,9 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
   }
 
   return (
-    <div className="dashboard glass" style={{ padding: '20px', margin: '20px' }}>
+    <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px' }}>
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '50px' }} />
-          <h2>Dashboard</h2>
-        </div>
+        <h2>Dashboard</h2>
         <Box sx={{ display: 'flex', gap: '16px' }}>
           <Button variant="contained" onClick={handleShowAdd}>
             Add New Patient Record
@@ -151,6 +148,16 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
               {row.getVisibleCells().map(cell => (
                 <td key={cell.id} style={{ borderBottom: '1px solid #ddd', padding: '8px' }}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+}
                 </td>
               ))}
             </tr>

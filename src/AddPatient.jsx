@@ -15,8 +15,6 @@ export default function AddPatient({ onBack, onAdd }) {
     email: '',
     bloodGroup: '',
     knownAllergies: '',
-    weight: '',
-    height: '',
     notes: '',
     smoker: false,
   });
@@ -36,8 +34,6 @@ export default function AddPatient({ onBack, onAdd }) {
       email: randomPatient.name.toLowerCase().replace(' ', '.') + '@example.com',
       bloodGroup: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'][Math.floor(Math.random() * 8)],
       knownAllergies: 'None',
-      weight: (50 + Math.random() * 50).toFixed(1),
-      height: (150 + Math.random() * 50).toFixed(1),
       notes: 'Auto-filled test data.',
       smoker: Math.random() > 0.5
     });
@@ -68,8 +64,6 @@ export default function AddPatient({ onBack, onAdd }) {
           email: formData.email,
           bloodGroup: formData.bloodGroup,
           knownAllergies: formData.knownAllergies,
-          weight: parseFloat(formData.weight),
-          height: parseFloat(formData.height),
           notes: formData.notes,
           smoker: formData.smoker
         }),
@@ -103,8 +97,6 @@ export default function AddPatient({ onBack, onAdd }) {
         <input name="email" type="email" value={formData.email} placeholder="Email" onChange={handleChange} />
         <input name="bloodGroup" value={formData.bloodGroup} placeholder="Blood Group" onChange={handleChange} />
         <input name="knownAllergies" value={formData.knownAllergies} placeholder="Known Allergies" onChange={handleChange} />
-        <input name="weight" type="number" step="0.1" value={formData.weight} placeholder="Weight (kg)" onChange={handleChange} />
-        <input name="height" type="number" step="0.1" value={formData.height} placeholder="Height (cm)" onChange={handleChange} />
         <input name="notes" value={formData.notes} placeholder="Notes" onChange={handleChange} />
         <label>
           <input name="smoker" type="checkbox" checked={formData.smoker} onChange={handleChange} />

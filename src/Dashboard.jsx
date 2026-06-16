@@ -13,20 +13,21 @@ import AddPatient from './AddPatient';
 
 const columnHelper = createColumnHelper();
 
-export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
+export default function Dashboard({ onLogout, onEdit, data = [], setData, searchTerm, setSearchTerm }) {
   const columns = [
     columnHelper.accessor('mrNumber', { header: 'MR Number' }),
     columnHelper.accessor('name', { header: 'Name' }),
+    columnHelper.accessor('fatherName', { header: 'Father\'s Name' }),
+    columnHelper.accessor('motherName', { header: 'Mother\'s Name' }),
+    columnHelper.accessor('dateOfBirth', { header: 'Date of Birth', cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A' }),
+    columnHelper.accessor('age', { header: 'Age' }),
+    columnHelper.accessor('address', { header: 'Address' }),
     columnHelper.accessor('phone', { header: 'Phone' }),
-    columnHelper.accessor('email', { header: 'Email' }),
-    columnHelper.accessor('bloodGroup', { header: 'Blood Group' }),
-    columnHelper.accessor('weight', { header: 'Weight (kg)' }),
-    columnHelper.accessor('height', { header: 'Height (cm)' }),
-    columnHelper.accessor('smoker', { header: 'Smoker', cell: info => info.getValue() ? 'Yes' : 'No' }),
+    columnHelper.accessor('createdAt', { header: 'Created At', cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A' }),
     columnHelper.accessor('scans', {
-    header: 'Scans',
-    cell: info => Array.isArray(info.getValue()) ? info.getValue().join(', ') : info.getValue()
-  }),
+      header: 'Scans',
+      cell: info => Array.isArray(info.getValue()) ? info.getValue().join(', ') : info.getValue()
+    }),
     columnHelper.display({
       id: 'actions',
       header: 'Actions',
@@ -60,7 +61,6 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
   ];
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState('');
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: Number(localStorage.getItem('pageSize') || 10),
@@ -75,11 +75,9 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
     columns,
     state: {
       sorting,
-      globalFilter,
       pagination,
     },
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -110,36 +108,38 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData }) {
       </div>
 
       <input
-        value={globalFilter ?? ''}
-        onChange={(e) => setGlobalFilter(e.target.value)}
+        value={searchTerm ?? ''}
+        onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="Search all columns..."
       />
 
-      <table>
-        <thead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <th key={header.id} onClick={header.column.getToggleSortingHandler()}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                  {{ asc: ' 🔼', desc: ' 🔽' }[header.column.getIsSorted()] ?? null}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map(row => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ overflowX: 'auto', width: '100%' }}>
+        <table style={{ minWidth: 'max-content', width: '100%' }}>
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <th key={header.id} onClick={header.column.getToggleSortingHandler()} style={{ whiteSpace: 'nowrap' }}>
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {{ asc: ' 🔼', desc: ' 🔽' }[header.column.getIsSorted()] ?? null}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map(row => (
+              <tr key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <td key={cell.id} style={{ whiteSpace: 'nowrap' }}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>

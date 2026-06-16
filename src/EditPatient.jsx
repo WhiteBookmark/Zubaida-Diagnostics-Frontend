@@ -2,7 +2,10 @@ import { useState } from 'react';
 import './Auth.css';
 
 export default function EditPatient({ record, onBack, onSave }) {
-  const [formData, setFormData] = useState({ ...record, smoker: !!record.smoker });
+  const [formData, setFormData] = useState(() => {
+    const { weight, height, ...rest } = record;
+    return { ...rest, smoker: !!record.smoker };
+  });
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -45,8 +48,6 @@ export default function EditPatient({ record, onBack, onSave }) {
         <input name="email" type="email" placeholder="Email" value={formData.email || ''} onChange={handleChange} />
         <input name="bloodGroup" placeholder="Blood Group" value={formData.bloodGroup || ''} onChange={handleChange} />
         <input name="knownAllergies" placeholder="Known Allergies" value={formData.knownAllergies || ''} onChange={handleChange} />
-        <input name="weight" type="number" step="0.1" placeholder="Weight (kg)" value={formData.weight || ''} onChange={handleChange} />
-        <input name="height" type="number" step="0.1" placeholder="Height (cm)" value={formData.height || ''} onChange={handleChange} />
         <input name="notes" placeholder="Notes" value={formData.notes || ''} onChange={handleChange} />
         <label>
           <input name="smoker" type="checkbox" checked={formData.smoker} onChange={handleChange} />

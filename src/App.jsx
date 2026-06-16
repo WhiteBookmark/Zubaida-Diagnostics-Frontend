@@ -10,20 +10,24 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [view, setView] = useState('dashboard') // 'dashboard' or 'edit'
   const [data, setData] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [recordToEdit, setRecordToEdit] = useState(null)
 
   useEffect(() => {
-    fetch('/api/patients')
-      .then(res => res.json())
-      .then(result => {
-        if (result && result.data) {
-          setData(result.data);
-        } else if (Array.isArray(result)) {
-          setData(result);
-        }
-      })
-      .catch(console.error);
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      fetch(`/api/patients?search=${searchTerm}`)
+        .then(res => res.json())
+        .then(result => {
+          if (result && result.data) {
+            setData(result.data);
+          } else if (Array.isArray(result)) {
+            setData(result);
+          }
+        })
+        .catch(console.error);
+    }, 300);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   const renderView = () => {
     if (!isLoggedIn) return <Login onLogin={() => setIsLoggedIn(true)} />
@@ -40,8 +44,6 @@ function App() {
                 ...updatedRecord,
                 dateOfBirth: updatedRecord.dateOfBirth,
                 age: parseInt(updatedRecord.age),
-                weight: parseFloat(updatedRecord.weight) || null,
-                height: parseFloat(updatedRecord.height) || null,
               })
             });
             if (response.ok) {
@@ -68,6 +70,8 @@ function App() {
         }}
         data={data}
         setData={setData}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
       />
     )
   }

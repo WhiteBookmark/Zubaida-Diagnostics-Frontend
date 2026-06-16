@@ -157,13 +157,3 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
     </div>
   );
 }
-}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}

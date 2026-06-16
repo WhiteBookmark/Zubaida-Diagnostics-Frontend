@@ -47,19 +47,18 @@ export default function AppointmentRecords({ onLogout }) {
 
   if (showAddForm) {
     return <AddAppointmentRecord onBack={() => setShowAddForm(false)} onAdd={(newRecord) => {
-        setShowAddForm(false);
-        fetch('/api/appointments').then(res => res.json()).then(setData);
+      setShowAddForm(false);
+      fetch('/api/appointments').then(res => res.json()).then(setData);
     }} />;
   }
 
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '20px' }}>
       <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
-        <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '50px' }} />
         <h2>Appointment Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>
-            <Button variant="contained" onClick={() => setShowAddForm(true)}>Add New Appointment</Button>
-            <Button variant="outlined" onClick={onLogout}>Logout</Button>
+          <Button variant="contained" onClick={() => setShowAddForm(true)}>Add New Appointment</Button>
+          <Button variant="outlined" onClick={onLogout}>Logout</Button>
         </Box>
       </div>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>

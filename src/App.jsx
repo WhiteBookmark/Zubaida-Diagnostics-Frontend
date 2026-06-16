@@ -12,6 +12,7 @@ import './Auth.css'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [username, setUsername] = useState('')
   const [currentPage, setCurrentPage] = useState('patients')
   const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument'
   const [data, setData] = useState([])
@@ -39,8 +40,14 @@ function App() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, isLoggedIn]);
 
-  const handleLogin = useCallback(() => setIsLoggedIn(true), []);
-  const handleLogout = useCallback(() => setIsLoggedIn(false), []);
+  const handleLogin = useCallback((username) => {
+    setUsername(username);
+    setIsLoggedIn(true);
+  }, []);
+  const handleLogout = useCallback(() => {
+    setUsername('');
+    setIsLoggedIn(false);
+  }, []);
 
   const handleEdit = useCallback((record) => {
     setRecordToEdit(record);
@@ -124,7 +131,7 @@ function App() {
 
   return (
     <>
-      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} onLogout={handleLogout} />
+      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} onLogout={handleLogout} username={username} />
       {renderContent()}
     </>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import logo from './assets/Glassmorphism Logo ZD.png';
 
-export default function Header({ currentPage, setCurrentPage, onLogout }) {
+export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
   const links = [
     { name: 'Patient Records', id: 'patients' },
     { name: 'Vital Records', id: 'vitals' },
@@ -34,7 +34,10 @@ export default function Header({ currentPage, setCurrentPage, onLogout }) {
           </ul>
         </nav>
       </div>
-      <button onClick={onLogout} style={{ padding: '5px 15px' }}>Logout</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <span>Logged in as <strong>{username}</strong></span>
+        <button onClick={onLogout} style={{ padding: '5px 15px' }}>Logout</button>
+      </div>
     </header>
   );
 }

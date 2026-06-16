@@ -9,7 +9,7 @@ export default function Login({ onLogin }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (username === 'admin' && password === 'password') {
-      onLogin();
+      onLogin(username);
     } else {
       setError('Invalid username or password');
     }

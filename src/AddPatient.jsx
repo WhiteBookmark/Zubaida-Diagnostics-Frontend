@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { mockData } from './mockData';
+import { Button } from '@mui/material';
 import './Auth.css';
 
 export default function AddPatient({ onBack, onAdd }) {
@@ -102,12 +103,12 @@ export default function AddPatient({ onBack, onAdd }) {
           <input name="smoker" type="checkbox" checked={formData.smoker} onChange={handleChange} />
           Smoker
         </label>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button type="button" onClick={onBack}>Cancel</button>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
+          <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
           {import.meta.env.DEV && (
-            <button type="button" onClick={fillRandomData}>Fill Random Data</button>
+            <Button variant="contained" fullWidth onClick={fillRandomData}>Fill Random Data</Button>
           )}
-          <button type="submit">Add</button>
+          <Button variant="contained" fullWidth type="submit">Add</Button>
         </div>
       </form>
     </div>

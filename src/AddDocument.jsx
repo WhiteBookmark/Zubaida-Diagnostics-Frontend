@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Button } from '@mui/material';
 import './Auth.css';
 
 export default function AddDocument({ onBack, onSave }) {
@@ -75,9 +76,9 @@ export default function AddDocument({ onBack, onSave }) {
         <input name="type" value={formData.type} placeholder="Document Type (e.g. Lab Report)" onChange={handleChange} required />
         <input name="notes" value={formData.notes} placeholder="Notes" onChange={handleChange} />
         <input type="file" onChange={handleFileChange} required />
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button type="button" onClick={onBack}>Cancel</button>
-          <button type="submit">Upload</button>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
+          <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
+          <Button variant="contained" fullWidth type="submit">Upload</Button>
         </div>
       </form>
     </div>

@@ -51,7 +51,7 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
-.auth-form button {
+.auth-form button:not(.MuiButton-root) {
   width: 100%;
   padding: 12px;
   margin-top: 10px;
@@ -65,7 +65,7 @@
   transition: all 0.3s;
 }
 
-.auth-form button:hover {
+.auth-form button:not(.MuiButton-root):hover {
   background: rgba(37, 99, 235, 1);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }

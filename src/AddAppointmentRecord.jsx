@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Button } from '@mui/material';
 import './Auth.css';
 
 export default function AddAppointmentRecord({ onBack, onAdd }) {
@@ -72,12 +73,12 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
         <input name="tokenNumber" type="number" value={formData.tokenNumber} placeholder="Token Number" onChange={handleChange} autoComplete="off" />
         <input name="amountPaid" type="number" step="0.01" value={formData.amountPaid} placeholder="Amount Paid" onChange={handleChange} autoComplete="off" />
         <input name="notes" value={formData.notes} placeholder="Notes" onChange={handleChange} autoComplete="off" />
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button type="button" onClick={onBack}>Cancel</button>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
+          <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
           {import.meta.env.DEV && (
-            <button type="button" onClick={fillRandomData}>Fill Random Data</button>
+            <Button variant="contained" fullWidth onClick={fillRandomData}>Fill Random Data</Button>
           )}
-          <button type="submit">Add</button>
+          <Button variant="contained" fullWidth type="submit">Add</Button>
         </div>
       </form>
     </div>

@@ -39,13 +39,13 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
         </nav>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <span style={{ color: '#334155' }}>Logged in as <strong>{username}</strong></span>
-        <button 
-          onClick={onLogout} 
-          style={{ 
-            padding: '8px 16px', 
-            borderRadius: '8px', 
-            border: '1px solid rgba(255, 255, 255, 0.6)', 
+        <span style={{ color: '#334155' }}>Logged in as {username}</span>
+        <button
+          onClick={onLogout}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 255, 255, 0.6)',
             background: 'rgba(255, 255, 255, 0.3)',
             color: '#0f172a',
             cursor: 'pointer',

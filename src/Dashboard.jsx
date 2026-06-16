@@ -1,8 +1,12 @@
 import { useState, useCallback, useMemo } from 'react';
 import {
-  MaterialReactTable,
-  useMaterialReactTable,
-} from 'material-react-table';
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  flexRender,
+} from '@tanstack/react-table';
 import { Box, Button, IconButton, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -11,39 +15,75 @@ import logo from './assets/Glassmorphism Logo ZD.png';
 
 export default function Dashboard({ onLogout, onEdit, data = [], setData, searchTerm, setSearchTerm }) {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [sorting, setSorting] = useState([]);
 
   const columns = useMemo(
     () => [
-      { accessorKey: 'mrNumber', header: 'MR Number', size: 120 },
-      { accessorKey: 'name', header: 'Name', size: 150 },
-      { accessorKey: 'fatherName', header: "Father's Name", size: 150 },
-      { accessorKey: 'motherName', header: "Mother's Name", size: 150 },
+      { accessorKey: 'mrNumber', header: 'MR Number' },
+      { accessorKey: 'name', header: 'Name' },
+      { accessorKey: 'fatherName', header: "Father's Name" },
+      { accessorKey: 'motherName', header: "Mother's Name" },
       {
         accessorKey: 'dateOfBirth',
         header: 'Date of Birth',
-        size: 130,
-        Cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue()).toLocaleDateString() : 'N/A'
+        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
       },
-      { accessorKey: 'age', header: 'Age', size: 80 },
-      { accessorKey: 'address', header: 'Address', size: 180 },
-      { accessorKey: 'phone', header: 'Phone', size: 130 },
+      { accessorKey: 'age', header: 'Age' },
+      { accessorKey: 'address', header: 'Address' },
+      { accessorKey: 'phone', header: 'Phone' },
       {
         accessorKey: 'createdAt',
         header: 'Created At',
-        size: 160,
-        Cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue()).toLocaleString() : 'N/A'
+        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
       },
       {
         accessorKey: 'scans',
         header: 'Scans',
-        size: 160,
-        Cell: ({ cell }) => Array.isArray(cell.getValue()) ? cell.getValue().join(', ') : (cell.getValue() ?? '')
+        cell: info => Array.isArray(info.getValue()) ? info.getValue().join(', ') : (info.getValue() ?? '')
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => (
+          <Box sx={{ display: 'flex', gap: '1px' }}>
+            <Tooltip title="Edit">
+              <IconButton onClick={() => onEdit(row.original)}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton
+                color="error"
+                onClick={() => handleDelete(row)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
       },
     ],
-    []
+    [onEdit]
   );
 
-  // Memoize callbacks so MRT does not see new references on every parent render
+  const table = useReactTable({
+    columns,
+    data,
+    state: {
+      globalFilter: searchTerm,
+      sorting,
+    },
+    onGlobalFilterChange: setSearchTerm,
+    onSortingChange: setSorting,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      pagination: { pageSize: 25 },
+    },
+  });
+
   const handleShowAdd = useCallback(() => setShowAddForm(true), []);
   const handleHideAdd = useCallback(() => setShowAddForm(false), []);
 
@@ -70,65 +110,6 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
     }
   }, [setData]);
 
-  const renderRowActions = useCallback(({ row }) => (
-    <Box sx={{ display: 'flex', gap: '1px' }}>
-      <Tooltip title="Edit">
-        <IconButton onClick={() => onEdit(row.original)}>
-          <EditIcon />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Delete">
-        <IconButton
-          color="error"
-          onClick={() => handleDelete(row)}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </Tooltip>
-    </Box>
-  ), [onEdit, handleDelete]);
-
-  const renderTopToolbarCustomActions = useCallback(() => (
-    <Box sx={{ display: 'flex', gap: '16px', padding: '8px' }}>
-      <Button variant="contained" onClick={handleShowAdd}>
-        Add New Patient Record
-      </Button>
-      <Button variant="outlined" onClick={onLogout}>Logout</Button>
-    </Box>
-  ), [handleShowAdd, onLogout]);
-
-  const table = useMaterialReactTable({
-    columns,
-    data,
-    // Global filter is handled client-side by MRT — no network call per keystroke
-    enableGlobalFilter: true,
-    state: {
-      globalFilter: searchTerm,
-    },
-    onGlobalFilterChange: setSearchTerm,
-    // Keep sorting/filtering/pagination entirely in the browser
-    manualSorting: false,
-    manualFiltering: false,
-    manualPagination: false,
-    // Disable features that are heavy and unused
-    enableDensityToggle: false,
-    enableFullScreenToggle: false,
-    enableHiding: false,
-    renderRowActions,
-    renderTopToolbarCustomActions,
-    positionActionsColumn: 'last',
-    enableRowActions: true,
-    // Pagination keeps DOM node count low
-    initialState: {
-      pagination: { pageSize: 25, pageIndex: 0 },
-    },
-    // Memoize row virtual rendering — reduces DOM thrashing on sort
-    enableRowVirtualization: data.length > 50,
-    muiTableContainerProps: {
-      sx: { maxHeight: '70vh' },
-    },
-  });
-
   if (showAddForm) {
     return (
       <AddPatient
@@ -145,8 +126,37 @@ export default function Dashboard({ onLogout, onEdit, data = [], setData, search
           <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '50px' }} />
           <h2>Dashboard</h2>
         </div>
+        <Box sx={{ display: 'flex', gap: '16px' }}>
+          <Button variant="contained" onClick={handleShowAdd}>
+            Add New Patient Record
+          </Button>
+          <Button variant="outlined" onClick={onLogout}>Logout</Button>
+        </Box>
       </div>
-      <MaterialReactTable table={table} />
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <th key={header.id} style={{ borderBottom: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>
+                  {flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map(row => (
+            <tr key={row.id}>
+              {row.getVisibleCells().map(cell => (
+                <td key={cell.id} style={{ borderBottom: '1px solid #ddd', padding: '8px' }}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

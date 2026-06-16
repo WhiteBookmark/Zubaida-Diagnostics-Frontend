@@ -33,7 +33,19 @@ export default function AddVitalRecord({ onBack, onAdd }) {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-...
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onAdd(formData);
+  };
+
+  return (
+    <div className="auth-container">
+      <form onSubmit={handleSubmit}>
+        <select name="patientId" value={formData.patientId} onChange={handleChange} required>
+          <option value="">Select Patient</option>
+          {patients.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
         <input name="weight" type="number" step="0.1" value={formData.weight} placeholder="Weight (kg)" onChange={handleChange} />
         <input name="height" type="number" step="0.1" value={formData.height} placeholder="Height (cm)" onChange={handleChange} />
         <input name="notes" value={formData.notes} placeholder="Notes" onChange={handleChange} />

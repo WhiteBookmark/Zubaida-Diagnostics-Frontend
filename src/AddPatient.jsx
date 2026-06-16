@@ -104,7 +104,9 @@ export default function AddPatient({ onBack, onAdd }) {
         </label>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button type="button" onClick={onBack}>Cancel</button>
-          <button type="button" onClick={fillRandomData}>Fill Random Data</button>
+          {import.meta.env.DEV && (
+            <button type="button" onClick={fillRandomData}>Fill Random Data</button>
+          )}
           <button type="submit">Add</button>
         </div>
       </form>

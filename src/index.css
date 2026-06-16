@@ -38,10 +38,12 @@
 /* Glassmorphism Class */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
+  backdrop-filter: blur(8px); /* reduced from 15px — lower GPU cost */
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   box-shadow: var(--shadow);
+  will-change: transform; /* promote to own compositor layer */
 }
 
 @media (prefers-color-scheme: dark) {

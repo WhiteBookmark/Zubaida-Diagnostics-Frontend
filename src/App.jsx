@@ -1,21 +1,29 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Login from './Login'
 import Dashboard from './Dashboard'
 import EditPatient from './EditPatient'
-import { mockData } from './mockData'
+import Header from './Header'
+import VitalRecords from './VitalRecords'
+import AppointmentRecords from './AppointmentRecords'
+import Documents from './Documents'
 import './App.css'
 import './Auth.css'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [currentPage, setCurrentPage] = useState('patients')
   const [view, setView] = useState('dashboard') // 'dashboard' or 'edit'
   const [data, setData] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [recordToEdit, setRecordToEdit] = useState(null)
 
+  // Fetch all patients once on login; sorting/filtering is handled client-side by MRT.
+  // Only re-fetch when the user explicitly searches (debounced).
   useEffect(() => {
+    if (!isLoggedIn) return;
+
     const delayDebounceFn = setTimeout(() => {
-      fetch(`/api/patients?search=${searchTerm}`)
+      fetch(`/api/patients?search=${encodeURIComponent(searchTerm)}`)
         .then(res => res.json())
         .then(result => {
           if (result && result.data) {
@@ -26,61 +34,87 @@ function App() {
         })
         .catch(console.error);
     }, 300);
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
 
-  const renderView = () => {
-    if (!isLoggedIn) return <Login onLogin={() => setIsLoggedIn(true)} />
-    if (view === 'edit') return (
-      <EditPatient
-        record={recordToEdit}
-        onBack={() => setView('dashboard')}
-        onSave={async (updatedRecord) => {
-          try {
-            const response = await fetch(`/api/patients/${updatedRecord.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                ...updatedRecord,
-                dateOfBirth: updatedRecord.dateOfBirth,
-                age: parseInt(updatedRecord.age),
-              })
-            });
-            if (response.ok) {
-              const savedRecord = await response.json();
-              setData(data.map(r => r.id === savedRecord.id ? savedRecord : r));
-              alert('Patient updated successfully!');
-              setView('dashboard');
-            } else {
-              alert('Failed to update record');
-            }
-          } catch (err) {
-            console.error(err);
-            alert('Error updating record');
-          }
-        }}
-      />
-    )
-    return (
-      <Dashboard
-        onLogout={() => setIsLoggedIn(false)}
-        onEdit={(record) => {
-          setRecordToEdit(record)
-          setView('edit')
-        }}
-        data={data}
-        setData={setData}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-      />
-    )
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, isLoggedIn]);
+
+  const handleLogin = useCallback(() => setIsLoggedIn(true), []);
+  const handleLogout = useCallback(() => setIsLoggedIn(false), []);
+
+  const handleEdit = useCallback((record) => {
+    setRecordToEdit(record);
+    setView('edit');
+  }, []);
+
+  const handleBack = useCallback(() => setView('dashboard'), []);
+
+  const handleSave = useCallback(async (updatedRecord) => {
+    try {
+      const response = await fetch(`/api/patients/${updatedRecord.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...updatedRecord,
+          dateOfBirth: updatedRecord.dateOfBirth,
+          age: parseInt(updatedRecord.age),
+        })
+      });
+      if (response.ok) {
+        const savedRecord = await response.json();
+        setData(prev => prev.map(r => r.id === savedRecord.id ? savedRecord : r));
+        alert('Patient updated successfully!');
+        setView('dashboard');
+      } else {
+        alert('Failed to update record');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error updating record');
+    }
+  }, []);
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
   }
+
+  const renderContent = () => {
+    if (view === 'edit') {
+      return (
+        <EditPatient
+          record={recordToEdit}
+          onBack={handleBack}
+          onSave={handleSave}
+        />
+      );
+    }
+    
+    switch (currentPage) {
+      case 'vitals':
+        return <VitalRecords onLogout={handleLogout} />;
+      case 'appointments':
+        return <AppointmentRecords />;
+      case 'documents':
+        return <Documents />;
+      default:
+        return (
+          <Dashboard
+            onLogout={handleLogout}
+            onEdit={handleEdit}
+            data={data}
+            setData={setData}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+          />
+        );
+    }
+  };
 
   return (
     <>
-      {renderView()}
+      <Header currentPage={currentPage} setCurrentPage={setCurrentPage} onLogout={handleLogout} />
+      {renderContent()}
     </>
-  )
+  );
 }
 
 export default App

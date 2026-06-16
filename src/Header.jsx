@@ -26,6 +26,7 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
                     fontWeight: currentPage === link.id ? 'bold' : '500',
                     color: currentPage === link.id ? '#2563eb' : '#334155',
                     fontSize: '16px',
+                    fontFamily: 'Georgia, serif',
                     padding: '8px 12px',
                     borderRadius: '8px',
                     transition: 'background 0.2s',
@@ -55,6 +56,7 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
             background: 'rgba(255, 255, 255, 0.3)',
             color: '#0f172a',
             cursor: 'pointer',
+            fontFamily: 'Georgia, serif',
             fontWeight: 600,
             transition: 'background 0.2s'
           }}

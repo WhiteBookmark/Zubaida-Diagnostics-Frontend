@@ -126,7 +126,7 @@ export default function Dashboard({ onEdit, data = [], setData, searchTerm, setS
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px' }}>
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-        <h2>Dashboard</h2>
+        <h2>Patient Records</h2>
         <Box sx={{ display: 'flex', gap: '16px' }}>
           <Button variant="contained" onClick={handleShowAdd}>
             Add New Patient Record

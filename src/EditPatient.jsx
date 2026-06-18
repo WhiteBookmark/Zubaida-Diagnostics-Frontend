@@ -1,21 +1,48 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, Snackbar, Alert } from '@mui/material';
 import './Auth.css';
 
 export default function EditPatient({ record, onBack, onSave }) {
   const [formData, setFormData] = useState(() => {
-    const { mrNumber, name, fatherName, motherName, dateOfBirth, age, phone, email } = record;
-    return { mrNumber, name, fatherName, motherName, dateOfBirth, age, phone, email };
+    const { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, phone, email } = record;
+    return { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, phone, email };
   });
+
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setToast(prev => ({ ...prev, open: false }));
+  };
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormData({ ...formData, [e.target.name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(formData);
+    try {
+      const response = await fetch(`/api/patients/${formData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          dateOfBirth: formData.dateOfBirth,
+          age: parseInt(formData.age),
+        })
+      });
+      if (response.ok) {
+        const savedRecord = await response.json();
+        setToast({ open: true, message: 'Patient updated successfully!', severity: 'success' });
+        setTimeout(() => onSave(savedRecord), 1500);
+      } else {
+        setToast({ open: true, message: 'Failed to update record', severity: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+      setToast({ open: true, message: 'Error updating record', severity: 'error' });
+    }
   };
 
   return (
@@ -59,6 +86,16 @@ export default function EditPatient({ record, onBack, onSave }) {
           <Button variant="contained" fullWidth type="submit">Save</Button>
         </div>
       </form>
+      <Snackbar 
+        open={toast.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

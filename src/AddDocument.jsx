@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, Snackbar, Alert } from '@mui/material';
 import './Auth.css';
 
 export default function AddDocument({ onBack, onSave }) {
@@ -8,6 +8,12 @@ export default function AddDocument({ onBack, onSave }) {
     type: '',
   });
   const [file, setFile] = useState(null);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setToast(prev => ({ ...prev, open: false }));
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,7 +26,7 @@ export default function AddDocument({ onBack, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file || !formData.mrNumber) {
-      alert('Please enter an MR Number and select a file.');
+      setToast({ open: true, message: 'Please enter an MR Number and select a file.', severity: 'error' });
       return;
     }
 
@@ -39,11 +45,11 @@ export default function AddDocument({ onBack, onSave }) {
         throw new Error(errorData.error || 'Failed to upload document');
       }
 
-      alert('Document uploaded successfully!');
-      onSave(); // Navigate back or refresh
+      setToast({ open: true, message: 'Document uploaded successfully!', severity: 'success' });
+      setTimeout(() => onSave(), 1500); // Navigate back or refresh
     } catch (error) {
       console.error(error);
-      alert('Error uploading document: ' + error.message);
+      setToast({ open: true, message: 'Error uploading document: ' + error.message, severity: 'error' });
     }
   };
 
@@ -68,6 +74,16 @@ export default function AddDocument({ onBack, onSave }) {
           <Button variant="contained" fullWidth type="submit">Upload</Button>
         </div>
       </form>
+      <Snackbar 
+        open={toast.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

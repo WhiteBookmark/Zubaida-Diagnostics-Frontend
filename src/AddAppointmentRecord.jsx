@@ -1,13 +1,20 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, Snackbar, Alert } from '@mui/material';
 import './Auth.css';
 
-export default function AddAppointmentRecord({ onBack, onAdd }) {
+export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '' }) {
   const [formData, setFormData] = useState({
-    mrNumber: '',
+    mrNumber: initialMrNumber,
     dateTime: '',
     amountPaid: '',
   });
+
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setToast(prev => ({ ...prev, open: false }));
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,7 +27,7 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
       const patientData = await patientRes.json();
       
       if (!patientData.data || patientData.data.length === 0) {
-        alert('Patient not found with this MR Number');
+        setToast({ open: true, message: 'Patient not found with this MR Number', severity: 'error' });
         return;
       }
 
@@ -36,14 +43,15 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
       });
       if (response.ok) {
         const newRecord = await response.json();
-        onAdd(newRecord);
+        setToast({ open: true, message: 'Appointment added successfully!', severity: 'success' });
+        setTimeout(() => onAdd(newRecord), 1500);
       } else {
         const errorData = await response.json();
-        alert(`Failed to add appointment: ${errorData.error || 'Unknown error'}`);
+        setToast({ open: true, message: `Failed to add appointment: ${errorData.error || 'Unknown error'}`, severity: 'error' });
       }
     } catch (error) {
       console.error('Error adding appointment:', error);
-      alert('Error adding appointment: ' + error.message);
+      setToast({ open: true, message: 'Error adding appointment: ' + error.message, severity: 'error' });
     }
   };
 
@@ -68,6 +76,16 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
           <Button variant="contained" fullWidth type="submit">Add</Button>
         </div>
       </form>
+      <Snackbar 
+        open={toast.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

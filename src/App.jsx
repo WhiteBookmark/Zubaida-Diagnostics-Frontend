@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import Login from './Login'
 import Dashboard from './Dashboard'
 import EditPatient from './EditPatient'
+import AddPatient from './AddPatient'
+import AddAppointmentRecord from './AddAppointmentRecord'
 import Header from './Header'
 import VitalRecords from './VitalRecords'
 import AppointmentRecords from './AppointmentRecords'
@@ -14,11 +16,12 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
   const [currentPage, setCurrentPage] = useState('patients')
-  const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument'
+  const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument', 'addPatient', 'addAppointment'
   const [resetKey, setResetKey] = useState(0)
   const [data, setData] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [recordToEdit, setRecordToEdit] = useState(null)
+  const [newMrNumber, setNewMrNumber] = useState('')
 
   // Fetch all patients once on login; sorting/filtering is handled client-side by MRT.
   // Only re-fetch when the user explicitly searches (debounced).
@@ -71,29 +74,22 @@ function App() {
     setResetKey(prev => prev + 1);
   }, []);
 
-  const handleSave = useCallback(async (updatedRecord) => {
-    try {
-      const response = await fetch(`/api/patients/${updatedRecord.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...updatedRecord,
-          dateOfBirth: updatedRecord.dateOfBirth,
-          age: parseInt(updatedRecord.age),
-        })
-      });
-      if (response.ok) {
-        const savedRecord = await response.json();
-        setData(prev => prev.map(r => r.id === savedRecord.id ? savedRecord : r));
-        alert('Patient updated successfully!');
-        setView('dashboard');
-      } else {
-        alert('Failed to update record');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error updating record');
-    }
+  const handleSave = useCallback((savedRecord) => {
+    setData(prev => prev.map(r => r.id === savedRecord.id ? savedRecord : r));
+    setView('dashboard');
+  }, []);
+
+  const handleAddPatient = useCallback(() => setView('addPatient'), []);
+
+  const handlePatientAdded = useCallback((newPatient) => {
+    setData(prev => [...prev, newPatient]);
+    setNewMrNumber(newPatient.mrNumber);
+    setView('addAppointment');
+  }, []);
+
+  const handleAppointmentAdded = useCallback(() => {
+    setView('dashboard');
+    setCurrentPage('appointments');
   }, []);
 
   if (!isLoggedIn) {
@@ -116,6 +112,14 @@ function App() {
         return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
     }
 
+    if (view === 'addPatient') {
+      return <AddPatient onBack={handleBack} onAdd={handlePatientAdded} />
+    }
+
+    if (view === 'addAppointment') {
+      return <AddAppointmentRecord onBack={handleBack} onAdd={handleAppointmentAdded} initialMrNumber={newMrNumber} />
+    }
+
     switch (currentPage) {
       case 'vitals':
         return <VitalRecords key={`vitals-${resetKey}`} />;
@@ -128,6 +132,7 @@ function App() {
           <Dashboard
             key={`dashboard-${resetKey}`}
             onEdit={handleEdit}
+            onAddPatient={handleAddPatient}
             data={data}
             setData={setData}
             searchTerm={searchTerm}

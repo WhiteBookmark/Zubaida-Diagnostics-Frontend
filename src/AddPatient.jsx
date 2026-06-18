@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { mockData } from './mockData';
-import { Button } from '@mui/material';
+import { Button, Snackbar, Alert } from '@mui/material';
 import './Auth.css';
 
 export default function AddPatient({ onBack, onAdd }) {
@@ -13,6 +13,13 @@ export default function AddPatient({ onBack, onAdd }) {
     phone: '',
     email: '',
   });
+
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setToast(prev => ({ ...prev, open: false }));
+  };
 
   const fillRandomData = () => {
     const randomPatient = mockData[Math.floor(Math.random() * mockData.length)];
@@ -57,10 +64,11 @@ export default function AddPatient({ onBack, onAdd }) {
       }
 
       const newPatient = await response.json();
-      onAdd(newPatient);
+      setToast({ open: true, message: 'Patient added successfully!', severity: 'success' });
+      setTimeout(() => onAdd(newPatient), 1500);
     } catch (error) {
       console.error(error);
-      alert('Error creating patient: ' + error.message);
+      setToast({ open: true, message: 'Error creating patient: ' + error.message, severity: 'error' });
     }
   };
 
@@ -104,6 +112,16 @@ export default function AddPatient({ onBack, onAdd }) {
           <Button variant="contained" fullWidth type="submit">Add</Button>
         </div>
       </form>
+      <Snackbar 
+        open={toast.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

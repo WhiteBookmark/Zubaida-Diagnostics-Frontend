@@ -13,8 +13,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddPatient from './AddPatient';
 import logo from './assets/Glassmorphism Logo ZD.png';
 
-export default function Dashboard({ onEdit, data = [], setData, searchTerm, setSearchTerm }) {
-  const [showAddForm, setShowAddForm] = useState(false);
+export default function Dashboard({ onEdit, onAddPatient, data = [], setData, searchTerm, setSearchTerm }) {
   const [sorting, setSorting] = useState([]);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -78,14 +77,6 @@ export default function Dashboard({ onEdit, data = [], setData, searchTerm, setS
     },
   });
 
-  const handleShowAdd = useCallback(() => setShowAddForm(true), []);
-  const handleHideAdd = useCallback(() => setShowAddForm(false), []);
-
-  const handleAdd = useCallback((newRecord) => {
-    setData(prev => [...prev, newRecord]);
-    setShowAddForm(false);
-  }, [setData]);
-
   const handleDeleteClick = useCallback((row) => {
     setRowToDelete(row);
     setDeleteDialogOpen(true);
@@ -124,21 +115,12 @@ export default function Dashboard({ onEdit, data = [], setData, searchTerm, setS
     setToast(prev => ({ ...prev, open: false }));
   };
 
-  if (showAddForm) {
-    return (
-      <AddPatient
-        onBack={handleHideAdd}
-        onAdd={handleAdd}
-      />
-    );
-  }
-
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px' }}>
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
         <h2>Patient Records</h2>
         <Box sx={{ display: 'flex', gap: '16px' }}>
-          <Button variant="contained" onClick={handleShowAdd}>
+          <Button variant="contained" onClick={onAddPatient}>
             Add New Patient Record
           </Button>
         </Box>

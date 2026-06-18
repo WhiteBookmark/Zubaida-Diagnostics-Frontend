@@ -87,6 +87,11 @@ function App() {
     setView('addAppointment');
   }, []);
 
+  const handleAddAppointmentForPatient = useCallback((patient) => {
+    setNewMrNumber(patient.mrNumber);
+    setView('addAppointment');
+  }, []);
+
   const handleAppointmentAdded = useCallback(() => {
     setView('dashboard');
     setCurrentPage('appointments');
@@ -133,6 +138,7 @@ function App() {
             key={`dashboard-${resetKey}`}
             onEdit={handleEdit}
             onAddPatient={handleAddPatient}
+            onAddAppointment={handleAddAppointmentForPatient}
             data={data}
             setData={setData}
             searchTerm={searchTerm}

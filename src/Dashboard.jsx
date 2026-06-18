@@ -10,10 +10,11 @@ import {
 import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
 import AddPatient from './AddPatient';
 import logo from './assets/Glassmorphism Logo ZD.png';
 
-export default function Dashboard({ onEdit, onAddPatient, data = [], setData, searchTerm, setSearchTerm }) {
+export default function Dashboard({ onEdit, onAddPatient, onAddAppointment, data = [], setData, searchTerm, setSearchTerm }) {
   const [sorting, setSorting] = useState([]);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -22,23 +23,16 @@ export default function Dashboard({ onEdit, onAddPatient, data = [], setData, se
 
   const columns = useMemo(
     () => [
-      { accessorKey: 'mrNumber', header: 'MR Number' },
-      { accessorKey: 'name', header: 'Name' },
-      { accessorKey: 'fatherName', header: "Father's Name" },
-      { accessorKey: 'motherName', header: "Mother's Name" },
-      {
-        accessorKey: 'dateOfBirth',
-        header: 'Date of Birth',
-        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
-      },
-      { accessorKey: 'age', header: 'Age' },
-      { accessorKey: 'phone', header: 'Phone' },
-      { accessorKey: 'email', header: 'Email' },
       {
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => (
           <Box sx={{ display: 'flex', gap: '1px' }}>
+            <Tooltip title="Add Appointment">
+              <IconButton color="primary" onClick={() => onAddAppointment(row.original)}>
+                <EventIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Edit">
               <IconButton onClick={() => onEdit(row.original)}>
                 <EditIcon />
@@ -55,8 +49,20 @@ export default function Dashboard({ onEdit, onAddPatient, data = [], setData, se
           </Box>
         ),
       },
+      { accessorKey: 'mrNumber', header: 'MR Number' },
+      { accessorKey: 'name', header: 'Name' },
+      { accessorKey: 'fatherName', header: "Father's Name" },
+      { accessorKey: 'motherName', header: "Mother's Name" },
+      {
+        accessorKey: 'dateOfBirth',
+        header: 'Date of Birth',
+        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
+      },
+      { accessorKey: 'age', header: 'Age' },
+      { accessorKey: 'phone', header: 'Phone' },
+      { accessorKey: 'email', header: 'Email' },
     ],
-    [onEdit]
+    [onEdit, onAddAppointment]
   );
 
   const table = useReactTable({

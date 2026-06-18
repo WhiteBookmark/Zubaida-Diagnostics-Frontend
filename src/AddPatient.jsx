@@ -36,7 +36,21 @@ export default function AddPatient({ onBack, onAdd }) {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let newFormData = { ...formData, [name]: value };
+
+    if (name === 'dob' && value) {
+      const birthDate = new Date(value);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      newFormData.age = age >= 0 ? age.toString() : '';
+    }
+
+    setFormData(newFormData);
   };
 
   const handleSubmit = async (e) => {
@@ -78,7 +92,7 @@ export default function AddPatient({ onBack, onAdd }) {
         <h2>Add New Patient Record</h2>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Name</label>
-          <input name="name" value={formData.name} onChange={handleChange} required />
+          <input name="name" value={formData.name} onChange={handleChange} autoFocus required />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Father Name</label>

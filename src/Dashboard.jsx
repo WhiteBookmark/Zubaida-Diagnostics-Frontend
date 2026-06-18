@@ -29,22 +29,8 @@ export default function Dashboard({ onEdit, data = [], setData, searchTerm, setS
         cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
       },
       { accessorKey: 'age', header: 'Age' },
-      { accessorKey: 'address', header: 'Address' },
       { accessorKey: 'phone', header: 'Phone' },
       { accessorKey: 'email', header: 'Email' },
-      { accessorKey: 'bloodGroup', header: 'Blood Group' },
-      { accessorKey: 'knownAllergies', header: 'Known Allergies' },
-      {
-        accessorKey: 'smoker',
-        header: 'Smoker',
-        cell: info => info.getValue() ? 'Yes' : 'No'
-      },
-      { accessorKey: 'notes', header: 'Doctor\'s Notes' },
-      {
-        accessorKey: 'createdAt',
-        header: 'Created At',
-        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
-      },
       {
         id: 'actions',
         header: 'Actions',

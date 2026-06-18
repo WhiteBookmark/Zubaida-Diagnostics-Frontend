@@ -66,8 +66,34 @@ export default function AddDocument({ onBack, onSave }) {
           <input name="type" value={formData.type} onChange={handleChange} required />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>File</label>
-          <input type="file" onChange={handleFileChange} required />
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>File</label>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            background: 'rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255, 255, 255, 0.6)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+          }}>
+            <Button
+              variant="contained"
+              component="label"
+              sx={{ textTransform: 'none' }}
+            >
+              Choose File
+              <input
+                type="file"
+                hidden
+                onChange={handleFileChange}
+                required={!file}
+              />
+            </Button>
+            <span style={{ fontSize: '14px', color: '#0f172a', opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {file ? file.name : 'No file selected'}
+            </span>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>

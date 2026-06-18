@@ -3,10 +3,18 @@ import { Button, Snackbar, Alert } from '@mui/material';
 import './Auth.css';
 
 export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '' }) {
-  const [formData, setFormData] = useState({
-    mrNumber: initialMrNumber,
-    dateTime: '',
-    amountPaid: '',
+  const [formData, setFormData] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return {
+      mrNumber: initialMrNumber,
+      dateTime: `${year}-${month}-${day}T${hours}:${minutes}`,
+      amountPaid: '',
+    };
   });
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });

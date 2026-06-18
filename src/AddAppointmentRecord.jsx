@@ -7,10 +7,8 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
   const [formData, setFormData] = useState({
     patientId: '',
     dateTime: '',
-    reason: '',
     tokenNumber: '',
     amountPaid: '',
-    notes: '',
   });
 
   useEffect(() => {
@@ -29,10 +27,8 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
     setFormData({
       patientId: randomPatient ? randomPatient.id : '',
       dateTime: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      reason: 'Routine Checkup',
       tokenNumber: Math.floor(Math.random() * 100) + 1,
       amountPaid: (Math.random() * 500 + 100).toFixed(2),
-      notes: 'Auto-filled test data.',
     });
   };
 
@@ -70,10 +66,8 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
           {patients.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
         <input name="dateTime" type="datetime-local" value={formData.dateTime} onChange={handleChange} required autoComplete="off" />
-        <input name="reason" value={formData.reason} placeholder="Reason" onChange={handleChange} autoComplete="off" />
         <input name="tokenNumber" type="number" value={formData.tokenNumber} placeholder="Token Number" onChange={handleChange} autoComplete="off" />
         <input name="amountPaid" type="number" step="0.01" value={formData.amountPaid} placeholder="Amount Paid" onChange={handleChange} autoComplete="off" />
-        <input name="notes" value={formData.notes} placeholder="Notes" onChange={handleChange} autoComplete="off" />
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
           {import.meta.env.DEV && (

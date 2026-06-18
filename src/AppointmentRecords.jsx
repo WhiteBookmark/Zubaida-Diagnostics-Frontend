@@ -29,11 +29,8 @@ export default function AppointmentRecords() {
       header: 'Date/Time',
       cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
     },
-    { accessorKey: 'reason', header: 'Reason' },
     { accessorKey: 'tokenNumber', header: 'Token' },
     { accessorKey: 'amountPaid', header: 'Paid (Rs)' },
-    { accessorKey: 'status', header: 'Status' },
-    { accessorKey: 'notes', header: 'Notes' },
   ], []);
 
   const table = useReactTable({

@@ -9,7 +9,7 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
   ];
 
   return (
-    <header className="glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px', margin: '20px', marginBottom: '30px' }}>
+    <header className="glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 40px', margin: '20px', marginBottom: '30px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
         <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '40px', cursor: 'pointer' }} onClick={() => setCurrentPage('patients')} />
         <nav>

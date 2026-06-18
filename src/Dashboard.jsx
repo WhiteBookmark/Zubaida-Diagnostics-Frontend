@@ -7,7 +7,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, IconButton, Tooltip } from '@mui/material';
+import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddPatient from './AddPatient';
@@ -16,6 +16,10 @@ import logo from './assets/Glassmorphism Logo ZD.png';
 export default function Dashboard({ onEdit, data = [], setData, searchTerm, setSearchTerm }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
+  
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState(null);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
   const columns = useMemo(
     () => [
@@ -44,7 +48,7 @@ export default function Dashboard({ onEdit, data = [], setData, searchTerm, setS
             <Tooltip title="Delete">
               <IconButton
                 color="error"
-                onClick={() => handleDelete(row)}
+                onClick={() => handleDeleteClick(row)}
               >
                 <DeleteIcon />
               </IconButton>
@@ -82,23 +86,43 @@ export default function Dashboard({ onEdit, data = [], setData, searchTerm, setS
     setShowAddForm(false);
   }, [setData]);
 
-  const handleDelete = useCallback(async (row) => {
-    if (window.confirm('Are you sure you want to delete this patient record?')) {
-      try {
-        const response = await fetch(`/api/patients/${row.original.id}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) {
-          setData(prev => prev.filter(item => item.id !== row.original.id));
-        } else {
-          alert('Failed to delete record');
-        }
-      } catch (error) {
-        console.error('Error deleting record:', error);
-        alert('Error deleting record');
+  const handleDeleteClick = useCallback((row) => {
+    setRowToDelete(row);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setRowToDelete(null);
+  };
+
+  const confirmDelete = useCallback(async () => {
+    if (!rowToDelete) return;
+    
+    try {
+      const response = await fetch(`/api/patients/${rowToDelete.original.id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setData(prev => prev.filter(item => item.id !== rowToDelete.original.id));
+        setToast({ open: true, message: 'Record deleted successfully', severity: 'success' });
+      } else {
+        setToast({ open: true, message: 'Failed to delete record', severity: 'error' });
       }
+    } catch (error) {
+      console.error('Error deleting record:', error);
+      setToast({ open: true, message: 'Error deleting record', severity: 'error' });
+    } finally {
+      handleCloseDeleteDialog();
     }
-  }, [setData]);
+  }, [rowToDelete, setData]);
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToast(prev => ({ ...prev, open: false }));
+  };
 
   if (showAddForm) {
     return (
@@ -145,6 +169,41 @@ export default function Dashboard({ onEdit, data = [], setData, searchTerm, setS
           </tbody>
         </table>
       </div>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        PaperProps={{
+          className: 'glass',
+          style: { padding: '16px', borderRadius: '16px', background: 'var(--glass-bg)', backdropFilter: 'var(--glass-blur)' }
+        }}
+      >
+        <DialogTitle sx={{ color: 'var(--text-h)', fontWeight: 'bold' }}>Delete Patient Record</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: 'var(--text)' }}>
+            Are you sure you want to delete this patient record? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} sx={{ color: 'var(--text-h)' }}>
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} variant="contained" color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar 
+        open={toast.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from '@mui/material';
 import logo from './assets/Glassmorphism Logo ZD.png';
 import './Auth.css';
 
@@ -36,7 +37,9 @@ export default function Login({ onLogin }) {
           onChange={(e) => setPassword(e.target.value)}
           className="glass-input"
         />
-        <button type="submit">Sign In</button>
+        <Button variant="contained" type="submit" fullWidth sx={{ mt: 1 }}>
+          Sign In
+        </Button>
       </form>
     </div>
   );

@@ -63,7 +63,13 @@ export default function AddDocument({ onBack, onSave }) {
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Document Type</label>
-          <input name="type" value={formData.type} onChange={handleChange} required />
+          <input name="type" value={formData.type} onChange={handleChange} list="document-type-options" required />
+          <datalist id="document-type-options">
+            <option value="X-Ray" />
+            <option value="Ultrasound" />
+            <option value="Lab Result" />
+            <option value="Prescription" />
+          </datalist>
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>File</label>

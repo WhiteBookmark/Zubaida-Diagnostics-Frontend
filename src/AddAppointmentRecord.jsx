@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button, Snackbar, Alert } from '@mui/material';
 import './Auth.css';
 
@@ -16,6 +16,14 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       amountPaid: '',
     };
   });
+
+  const amountPaidRef = useRef(null);
+
+  useEffect(() => {
+    if (amountPaidRef.current) {
+      amountPaidRef.current.focus();
+    }
+  }, []);
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
@@ -77,7 +85,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Amount Paid</label>
-          <input name="amountPaid" type="number" step="0.01" value={formData.amountPaid} onChange={handleChange} autoComplete="off" />
+          <input name="amountPaid" type="number" step="0.01" value={formData.amountPaid} onChange={handleChange} autoComplete="off" ref={amountPaidRef} />
         </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>

@@ -70,31 +70,31 @@ export default function AddPatient({ onBack, onAdd }) {
         <h2>Add New Patient Record</h2>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Name</label>
-          <input name="name" value={formData.name} placeholder="Name" onChange={handleChange} required />
+          <input name="name" value={formData.name} onChange={handleChange} required />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Father Name</label>
-          <input name="fatherName" value={formData.fatherName} placeholder="Father Name" onChange={handleChange} />
+          <input name="fatherName" value={formData.fatherName} onChange={handleChange} />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Mother Name</label>
-          <input name="motherName" value={formData.motherName} placeholder="Mother Name" onChange={handleChange} />
+          <input name="motherName" value={formData.motherName} onChange={handleChange} />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Date of Birth</label>
-          <input name="dob" type="date" value={formData.dob} placeholder="Date of Birth" onChange={handleChange} />
+          <input name="dob" type="date" value={formData.dob} onChange={handleChange} />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Age</label>
-          <input name="age" type="number" value={formData.age} placeholder="Age" onChange={handleChange} />
+          <input name="age" type="number" value={formData.age} onChange={handleChange} />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Phone</label>
-          <input name="phone" value={formData.phone} placeholder="Phone" onChange={handleChange} />
+          <input name="phone" value={formData.phone} onChange={handleChange} />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Email</label>
-          <input name="email" type="email" value={formData.email} placeholder="Email" onChange={handleChange} />
+          <input name="email" type="email" value={formData.email} onChange={handleChange} />
         </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>

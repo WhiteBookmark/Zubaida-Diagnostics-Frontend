@@ -53,7 +53,7 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
         <h2>Add New Appointment Record</h2>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>MR Number</label>
-          <input name="mrNumber" type="text" value={formData.mrNumber} placeholder="MR Number" onChange={handleChange} required autoComplete="off" />
+          <input name="mrNumber" type="text" value={formData.mrNumber} onChange={handleChange} required autoComplete="off" />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Date & Time</label>
@@ -61,7 +61,7 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Amount Paid</label>
-          <input name="amountPaid" type="number" step="0.01" value={formData.amountPaid} placeholder="Amount Paid" onChange={handleChange} autoComplete="off" />
+          <input name="amountPaid" type="number" step="0.01" value={formData.amountPaid} onChange={handleChange} autoComplete="off" />
         </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>

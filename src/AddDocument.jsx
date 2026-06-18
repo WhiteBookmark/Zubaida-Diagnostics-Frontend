@@ -53,11 +53,11 @@ export default function AddDocument({ onBack, onSave }) {
         <h2>Add New Document</h2>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>MR Number</label>
-          <input name="mrNumber" value={formData.mrNumber} placeholder="MR Number" onChange={handleChange} required />
+          <input name="mrNumber" value={formData.mrNumber} onChange={handleChange} required />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Document Type</label>
-          <input name="type" value={formData.type} placeholder="Document Type (e.g. Lab Report)" onChange={handleChange} required />
+          <input name="type" value={formData.type} onChange={handleChange} required />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
           <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>File</label>

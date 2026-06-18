@@ -45,7 +45,6 @@ export default function Documents({ onAddDocument }) {
     { accessorKey: 'patient.name', header: 'Patient Name' },
     { accessorKey: 'type', header: 'Document Type' },
     { accessorKey: 'filePath', header: 'File Path' },
-    { accessorKey: 'notes', header: 'Notes' },
     {
       accessorKey: 'uploadedAt',
       header: 'Uploaded At',

@@ -4,7 +4,6 @@ import logo from './assets/Glassmorphism Logo ZD.png';
 export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
   const links = [
     { name: 'Patient Records', id: 'patients' },
-    { name: 'Vital Records', id: 'vitals' },
     { name: 'Appointment Records', id: 'appointments' },
     { name: 'Documents', id: 'documents' },
   ];

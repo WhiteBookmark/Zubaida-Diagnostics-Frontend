@@ -7,10 +7,12 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert } from '@mui/material';
+import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import AddPatient from './AddPatient';
 import logo from './assets/Glassmorphism Logo ZD.png';
 
@@ -69,14 +71,11 @@ export default function Dashboard({ onEdit, onAddPatient, onAddAppointment, data
     columns,
     data,
     state: {
-      globalFilter: searchTerm,
       sorting,
     },
-    onGlobalFilterChange: setSearchTerm,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: { pageSize: 25 },
@@ -125,7 +124,42 @@ export default function Dashboard({ onEdit, onAddPatient, onAddAppointment, data
     <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px' }}>
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
         <h2>Patient Records</h2>
-        <Box sx={{ display: 'flex', gap: '16px' }}>
+        <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <TextField
+            variant="outlined"
+            placeholder="Search patients..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            size="small"
+            sx={{
+               background: 'rgba(255, 255, 255, 0.1)',
+               borderRadius: '8px',
+               input: { color: 'var(--text)' },
+               '& .MuiOutlinedInput-root': {
+                 '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                 '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                 '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
+               }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: 'var(--text)' }} />
+                </InputAdornment>
+              ),
+              endAdornment: searchTerm ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setSearchTerm('')}
+                    edge="end"
+                  >
+                    <ClearIcon sx={{ color: 'var(--text)' }} />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            }}
+          />
           <Button variant="contained" onClick={onAddPatient}>
             Add New Patient Record
           </Button>

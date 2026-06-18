@@ -63,8 +63,8 @@ export default function AddDocument({ onBack, onSave }) {
 
   return (
     <div className="auth-container">
-      <h2>Add New Document</h2>
       <form onSubmit={handleSubmit} className="auth-form">
+        <h2>Add New Document</h2>
         <select name="patientId" value={formData.patientId} onChange={handleChange} required>
           <option value="">Select Patient</option>
           {patients.map(patient => (

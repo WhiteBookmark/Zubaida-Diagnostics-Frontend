@@ -66,8 +66,8 @@ export default function AddPatient({ onBack, onAdd }) {
 
   return (
     <div className="auth-container">
-      <h2>Add New Patient Record</h2>
       <form onSubmit={handleSubmit} className="auth-form">
+        <h2>Add New Patient Record</h2>
         <input name="name" value={formData.name} placeholder="Name" onChange={handleChange} required />
         <input name="fatherName" value={formData.fatherName} placeholder="Father Name" onChange={handleChange} />
         <input name="motherName" value={formData.motherName} placeholder="Mother Name" onChange={handleChange} />

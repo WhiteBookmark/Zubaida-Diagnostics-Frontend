@@ -63,8 +63,8 @@ export default function AddAppointmentRecord({ onBack, onAdd }) {
 
   return (
     <div className="auth-container">
-      <h2>Add New Appointment Record</h2>
       <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
+        <h2>Add New Appointment Record</h2>
         <select name="patientId" value={formData.patientId} onChange={handleChange} required>
           <option value="">Select Patient</option>
           {patients.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}

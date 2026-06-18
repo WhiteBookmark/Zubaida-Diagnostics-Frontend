@@ -51,9 +51,18 @@ export default function AddDocument({ onBack, onSave }) {
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Add New Document</h2>
-        <input name="mrNumber" value={formData.mrNumber} placeholder="MR Number" onChange={handleChange} required />
-        <input name="type" value={formData.type} placeholder="Document Type (e.g. Lab Report)" onChange={handleChange} required />
-        <input type="file" onChange={handleFileChange} required />
+        <div style={{ width: '100%', textAlign: 'left' }}>
+          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>MR Number</label>
+          <input name="mrNumber" value={formData.mrNumber} placeholder="MR Number" onChange={handleChange} required />
+        </div>
+        <div style={{ width: '100%', textAlign: 'left' }}>
+          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Document Type</label>
+          <input name="type" value={formData.type} placeholder="Document Type (e.g. Lab Report)" onChange={handleChange} required />
+        </div>
+        <div style={{ width: '100%', textAlign: 'left' }}>
+          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>File</label>
+          <input type="file" onChange={handleFileChange} required />
+        </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
           <Button variant="contained" fullWidth type="submit">Upload</Button>

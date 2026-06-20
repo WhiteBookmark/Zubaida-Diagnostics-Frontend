@@ -21,7 +21,7 @@ export default function Login({ onLogin }) {
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
         <img src={logo} alt="Logo" style={{ height: '60px', marginBottom: '20px' }} />
-        <h2 style={{ color: '#0f172a' }}>Login to Zubaida Diagnostics Web Portal</h2>
+        <h2 style={{ color: '#0f172a' }}>Login to Web Portal</h2>
         {error && <p className="error" style={{ color: '#ef4444' }}>{error}</p>}
         <input
           type="text"

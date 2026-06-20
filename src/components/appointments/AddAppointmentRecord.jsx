@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button, Snackbar, Alert } from '@mui/material';
-import './Auth.css';
+import '../../styles/Auth.css';
 
 export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '' }) {
   const [formData, setFormData] = useState(() => {

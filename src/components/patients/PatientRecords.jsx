@@ -14,7 +14,7 @@ import EventIcon from '@mui/icons-material/Event';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import AddPatient from './AddPatient';
-import logo from './assets/Glassmorphism Logo ZD.png';
+import logo from '../../assets/Glassmorphism Logo ZD.png';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, data = [], setData, searchTerm, setSearchTerm }) {
   const [sorting, setSorting] = useState([]);

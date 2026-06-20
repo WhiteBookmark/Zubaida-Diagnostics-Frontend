@@ -9,7 +9,7 @@ import { Box, Button, IconButton, TextField, InputAdornment } from '@mui/materia
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import AddAppointmentRecord from './AddAppointmentRecord';
-import logo from './assets/Glassmorphism Logo ZD.png';
+import logo from '../../assets/Glassmorphism Logo ZD.png';
 
 export default function AppointmentRecords() {
   const [data, setData] = useState([]);

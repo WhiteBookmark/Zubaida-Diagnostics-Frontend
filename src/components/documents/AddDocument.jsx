@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Snackbar, Alert } from '@mui/material';
-import './Auth.css';
+import '../../styles/Auth.css';
 
 export default function AddDocument({ onBack, onSave }) {
   const [formData, setFormData] = useState({

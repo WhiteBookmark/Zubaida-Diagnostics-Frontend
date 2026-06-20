@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
-import './Auth.css';
+import '../../styles/Auth.css';
 
 export default function AddVitalRecord({ onBack, onAdd }) {
   const [patients, setPatients] = useState([]);

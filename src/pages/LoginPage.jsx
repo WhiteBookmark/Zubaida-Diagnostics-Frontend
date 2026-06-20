@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@mui/material';
-import logo from './assets/Glassmorphism Logo ZD.png';
-import './Auth.css';
+import logo from '../assets/Glassmorphism Logo ZD.png';
+import '../styles/Auth.css';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');

@@ -8,7 +8,7 @@ import {
 import { Box, Button, Tooltip, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddVitalRecord from './AddVitalRecord';
-import logo from './assets/Glassmorphism Logo ZD.png';
+import logo from '../../assets/Glassmorphism Logo ZD.png';
 
 export default function VitalRecords() {
   const [data, setData] = useState([]);

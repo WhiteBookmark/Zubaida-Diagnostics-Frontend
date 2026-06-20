@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { mockData } from './mockData';
-import { Button, Snackbar, Alert } from '@mui/material';
-import './Auth.css';
+import { mockData } from '../../utils/mockData';
+import { Box, Button, TextField, Select, MenuItem, InputLabel, FormControl, Snackbar, Alert } from '@mui/material';
+import '../../styles/Auth.css';
 
 export default function AddPatient({ onBack, onAdd }) {
   const [formData, setFormData] = useState({

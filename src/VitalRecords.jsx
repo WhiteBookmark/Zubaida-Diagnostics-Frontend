@@ -85,7 +85,7 @@ export default function VitalRecords() {
   }
 
   return (
-    <div className="dashboard glass" style={{ padding: '20px', margin: '20px' }}>
+    <div className="dashboard glass" style={{ padding: '20px', margin: '20px 20px 40px 20px' }}>
       <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
         <h2>Vital Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto' }}>

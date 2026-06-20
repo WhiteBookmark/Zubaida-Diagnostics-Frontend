@@ -121,7 +121,7 @@ export default function Dashboard({ onEdit, onAddPatient, onAddAppointment, data
   };
 
   return (
-    <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px' }}>
+    <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px 40px 20px' }}>
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
         <h2>Patient Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -134,6 +134,7 @@ export default function Dashboard({ onEdit, onAddPatient, onAddAppointment, data
             sx={{
                background: 'rgba(255, 255, 255, 0.1)',
                borderRadius: '8px',
+               boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
                input: { color: 'var(--text)' },
                '& .MuiOutlinedInput-root': {
                  '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },

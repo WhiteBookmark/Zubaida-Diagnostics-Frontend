@@ -1,232 +1,103 @@
-import { useState, useCallback, useMemo } from 'react';
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  flexRender,
-} from '@tanstack/react-table';
-import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EventIcon from '@mui/icons-material/Event';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
-import AddPatient from './AddPatient';
-import logo from './assets/Glassmorphism Logo ZD.png';
+import { useState, useEffect } from 'react';
+import { Box, Typography } from '@mui/material';
+import PeopleIcon from '@mui/icons-material/People';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import FolderIcon from '@mui/icons-material/Folder';
 
-export default function Dashboard({ onEdit, onAddPatient, onAddAppointment, data = [], setData, searchTerm, setSearchTerm }) {
-  const [sorting, setSorting] = useState([]);
-  
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [rowToDelete, setRowToDelete] = useState(null);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
-
-  const columns = useMemo(
-    () => [
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => (
-          <Box sx={{ display: 'flex', gap: '1px' }}>
-            <Tooltip title="Add Appointment">
-              <IconButton color="primary" onClick={() => onAddAppointment(row.original)}>
-                <EventIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Edit">
-              <IconButton onClick={() => onEdit(row.original)}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton
-                color="error"
-                onClick={() => handleDeleteClick(row)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ),
-      },
-      { accessorKey: 'mrNumber', header: 'MR Number' },
-      { accessorKey: 'name', header: 'Name' },
-      { accessorKey: 'fatherName', header: "Father's Name" },
-      { accessorKey: 'motherName', header: "Mother's Name" },
-      {
-        accessorKey: 'dateOfBirth',
-        header: 'Date of Birth',
-        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
-      },
-      { accessorKey: 'age', header: 'Age' },
-      { accessorKey: 'phone', header: 'Phone' },
-      { accessorKey: 'email', header: 'Email' },
-    ],
-    [onEdit, onAddAppointment]
-  );
-
-  const table = useReactTable({
-    columns,
-    data,
-    state: {
-      sorting,
-    },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: { pageSize: 25 },
-    },
+export default function Dashboard() {
+  const [counts, setCounts] = useState({
+    patients: 0,
+    appointments: 0,
+    documents: 0
   });
 
-  const handleDeleteClick = useCallback((row) => {
-    setRowToDelete(row);
-    setDeleteDialogOpen(true);
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [patientsRes, appointmentsRes, documentsRes] = await Promise.all([
+          fetch('/api/patients'),
+          fetch('/api/appointments'),
+          fetch('/api/documents')
+        ]);
+        const pData = await patientsRes.json();
+        const aData = await appointmentsRes.json();
+        const dData = await documentsRes.json();
+
+        const getCount = (res) => Array.isArray(res) ? res.length : (res.data ? res.data.length : 0);
+
+        setCounts({
+          patients: getCount(pData),
+          appointments: getCount(aData),
+          documents: getCount(dData)
+        });
+      } catch (err) {
+        console.error('Error fetching counts:', err);
+      }
+    };
+    fetchCounts();
   }, []);
 
-  const handleCloseDeleteDialog = () => {
-    setDeleteDialogOpen(false);
-    setRowToDelete(null);
-  };
-
-  const confirmDelete = useCallback(async () => {
-    if (!rowToDelete) return;
-    
-    try {
-      const response = await fetch(`/api/patients/${rowToDelete.original.id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setData(prev => prev.filter(item => item.id !== rowToDelete.original.id));
-        setToast({ open: true, message: 'Record deleted successfully', severity: 'success' });
-      } else {
-        setToast({ open: true, message: 'Failed to delete record', severity: 'error' });
-      }
-    } catch (error) {
-      console.error('Error deleting record:', error);
-      setToast({ open: true, message: 'Error deleting record', severity: 'error' });
-    } finally {
-      handleCloseDeleteDialog();
+  const statCards = [
+    {
+      title: 'Total Patients',
+      count: counts.patients,
+      icon: <PeopleIcon sx={{ fontSize: 60, color: 'var(--primary)' }} />,
+      bgColor: 'rgba(37, 99, 235, 0.1)'
+    },
+    {
+      title: 'Total Appointments',
+      count: counts.appointments,
+      icon: <EventNoteIcon sx={{ fontSize: 60, color: '#10b981' }} />,
+      bgColor: 'rgba(16, 185, 129, 0.1)'
+    },
+    {
+      title: 'Total Documents',
+      count: counts.documents,
+      icon: <FolderIcon sx={{ fontSize: 60, color: '#f59e0b' }} />,
+      bgColor: 'rgba(245, 158, 11, 0.1)'
     }
-  }, [rowToDelete, setData]);
-
-  const handleCloseToast = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setToast(prev => ({ ...prev, open: false }));
-  };
+  ];
 
   return (
-    <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px 40px 20px' }}>
-      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
-        <h2>Patient Records</h2>
-        <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <TextField
-            variant="outlined"
-            placeholder="Search patients..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            size="small"
+    <div className="dashboard glass" style={{ padding: '40px', margin: '0 20px 40px 20px' }}>
+      <div className="header" style={{ marginBottom: '2rem' }}>
+        <h2>Dashboard Overview</h2>
+      </div>
+
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+        gap: '30px' 
+      }}>
+        {statCards.map((stat, index) => (
+          <Box 
+            key={index}
+            className="glass"
             sx={{
-               background: 'rgba(255, 255, 255, 0.1)',
-               borderRadius: '8px',
-               boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
-               input: { color: 'var(--text)' },
-               '& .MuiOutlinedInput-root': {
-                 '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                 '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                 '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
-               }
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '30px',
+              borderRadius: '20px',
+              background: stat.bgColor,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              transition: 'transform 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)'
+              }
             }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: 'var(--text)' }} />
-                </InputAdornment>
-              ),
-              endAdornment: searchTerm ? (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => setSearchTerm('')}
-                    edge="end"
-                  >
-                    <ClearIcon sx={{ color: 'var(--text)' }} />
-                  </IconButton>
-                </InputAdornment>
-              ) : null,
-            }}
-          />
-          <Button variant="contained" onClick={onAddPatient}>
-            Add New Patient Record
-          </Button>
-        </Box>
-      </div>
-      <div style={{ overflowX: 'auto' }}>
-        <table>
-          <thead>
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <th key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map(row => (
-              <tr key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <td key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-        PaperProps={{
-          className: 'glass',
-          style: { padding: '16px', borderRadius: '16px', background: 'var(--glass-bg)', backdropFilter: 'var(--glass-blur)' }
-        }}
-      >
-        <DialogTitle sx={{ color: 'var(--text-h)', fontWeight: 'bold' }}>Delete Patient Record</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ color: 'var(--text)' }}>
-            Are you sure you want to delete this patient record? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} sx={{ color: 'var(--text-h)' }}>
-            Cancel
-          </Button>
-          <Button onClick={confirmDelete} variant="contained" color="error">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={6000} 
-        onClose={handleCloseToast}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
-          {toast.message}
-        </Alert>
-      </Snackbar>
+          >
+            {stat.icon}
+            <Typography variant="h3" sx={{ fontWeight: 'bold', mt: 2, color: 'var(--text-h)' }}>
+              {stat.count}
+            </Typography>
+            <Typography variant="h6" sx={{ color: 'var(--text)', mt: 1 }}>
+              {stat.title}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
     </div>
   );
 }

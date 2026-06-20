@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Login from './Login'
 import Dashboard from './Dashboard'
+import PatientRecords from './PatientRecords'
 import EditPatient from './EditPatient'
 import AddPatient from './AddPatient'
 import AddAppointmentRecord from './AddAppointmentRecord'
@@ -15,7 +16,7 @@ import './Auth.css'
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [username, setUsername] = useState('')
-  const [currentPage, setCurrentPage] = useState('patients')
+  const [currentPage, setCurrentPage] = useState('dashboard')
   const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument', 'addPatient', 'addAppointment'
   const [resetKey, setResetKey] = useState(0)
   const [data, setData] = useState([])
@@ -132,10 +133,10 @@ function App() {
         return <AppointmentRecords key={`appointments-${resetKey}`} />;
       case 'documents':
         return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} />;
-      default:
+      case 'patients':
         return (
-          <Dashboard
-            key={`dashboard-${resetKey}`}
+          <PatientRecords
+            key={`patients-${resetKey}`}
             onEdit={handleEdit}
             onAddPatient={handleAddPatient}
             onAddAppointment={handleAddAppointmentForPatient}
@@ -145,6 +146,9 @@ function App() {
             setSearchTerm={setSearchTerm}
           />
         );
+      case 'dashboard':
+      default:
+        return <Dashboard key={`dashboard-${resetKey}`} />;
     }
   };
 

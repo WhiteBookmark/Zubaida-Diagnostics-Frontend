@@ -3,7 +3,6 @@ import logo from '../../assets/Glassmorphism Logo ZD.png';
 
 export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
   const links = [
-    { name: 'Dashboard', id: 'dashboard' },
     { name: 'Patient Records', id: 'patients' },
     { name: 'Appointment Records', id: 'appointments' },
     { name: 'Documents', id: 'documents' },

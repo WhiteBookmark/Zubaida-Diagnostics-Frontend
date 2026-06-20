@@ -41,20 +41,17 @@ export default function Dashboard() {
     {
       title: 'Total Patients',
       count: counts.patients,
-      icon: <PeopleIcon sx={{ fontSize: 60, color: 'var(--primary)' }} />,
-      bgColor: 'rgba(37, 99, 235, 0.1)'
+      icon: <PeopleIcon sx={{ fontSize: 28, color: 'var(--text)' }} />
     },
     {
       title: 'Total Appointments',
       count: counts.appointments,
-      icon: <EventNoteIcon sx={{ fontSize: 60, color: '#10b981' }} />,
-      bgColor: 'rgba(16, 185, 129, 0.1)'
+      icon: <EventNoteIcon sx={{ fontSize: 28, color: 'var(--text)' }} />
     },
     {
       title: 'Total Documents',
       count: counts.documents,
-      icon: <FolderIcon sx={{ fontSize: 60, color: '#f59e0b' }} />,
-      bgColor: 'rgba(245, 158, 11, 0.1)'
+      icon: <FolderIcon sx={{ fontSize: 28, color: 'var(--text)' }} />
     }
   ];
 
@@ -78,9 +75,8 @@ export default function Dashboard() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '30px',
-              borderRadius: '20px',
-              background: stat.bgColor,
+              padding: '15px',
+              borderRadius: '12px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
               transition: 'transform 0.3s ease',
               '&:hover': {
@@ -89,10 +85,10 @@ export default function Dashboard() {
             }}
           >
             {stat.icon}
-            <Typography variant="h3" sx={{ fontWeight: 'bold', mt: 2, color: 'var(--text-h)' }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1, color: 'var(--text-h)' }}>
               {stat.count}
             </Typography>
-            <Typography variant="h6" sx={{ color: 'var(--text)', mt: 1 }}>
+            <Typography variant="body2" sx={{ color: 'var(--text)', mt: 0.5 }}>
               {stat.title}
             </Typography>
           </Box>

@@ -9,6 +9,7 @@ import { Box, Button, Tooltip, IconButton, TextField, InputAdornment, Dialog, Di
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export default function Documents({ onAddDocument }) {
   const [data, setData] = useState([]);
@@ -50,7 +51,40 @@ export default function Documents({ onAddDocument }) {
       }
   };
 
+  const handleDeleteClick = useCallback((row) => {
+    setRowToDelete(row);
+    setDeleteDialogOpen(true);
+  }, []);
+
+  const handleOpenDocument = useCallback((row) => {
+    const path = row.original.filePath;
+    if (path) {
+      const url = path.startsWith('http') ? path : `http://localhost:3000/${path}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      setToast({ open: true, message: 'File path not available', severity: 'warning' });
+    }
+  }, []);
+
   const columns = useMemo(() => [
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="View Document">
+            <IconButton color="primary" onClick={() => handleOpenDocument(row)}>
+              <OpenInNewIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton color="error" onClick={() => handleDeleteClick(row)}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
     { accessorKey: 'patient.mrNumber', header: 'MR Number' },
     { accessorKey: 'patient.name', header: 'Patient Name' },
     { accessorKey: 'type', header: 'Document Type' },
@@ -60,18 +94,7 @@ export default function Documents({ onAddDocument }) {
       header: 'Uploaded At',
       cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
     },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => (
-        <Tooltip title="Delete">
-          <IconButton color="error" onClick={() => handleDeleteClick(row)}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ),
-    },
-  ], []);
+  ], [handleDeleteClick, handleOpenDocument]);
 
   const table = useReactTable({
     columns,
@@ -81,11 +104,6 @@ export default function Documents({ onAddDocument }) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
-
-  const handleDeleteClick = useCallback((row) => {
-    setRowToDelete(row);
-    setDeleteDialogOpen(true);
-  }, []);
 
   const handleCloseDeleteDialog = () => {
     setDeleteDialogOpen(false);

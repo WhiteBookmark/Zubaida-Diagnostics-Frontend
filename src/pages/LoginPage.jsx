@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@mui/material';
-import logo from '../assets/Glassmorphism Logo ZD.png';
+import logo from '../assets/Logo.png';
 import '../styles/Auth.css';
 
 export default function Login({ onLogin }) {

@@ -1,7 +1,7 @@
 from PIL import Image
 from collections import Counter
 
-img_path = r'c:\repos\Zubaida Diagnostics\Zubaida Diagnostics Frontend\src\assets\Glassmorphism Logo ZD.png'
+img_path = r'c:\repos\Zubaida Diagnostics\Zubaida Diagnostics Frontend\src\assets\Logo.png'
 img = Image.open(img_path).convert('RGB')
 colors = img.getcolors(maxcolors=1000000)
 colors.sort(reverse=True)

@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from '../../assets/Glassmorphism Logo ZD.png';
+import logo from '../../assets/Logo.png';
 
 export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
   const links = [

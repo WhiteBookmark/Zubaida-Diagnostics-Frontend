@@ -59,6 +59,9 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       });
       if (response.ok) {
         const newRecord = await response.json();
+        if (!newRecord.patient) {
+          newRecord.patient = patient;
+        }
         onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {formData.mrNumber} with patient name {patient.name}</span>);
       } else {
         const errorData = await response.json();

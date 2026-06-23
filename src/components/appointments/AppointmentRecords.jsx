@@ -136,6 +136,7 @@ export default function AppointmentRecords() {
       setShowAddForm(false);
       if (message) setToast({ open: true, message, severity: 'success' });
       fetch('/api/appointments').then(res => res.json()).then(setData);
+      handlePrintToken(newRecord);
     }} />;
   }
 

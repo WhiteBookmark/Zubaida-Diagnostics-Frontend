@@ -59,8 +59,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       });
       if (response.ok) {
         const newRecord = await response.json();
-        setToast({ open: true, message: `Appointment added successfully! Token Number: ${newRecord.tokenNumber}`, severity: 'success' });
-        setTimeout(() => onAdd(newRecord), 1500);
+        onAdd(newRecord, `Appointment added successfully! Token Number: ${newRecord.tokenNumber}`);
       } else {
         const errorData = await response.json();
         setToast({ open: true, message: `Failed to add appointment: ${errorData.error || 'Unknown error'}`, severity: 'error' });

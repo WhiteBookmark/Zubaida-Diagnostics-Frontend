@@ -8,6 +8,7 @@ import {
 import { Box, Button, IconButton, TextField, InputAdornment } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import logo from '../../assets/Logo.png';
 
@@ -16,6 +17,12 @@ export default function AppointmentRecords() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const handleCloseToast = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setToast(prev => ({ ...prev, open: false }));
+  };
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -50,8 +57,9 @@ export default function AppointmentRecords() {
   });
 
   if (showAddForm) {
-    return <AddAppointmentRecord onBack={() => setShowAddForm(false)} onAdd={(newRecord) => {
+    return <AddAppointmentRecord onBack={() => setShowAddForm(false)} onAdd={(newRecord, message) => {
       setShowAddForm(false);
+      if (message) setToast({ open: true, message, severity: 'success' });
       fetch('/api/appointments').then(res => res.json()).then(setData);
     }} />;
   }
@@ -124,6 +132,16 @@ export default function AppointmentRecords() {
           ))}
         </tbody>
       </table>
+      <Snackbar 
+        open={toast.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseToast} severity={toast.severity} variant="filled" sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

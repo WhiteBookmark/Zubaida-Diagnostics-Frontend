@@ -16,8 +16,13 @@ import ClearIcon from '@mui/icons-material/Clear';
 import AddPatient from './AddPatient';
 import logo from '../../assets/Logo.png';
 
-export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, data = [], setData, searchTerm, setSearchTerm }) {
+export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment }) {
+  const [data, setData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState([]);
+  
+  const [cursorHistory, setCursorHistory] = useState([null]);
+  const [nextCursor, setNextCursor] = useState(null);
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
@@ -34,6 +39,43 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   useEffect(() => {
     localStorage.setItem('patientRecordsPageSize', pagination.pageSize);
   }, [pagination.pageSize]);
+
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    setCursorHistory([null]);
+  }, [searchTerm, pagination.pageSize]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      const currentCursor = cursorHistory[pagination.pageIndex];
+      let url = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+      if (currentCursor) {
+        url += `&cursor=${currentCursor}`;
+      }
+      
+      fetch(url)
+        .then(res => res.json())
+        .then(result => {
+          if (result && Array.isArray(result.data)) {
+            setData(result.data);
+            setNextCursor(result.nextCursor || null);
+            if (result.nextCursor) {
+               setCursorHistory(prev => {
+                  const newHistory = [...prev];
+                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                  return newHistory;
+               });
+            }
+          } else if (Array.isArray(result)) {
+            setData(result);
+            setNextCursor(null);
+          }
+        })
+        .catch(console.error);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, cursorHistory]);
 
   const columns = useMemo(
     () => [
@@ -90,7 +132,8 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1,
   });
 
   const handleDeleteClick = useCallback((row) => {
@@ -208,8 +251,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount() || 1}
+              {table.getState().pagination.pageIndex + 1}
             </strong>
           </span>
           <Select

@@ -19,34 +19,13 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
   const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument', 'addPatient', 'addAppointment'
   const [resetKey, setResetKey] = useState(0)
-  const [data, setData] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
   const [recordToEdit, setRecordToEdit] = useState(null)
   const [newMrNumber, setNewMrNumber] = useState('')
   const [pendingToast, setPendingToast] = useState('')
   const [pendingAppointmentPrint, setPendingAppointmentPrint] = useState(null)
   const [pendingAppointmentToast, setPendingAppointmentToast] = useState('')
 
-  // Fetch all patients once on login; sorting/filtering is handled client-side by MRT.
-  // Only re-fetch when the user explicitly searches (debounced).
-  useEffect(() => {
-    if (!isLoggedIn) return;
 
-    const delayDebounceFn = setTimeout(() => {
-      fetch(`/api/patients?search=${encodeURIComponent(searchTerm)}`)
-        .then(res => res.json())
-        .then(result => {
-          if (result && result.data) {
-            setData(result.data);
-          } else if (Array.isArray(result)) {
-            setData(result);
-          }
-        })
-        .catch(console.error);
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, isLoggedIn]);
 
   const handleLogin = useCallback((username) => {
     setUsername(username);
@@ -79,14 +58,12 @@ function App() {
   }, []);
 
   const handleSave = useCallback((savedRecord) => {
-    setData(prev => prev.map(r => r.id === savedRecord.id ? savedRecord : r));
     setView('dashboard');
   }, []);
 
   const handleAddPatient = useCallback(() => setView('addPatient'), []);
 
   const handlePatientAdded = useCallback((newPatient, toastMessage) => {
-    setData(prev => [...prev, newPatient]);
     setNewMrNumber(newPatient.mrNumber);
     setPendingToast(toastMessage || '');
     setView('addAppointment');
@@ -155,10 +132,6 @@ function App() {
             onEdit={handleEdit}
             onAddPatient={handleAddPatient}
             onAddAppointment={handleAddAppointmentForPatient}
-            data={data}
-            setData={setData}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
           />
         );
       case 'dashboard':

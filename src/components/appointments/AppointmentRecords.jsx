@@ -38,16 +38,46 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     setToast(prev => ({ ...prev, open: false }));
   };
 
+  const [cursorHistory, setCursorHistory] = useState([null]);
+  const [nextCursor, setNextCursor] = useState(null);
+
+  // Reset pagination when search term or page size changes
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    setCursorHistory([null]);
+  }, [searchTerm, pagination.pageSize]);
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetch(`/api/appointments?search=${encodeURIComponent(searchTerm)}`)
+      const currentCursor = cursorHistory[pagination.pageIndex];
+      let url = `/api/appointments?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+      if (currentCursor) {
+        url += `&cursor=${currentCursor}`;
+      }
+      
+      fetch(url)
         .then(res => res.json())
-        .then(setData)
+        .then(result => {
+          if (result && Array.isArray(result.data)) {
+            setData(result.data);
+            setNextCursor(result.nextCursor || null);
+            if (result.nextCursor) {
+               setCursorHistory(prev => {
+                  const newHistory = [...prev];
+                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                  return newHistory;
+               });
+            }
+          } else if (Array.isArray(result)) {
+            setData(result);
+            setNextCursor(null);
+          }
+        })
         .catch(console.error);
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, cursorHistory]);
 
   const handlePrintToken = useCallback(async (appointment) => {
     const printWindow = window.open('', '', 'width=400,height=600');
@@ -161,7 +191,8 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1,
   });
 
   if (showAddForm) {
@@ -246,8 +277,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount() || 1}
+              {table.getState().pagination.pageIndex + 1}
             </strong>
           </span>
           <Select

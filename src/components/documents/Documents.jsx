@@ -26,20 +26,49 @@ export default function Documents({ onAddDocument }) {
       pageSize: savedSize ? Number(savedSize) : 25,
     };
   });
+  
+  const [cursorHistory, setCursorHistory] = useState([null]);
+  const [nextCursor, setNextCursor] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('documentRecordsPageSize', pagination.pageSize);
   }, [pagination.pageSize]);
 
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    setCursorHistory([null]);
+  }, [searchTerm, pagination.pageSize]);
+
   const fetchData = useCallback(() => {
-    fetch(`/api/documents?search=${encodeURIComponent(searchTerm)}`)
+    const currentCursor = cursorHistory[pagination.pageIndex];
+    let url = `/api/documents?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+    if (currentCursor) {
+      url += `&cursor=${currentCursor}`;
+    }
+    
+    fetch(url)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
       })
-      .then(setData)
+      .then(result => {
+        if (result && Array.isArray(result.data)) {
+          setData(result.data);
+          setNextCursor(result.nextCursor || null);
+          if (result.nextCursor) {
+             setCursorHistory(prev => {
+                const newHistory = [...prev];
+                newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                return newHistory;
+             });
+          }
+        } else if (Array.isArray(result)) {
+          setData(result);
+          setNextCursor(null);
+        }
+      })
       .catch(err => console.error('Error fetching documents:', err));
-  }, [searchTerm]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, cursorHistory]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -116,7 +145,8 @@ export default function Documents({ onAddDocument }) {
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1,
   });
 
   const handleCloseDeleteDialog = () => {
@@ -223,8 +253,7 @@ export default function Documents({ onAddDocument }) {
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of{' '}
-              {table.getPageCount() || 1}
+              {table.getState().pagination.pageIndex + 1}
             </strong>
           </span>
           <Select

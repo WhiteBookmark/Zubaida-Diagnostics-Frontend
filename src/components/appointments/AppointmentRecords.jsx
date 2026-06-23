@@ -13,6 +13,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import logo from '../../assets/Logo.png';
+import QRCode from 'qrcode';
 
 export default function AppointmentRecords() {
   const [data, setData] = useState([]);
@@ -48,10 +49,20 @@ export default function AppointmentRecords() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
-  const handlePrintToken = useCallback((appointment) => {
+  const handlePrintToken = useCallback(async (appointment) => {
     const printWindow = window.open('', '', 'width=400,height=600');
     if (!printWindow) return; // In case of popup blockers
-    const htmlContent = `
+    
+    let qrDataUrl = '';
+    try {
+      const mrNumber = String(appointment.patient?.mrNumber ?? appointment.mrNumber ?? 'N/A').trim() || 'N/A';
+      qrDataUrl = await QRCode.toDataURL(mrNumber, { width: 100, margin: 1 });
+    } catch (err) {
+      console.error('Failed to generate QR code:', err);
+    }
+
+    try {
+      const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,27 +87,33 @@ export default function AppointmentRecords() {
 </head>
 <body>
     <div class="receipt-canvas" id="ticket">
-        <div class="header-title">Diagnostic Center</div>
-        <div class="sub-header">Patient Queue Management</div>
+        <div class="header-title">The Clinic and Zubaida Diagnostic</div>
         <div class="token-container">
             <div class="token-label">YOUR TOKEN NUMBER</div>
             <div class="token-value">${appointment.tokenNumber || 'N/A'}</div>
         </div>
+        ${qrDataUrl ? `
+        <div class="qr-container" style="margin: 15px 0;">
+            <img src="${qrDataUrl}" alt="QR Code" width="80" height="80" />
+        </div>` : ''}
         <div class="meta-data">
           MR Number: ${appointment.patient?.mrNumber || 'N/A'}<br>
           Patient: ${appointment.patient?.name || 'N/A'}<br>
           ${appointment.dateTime ? new Date(appointment.dateTime).toLocaleString() : ''}
         </div>
-        <div class="footer-notice">Please wait in the lounge area.</div>
     </div>
     <script>
         window.onload = function() { window.print(); window.close(); }
     </script>
 </body>
 </html>
-    `;
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+      `;
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    } catch (err) {
+      console.error('Failed to print token:', err);
+      printWindow.close();
+    }
   }, []);
 
   const columns = useMemo(() => [
@@ -152,15 +169,15 @@ export default function AppointmentRecords() {
             onChange={(e) => setSearchTerm(e.target.value)}
             size="small"
             sx={{
-               background: 'rgba(255, 255, 255, 0.1)',
-               borderRadius: '8px',
-               boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
-               input: { color: 'var(--text)' },
-               '& .MuiOutlinedInput-root': {
-                 '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                 '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                 '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
-               }
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
+              input: { color: 'var(--text)' },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
+              }
             }}
             InputProps={{
               startAdornment: (
@@ -258,9 +275,9 @@ export default function AppointmentRecords() {
           </Button>
         </Box>
       </Box>
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >

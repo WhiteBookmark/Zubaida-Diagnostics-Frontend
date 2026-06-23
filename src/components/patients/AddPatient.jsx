@@ -78,8 +78,7 @@ export default function AddPatient({ onBack, onAdd }) {
       }
 
       const newPatient = await response.json();
-      setToast({ open: true, message: 'Patient added successfully!', severity: 'success' });
-      setTimeout(() => onAdd(newPatient), 1500);
+      onAdd(newPatient, 'Patient added successfully!');
     } catch (error) {
       console.error(error);
       setToast({ open: true, message: 'Error creating patient: ' + error.message, severity: 'error' });

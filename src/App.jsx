@@ -23,6 +23,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('')
   const [recordToEdit, setRecordToEdit] = useState(null)
   const [newMrNumber, setNewMrNumber] = useState('')
+  const [pendingToast, setPendingToast] = useState('')
 
   // Fetch all patients once on login; sorting/filtering is handled client-side by MRT.
   // Only re-fetch when the user explicitly searches (debounced).
@@ -82,14 +83,16 @@ function App() {
 
   const handleAddPatient = useCallback(() => setView('addPatient'), []);
 
-  const handlePatientAdded = useCallback((newPatient) => {
+  const handlePatientAdded = useCallback((newPatient, toastMessage) => {
     setData(prev => [...prev, newPatient]);
     setNewMrNumber(newPatient.mrNumber);
+    setPendingToast(toastMessage || '');
     setView('addAppointment');
   }, []);
 
   const handleAddAppointmentForPatient = useCallback((patient) => {
     setNewMrNumber(patient.mrNumber);
+    setPendingToast('');
     setView('addAppointment');
   }, []);
 
@@ -123,7 +126,7 @@ function App() {
     }
 
     if (view === 'addAppointment') {
-      return <AddAppointmentRecord onBack={handleBack} onAdd={handleAppointmentAdded} initialMrNumber={newMrNumber} />
+      return <AddAppointmentRecord onBack={handleBack} onAdd={handleAppointmentAdded} initialMrNumber={newMrNumber} initialToastMessage={pendingToast} />
     }
 
     switch (currentPage) {

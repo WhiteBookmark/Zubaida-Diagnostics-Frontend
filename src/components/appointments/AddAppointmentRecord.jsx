@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button, Snackbar, Alert } from '@mui/material';
 import '../../styles/Auth.css';
 
-export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '' }) {
+export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '', initialToastMessage = '' }) {
   const [formData, setFormData] = useState(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -25,7 +25,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
     }
   }, []);
 
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [toast, setToast] = useState({ open: !!initialToastMessage, message: initialToastMessage || '', severity: 'success' });
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;

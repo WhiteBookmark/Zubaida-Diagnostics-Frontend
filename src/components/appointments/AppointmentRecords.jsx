@@ -23,7 +23,7 @@ export default function AppointmentRecords() {
     const savedSize = localStorage.getItem('appointmentRecordsPageSize');
     return {
       pageIndex: 0,
-      pageSize: savedSize ? Number(savedSize) : 10,
+      pageSize: savedSize ? Number(savedSize) : 5,
     };
   });
 

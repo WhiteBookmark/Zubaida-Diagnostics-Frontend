@@ -9,6 +9,7 @@ import {
 import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import PrintIcon from '@mui/icons-material/Print';
 import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import logo from '../../assets/Logo.png';
@@ -47,7 +48,67 @@ export default function AppointmentRecords() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
+  const handlePrintToken = useCallback((appointment) => {
+    const printWindow = window.open('', '', 'width=400,height=600');
+    if (!printWindow) return; // In case of popup blockers
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Print Token</title>
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0mm;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #000; padding: 10mm; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; }
+        .receipt-canvas { width: 72mm; text-align: center; }
+        .header-title { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sub-header { font-size: 11px; color: #444; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
+        .token-container { margin: 15px 0; padding: 10px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000; }
+        .token-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; }
+        .token-value { font-size: 48px; font-weight: 900; line-height: 1.1; margin: 4px 0; }
+        .meta-data { font-size: 11px; margin-top: 10px; }
+        .footer-notice { font-size: 10px; margin-top: 8px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="receipt-canvas" id="ticket">
+        <div class="header-title">Diagnostic Center</div>
+        <div class="sub-header">Patient Queue Management</div>
+        <div class="token-container">
+            <div class="token-label">YOUR TOKEN NUMBER</div>
+            <div class="token-value">${appointment.tokenNumber || 'N/A'}</div>
+        </div>
+        <div class="meta-data">
+          MR Number: ${appointment.patient?.mrNumber || 'N/A'}<br>
+          Patient: ${appointment.patient?.name || 'N/A'}<br>
+          ${appointment.dateTime ? new Date(appointment.dateTime).toLocaleString() : ''}
+        </div>
+        <div class="footer-notice">Please wait in the lounge area.</div>
+    </div>
+    <script>
+        window.onload = function() { window.print(); window.close(); }
+    </script>
+</body>
+</html>
+    `;
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  }, []);
+
   const columns = useMemo(() => [
+    {
+      id: 'actions',
+      header: 'Actions',
+      cell: ({ row }) => (
+        <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
+          <PrintIcon />
+        </IconButton>
+      )
+    },
     { accessorKey: 'patient.mrNumber', header: 'MR Number' },
     { accessorKey: 'patient.name', header: 'Patient Name' },
     {
@@ -56,8 +117,8 @@ export default function AppointmentRecords() {
       cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
     },
     { accessorKey: 'tokenNumber', header: 'Token' },
-    { accessorKey: 'amountPaid', header: 'Paid (Rs)' },
-  ], []);
+    { accessorKey: 'amountPaid', header: 'Paid (Rs)' }
+  ], [handlePrintToken]);
 
   const table = useReactTable({
     columns,

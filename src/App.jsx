@@ -30,6 +30,10 @@ function App() {
   const handleLogin = useCallback((username) => {
     setUsername(username);
     setIsLoggedIn(true);
+    const departmentUsers = ['X-Ray Department', 'Ultrasound Department', 'Lab Department'];
+    if (departmentUsers.includes(username)) {
+      setCurrentPage('documents');
+    }
   }, []);
   const handleLogout = useCallback(() => {
     setUsername('');
@@ -87,6 +91,15 @@ function App() {
   }
 
   const renderContent = () => {
+    const isDepartmentUser = ['X-Ray Department', 'Ultrasound Department', 'Lab Department'].includes(username);
+
+    if (isDepartmentUser) {
+      if (view === 'addDocument') {
+          return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
+      }
+      return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} />;
+    }
+
     if (view === 'edit') {
       return (
         <EditPatient

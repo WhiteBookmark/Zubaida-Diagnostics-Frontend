@@ -2,16 +2,22 @@ import React from 'react';
 import logo from '../../assets/Logo.png';
 
 export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
+  const departmentUsers = ['X-Ray Department', 'Ultrasound Department', 'Lab Department'];
   const links = [
     { name: 'Patient Records', id: 'patients' },
     { name: 'Appointment Records', id: 'appointments' },
     { name: 'Documents', id: 'documents' },
-  ];
+  ].filter(link => {
+    if (departmentUsers.includes(username)) {
+      return link.id === 'documents';
+    }
+    return true;
+  });
 
   return (
     <header className="glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 40px', margin: '20px', marginBottom: '30px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '40px', cursor: 'pointer' }} onClick={() => setCurrentPage('dashboard')} />
+        <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '40px', cursor: 'pointer' }} onClick={() => setCurrentPage(departmentUsers.includes(username) ? 'documents' : 'dashboard')} />
         <nav>
           <ul style={{ display: 'flex', listStyle: 'none', gap: '20px', margin: 0, padding: 0 }}>
             {links.map(link => (

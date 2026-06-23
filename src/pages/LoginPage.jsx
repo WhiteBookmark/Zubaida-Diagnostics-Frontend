@@ -10,7 +10,14 @@ export default function Login({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'password') {
+    const userCredentials = {
+      'admin': 'admin123',
+      'X-Ray Department': 'xray123',
+      'Ultrasound Department': 'ultrasound123',
+      'Lab Department': 'lab123'
+    };
+
+    if (userCredentials[username] && userCredentials[username] === password) {
       onLogin(username);
     } else {
       setError('Invalid username or password');

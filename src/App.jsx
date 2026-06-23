@@ -24,6 +24,8 @@ function App() {
   const [recordToEdit, setRecordToEdit] = useState(null)
   const [newMrNumber, setNewMrNumber] = useState('')
   const [pendingToast, setPendingToast] = useState('')
+  const [pendingAppointmentPrint, setPendingAppointmentPrint] = useState(null)
+  const [pendingAppointmentToast, setPendingAppointmentToast] = useState('')
 
   // Fetch all patients once on login; sorting/filtering is handled client-side by MRT.
   // Only re-fetch when the user explicitly searches (debounced).
@@ -96,7 +98,9 @@ function App() {
     setView('addAppointment');
   }, []);
 
-  const handleAppointmentAdded = useCallback(() => {
+  const handleAppointmentAdded = useCallback((newRecord, message) => {
+    setPendingAppointmentPrint(newRecord);
+    setPendingAppointmentToast(message);
     setView('dashboard');
     setCurrentPage('appointments');
   }, []);
@@ -133,7 +137,15 @@ function App() {
       case 'vitals':
         return <VitalRecords key={`vitals-${resetKey}`} />;
       case 'appointments':
-        return <AppointmentRecords key={`appointments-${resetKey}`} />;
+        return <AppointmentRecords 
+                  key={`appointments-${resetKey}`} 
+                  initialPrintRecord={pendingAppointmentPrint}
+                  initialToastMessage={pendingAppointmentToast}
+                  clearPending={() => {
+                    setPendingAppointmentPrint(null);
+                    setPendingAppointmentToast('');
+                  }}
+               />;
       case 'documents':
         return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} />;
       case 'patients':

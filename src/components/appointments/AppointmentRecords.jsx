@@ -15,7 +15,7 @@ import AddAppointmentRecord from './AddAppointmentRecord';
 import logo from '../../assets/Logo.png';
 import QRCode from 'qrcode';
 
-export default function AppointmentRecords() {
+export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null }) {
   const [data, setData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
@@ -117,6 +117,18 @@ export default function AppointmentRecords() {
       printWindow.close();
     }
   }, []);
+
+  useEffect(() => {
+    if (initialToastMessage) {
+      setToast({ open: true, message: initialToastMessage, severity: 'success' });
+    }
+    if (initialPrintRecord) {
+      handlePrintToken(initialPrintRecord);
+    }
+    if (initialToastMessage || initialPrintRecord) {
+      if (clearPending) clearPending();
+    }
+  }, [initialToastMessage, initialPrintRecord, clearPending, handlePrintToken]);
 
   const columns = useMemo(() => [
     {

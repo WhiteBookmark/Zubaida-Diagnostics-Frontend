@@ -6,7 +6,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem } from '@mui/material';
+import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem, Tooltip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
@@ -135,9 +135,11 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
-          <PrintIcon />
-        </IconButton>
+        <Tooltip title="Print Token">
+          <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
+            <PrintIcon />
+          </IconButton>
+        </Tooltip>
       )
     },
     { accessorKey: 'patient.mrNumber', header: 'MR Number' },

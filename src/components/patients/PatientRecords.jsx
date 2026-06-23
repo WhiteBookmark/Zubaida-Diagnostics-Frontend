@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -7,7 +7,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment } from '@mui/material';
+import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment, Select, MenuItem } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
@@ -22,6 +22,18 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  const [pagination, setPagination] = useState(() => {
+    const savedSize = localStorage.getItem('patientRecordsPageSize');
+    return {
+      pageIndex: 0,
+      pageSize: savedSize ? Number(savedSize) : 25,
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('patientRecordsPageSize', pagination.pageSize);
+  }, [pagination.pageSize]);
 
   const columns = useMemo(
     () => [
@@ -72,14 +84,13 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     data,
     state: {
       sorting,
+      pagination,
     },
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: { pageSize: 25 },
-    },
   });
 
   const handleDeleteClick = useCallback((row) => {
@@ -192,6 +203,56 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
           </tbody>
         </table>
       </div>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <span style={{ color: 'var(--text)' }}>
+            Page{' '}
+            <strong>
+              {table.getState().pagination.pageIndex + 1} of{' '}
+              {table.getPageCount() || 1}
+            </strong>
+          </span>
+          <Select
+            value={table.getState().pagination.pageSize}
+            onChange={e => {
+              table.setPageSize(Number(e.target.value));
+            }}
+            size="small"
+            sx={{
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: 'var(--text)',
+              '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'var(--primary)' },
+              '.MuiSvgIcon-root ': { fill: 'var(--text)' }
+            }}
+          >
+            {[5, 10, 25, 50, 75, 100].map(pageSize => (
+              <MenuItem key={pageSize} value={pageSize}>
+                Show {pageSize}
+              </MenuItem>
+            ))}
+          </Select>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
+          >
+            Next
+          </Button>
+        </Box>
+      </Box>
 
       <Dialog
         open={deleteDialogOpen}

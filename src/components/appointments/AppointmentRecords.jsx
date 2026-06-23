@@ -52,7 +52,7 @@ export default function AppointmentRecords() {
   const handlePrintToken = useCallback(async (appointment) => {
     const printWindow = window.open('', '', 'width=400,height=600');
     if (!printWindow) return; // In case of popup blockers
-    
+
     let qrDataUrl = '';
     try {
       const mrNumber = String(appointment.patient?.mrNumber ?? appointment.mrNumber ?? 'N/A').trim() || 'N/A';
@@ -74,22 +74,26 @@ export default function AppointmentRecords() {
             margin: 0mm;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #000; padding: 10mm; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; }
+        body { font-family: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif; color: #000; padding: 10mm; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; }
         .receipt-canvas { width: 72mm; text-align: center; }
-        .header-title { font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .header-title { font-family: Georgia, serif; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
         .sub-header { font-size: 11px; color: #444; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
-        .token-container { margin: 15px 0; padding: 10px 0; border-top: 2px dashed #000; border-bottom: 2px dashed #000; }
+        .token-container { margin: 5px 0 15px 0; padding: 10px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; }
         .token-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; }
-        .token-value { font-size: 48px; font-weight: 900; line-height: 1.1; margin: 4px 0; }
+        .token-value { font-family: Georgia, serif; font-size: 48px; font-weight: 900; line-height: 1.1; margin: 4px 0; }
         .meta-data { font-size: 11px; margin-top: 10px; }
+        .info-row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 15px; }
         .footer-notice { font-size: 10px; margin-top: 8px; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="receipt-canvas" id="ticket">
         <div class="header-title">The Clinic and Zubaida Diagnostic</div>
+        <div class="info-row">
+            <span>MR: ${appointment.patient?.mrNumber || 'N/A'}</span>
+            <span>${appointment.dateTime ? new Date(appointment.dateTime).toLocaleString() : ''}</span>
+        </div>
         <div class="token-container">
-            <div class="token-label">YOUR TOKEN NUMBER</div>
             <div class="token-value">${appointment.tokenNumber || 'N/A'}</div>
         </div>
         ${qrDataUrl ? `
@@ -97,9 +101,7 @@ export default function AppointmentRecords() {
             <img src="${qrDataUrl}" alt="QR Code" width="80" height="80" />
         </div>` : ''}
         <div class="meta-data">
-          MR Number: ${appointment.patient?.mrNumber || 'N/A'}<br>
-          Patient: ${appointment.patient?.name || 'N/A'}<br>
-          ${appointment.dateTime ? new Date(appointment.dateTime).toLocaleString() : ''}
+          ${appointment.patient?.name || 'N/A'}
         </div>
     </div>
     <script>

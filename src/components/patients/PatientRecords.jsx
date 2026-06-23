@@ -18,6 +18,7 @@ import logo from '../../assets/Logo.png';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment }) {
   const [data, setData] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState([]);
   
@@ -59,6 +60,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
           if (result && Array.isArray(result.data)) {
             setData(result.data);
             setNextCursor(result.nextCursor || null);
+            if (result.metadata?.totalPages) setTotalPages(result.metadata.totalPages);
             if (result.nextCursor) {
                setCursorHistory(prev => {
                   const newHistory = [...prev];
@@ -251,7 +253,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1}
+              {table.getState().pagination.pageIndex + 1} of {totalPages}
             </strong>
           </span>
           <Select
@@ -271,7 +273,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
           >
             {[5, 10, 25, 50, 75, 100].map(pageSize => (
               <MenuItem key={pageSize} value={pageSize}>
-                Show {pageSize}
+                Show {pageSize} Records
               </MenuItem>
             ))}
           </Select>

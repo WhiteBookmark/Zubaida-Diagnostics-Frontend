@@ -14,6 +14,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export default function Documents({ onAddDocument }) {
   const [data, setData] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -55,6 +56,7 @@ export default function Documents({ onAddDocument }) {
         if (result && Array.isArray(result.data)) {
           setData(result.data);
           setNextCursor(result.nextCursor || null);
+          if (result.metadata?.totalPages) setTotalPages(result.metadata.totalPages);
           if (result.nextCursor) {
              setCursorHistory(prev => {
                 const newHistory = [...prev];
@@ -253,7 +255,7 @@ export default function Documents({ onAddDocument }) {
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1}
+              {table.getState().pagination.pageIndex + 1} of {totalPages}
             </strong>
           </span>
           <Select
@@ -273,7 +275,7 @@ export default function Documents({ onAddDocument }) {
           >
             {[5, 10, 25, 50, 75, 100].map(pageSize => (
               <MenuItem key={pageSize} value={pageSize}>
-                Show {pageSize}
+                Show {pageSize} Records
               </MenuItem>
             ))}
           </Select>

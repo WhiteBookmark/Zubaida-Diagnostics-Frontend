@@ -17,6 +17,7 @@ import QRCode from 'qrcode';
 
 export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null }) {
   const [data, setData] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,6 +62,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           if (result && Array.isArray(result.data)) {
             setData(result.data);
             setNextCursor(result.nextCursor || null);
+            if (result.metadata?.totalPages) setTotalPages(result.metadata.totalPages);
             if (result.nextCursor) {
                setCursorHistory(prev => {
                   const newHistory = [...prev];
@@ -277,7 +279,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1}
+              {table.getState().pagination.pageIndex + 1} of {totalPages}
             </strong>
           </span>
           <Select
@@ -297,7 +299,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           >
             {[5, 10, 25, 50, 75, 100].map(pageSize => (
               <MenuItem key={pageSize} value={pageSize}>
-                Show {pageSize}
+                Show {pageSize} Records
               </MenuItem>
             ))}
           </Select>

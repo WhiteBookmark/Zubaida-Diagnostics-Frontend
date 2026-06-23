@@ -41,7 +41,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
     try {
       const patientRes = await fetch(`/api/patients?search=${formData.mrNumber}`);
       const patientData = await patientRes.json();
-      
+
       if (!patientData.data || patientData.data.length === 0) {
         setToast({ open: true, message: 'Patient not found with this MR Number', severity: 'error' });
         return;
@@ -59,7 +59,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       });
       if (response.ok) {
         const newRecord = await response.json();
-        onAdd(newRecord, `Appointment added successfully! Token Number: ${newRecord.tokenNumber}`);
+        onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {formData.mrNumber} with patient name {patient.name}</span>);
       } else {
         const errorData = await response.json();
         setToast({ open: true, message: `Failed to add appointment: ${errorData.error || 'Unknown error'}`, severity: 'error' });
@@ -91,9 +91,9 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
           <Button variant="contained" fullWidth type="submit">Add</Button>
         </div>
       </form>
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >

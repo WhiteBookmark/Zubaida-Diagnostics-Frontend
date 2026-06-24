@@ -7,7 +7,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment, Select, MenuItem } from '@mui/material';
+import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment, Select, MenuItem, CircularProgress } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
@@ -18,7 +18,8 @@ import logo from '../../assets/Logo.png';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment }) {
   const [data, setData] = useState([]);
-  const [totalPages, setTotalPages] = useState(1);
+  const [approximateCount, setApproximateCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState([]);
   
@@ -54,13 +55,15 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
         url += `&cursor=${currentCursor}`;
       }
       
+      setIsLoading(true);
       fetch(url)
         .then(res => res.json())
         .then(result => {
+          setIsLoading(false);
           if (result && Array.isArray(result.data)) {
             setData(result.data);
             setNextCursor(result.nextCursor || null);
-            if (result.metadata?.totalPages) setTotalPages(result.metadata.totalPages);
+            if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
             if (result.nextCursor) {
                setCursorHistory(prev => {
                   const newHistory = [...prev];
@@ -73,11 +76,15 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
             setNextCursor(null);
           }
         })
-        .catch(console.error);
+        .catch(err => {
+          console.error(err);
+          setIsLoading(false);
+        });
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, cursorHistory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize]);
 
   const columns = useMemo(
     () => [
@@ -181,6 +188,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
         <h2>Patient Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
           <TextField
             variant="outlined"
             placeholder="Search patients..."
@@ -253,8 +261,9 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of {totalPages}
+              {table.getState().pagination.pageIndex + 1}
             </strong>
+            {' '}(Roughly {approximateCount.toLocaleString()} Records)
           </span>
           <Select
             value={table.getState().pagination.pageSize}

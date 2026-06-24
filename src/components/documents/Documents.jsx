@@ -6,7 +6,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, Tooltip, IconButton, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, Select, MenuItem } from '@mui/material';
+import { Box, Button, Tooltip, IconButton, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, Select, MenuItem, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -14,7 +14,8 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export default function Documents({ onAddDocument }) {
   const [data, setData] = useState([]);
-  const [totalPages, setTotalPages] = useState(1);
+  const [approximateCount, setApproximateCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -47,16 +48,18 @@ export default function Documents({ onAddDocument }) {
       url += `&cursor=${currentCursor}`;
     }
     
+    setIsLoading(true);
     fetch(url)
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
       })
       .then(result => {
+        setIsLoading(false);
         if (result && Array.isArray(result.data)) {
           setData(result.data);
           setNextCursor(result.nextCursor || null);
-          if (result.metadata?.totalPages) setTotalPages(result.metadata.totalPages);
+          if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
           if (result.nextCursor) {
              setCursorHistory(prev => {
                 const newHistory = [...prev];
@@ -69,8 +72,12 @@ export default function Documents({ onAddDocument }) {
           setNextCursor(null);
         }
       })
-      .catch(err => console.error('Error fetching documents:', err));
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, cursorHistory]);
+      .catch(err => {
+        console.error('Error fetching documents:', err);
+        setIsLoading(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -187,6 +194,7 @@ export default function Documents({ onAddDocument }) {
       <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
         <h2>Documents</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
+          {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
           <TextField
             variant="outlined"
             placeholder="Search documents..."
@@ -255,8 +263,9 @@ export default function Documents({ onAddDocument }) {
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of {totalPages}
+              {table.getState().pagination.pageIndex + 1}
             </strong>
+            {' '}(Roughly {approximateCount.toLocaleString()} Records)
           </span>
           <Select
             value={table.getState().pagination.pageSize}

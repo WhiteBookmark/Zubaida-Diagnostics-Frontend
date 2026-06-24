@@ -6,7 +6,7 @@ import {
   getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem, Tooltip } from '@mui/material';
+import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem, Tooltip, CircularProgress } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
@@ -17,7 +17,8 @@ import QRCode from 'qrcode';
 
 export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null }) {
   const [data, setData] = useState([]);
-  const [totalPages, setTotalPages] = useState(1);
+  const [approximateCount, setApproximateCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,13 +57,15 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         url += `&cursor=${currentCursor}`;
       }
       
+      setIsLoading(true);
       fetch(url)
         .then(res => res.json())
         .then(result => {
+          setIsLoading(false);
           if (result && Array.isArray(result.data)) {
             setData(result.data);
             setNextCursor(result.nextCursor || null);
-            if (result.metadata?.totalPages) setTotalPages(result.metadata.totalPages);
+            if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
             if (result.nextCursor) {
                setCursorHistory(prev => {
                   const newHistory = [...prev];
@@ -75,11 +78,15 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             setNextCursor(null);
           }
         })
-        .catch(console.error);
+        .catch(err => {
+          console.error(err);
+          setIsLoading(false);
+        });
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, cursorHistory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize]);
 
   const handlePrintToken = useCallback(async (appointment) => {
     const printWindow = window.open('', '', 'width=400,height=600');
@@ -211,6 +218,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
         <h2>Appointment Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
+          {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
           <TextField
             variant="outlined"
             placeholder="Search appointments..."
@@ -279,8 +287,9 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           <span style={{ color: 'var(--text)' }}>
             Page{' '}
             <strong>
-              {table.getState().pagination.pageIndex + 1} of {totalPages}
+              {table.getState().pagination.pageIndex + 1}
             </strong>
+            {' '}(Roughly {approximateCount.toLocaleString()} Records)
           </span>
           <Select
             value={table.getState().pagination.pageSize}

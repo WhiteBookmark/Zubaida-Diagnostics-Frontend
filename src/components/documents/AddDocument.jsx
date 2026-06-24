@@ -46,7 +46,7 @@ export default function AddDocument({ onBack, onSave }) {
       }
 
       setToast({ open: true, message: 'Document uploaded successfully!', severity: 'success' });
-      setTimeout(() => onSave(), 1500); // Navigate back or refresh
+      onSave(); // Navigate back or refresh
     } catch (error) {
       console.error(error);
       setToast({ open: true, message: 'Error uploading document: ' + error.message, severity: 'error' });

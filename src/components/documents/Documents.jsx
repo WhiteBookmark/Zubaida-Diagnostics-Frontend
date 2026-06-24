@@ -12,7 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-export default function Documents({ onAddDocument }) {
+export default function Documents({ onAddDocument, initialToastMessage, clearPending }) {
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +35,13 @@ export default function Documents({ onAddDocument }) {
   useEffect(() => {
     localStorage.setItem('documentRecordsPageSize', pagination.pageSize);
   }, [pagination.pageSize]);
+
+  useEffect(() => {
+    if (initialToastMessage) {
+      setToast({ open: true, message: initialToastMessage, severity: 'success' });
+      if (clearPending) clearPending();
+    }
+  }, [initialToastMessage, clearPending]);
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, pageIndex: 0 }));

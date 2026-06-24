@@ -16,7 +16,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import AddPatient from './AddPatient';
 import logo from '../../assets/Logo.png';
 
-export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment }) {
+export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, initialToastMessage, clearPending }) {
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +41,13 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment 
   useEffect(() => {
     localStorage.setItem('patientRecordsPageSize', pagination.pageSize);
   }, [pagination.pageSize]);
+
+  useEffect(() => {
+    if (initialToastMessage) {
+      setToast({ open: true, message: initialToastMessage, severity: 'success' });
+      if (clearPending) clearPending();
+    }
+  }, [initialToastMessage, clearPending]);
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, pageIndex: 0 }));

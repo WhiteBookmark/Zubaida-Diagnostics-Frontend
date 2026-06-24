@@ -24,8 +24,11 @@ function App() {
   const [pendingToast, setPendingToast] = useState('')
   const [pendingAppointmentPrint, setPendingAppointmentPrint] = useState(null)
   const [pendingAppointmentToast, setPendingAppointmentToast] = useState('')
+  const [viewToast, setViewToast] = useState('')
 
-
+  const clearViewToast = useCallback(() => {
+    setViewToast('');
+  }, []);
 
   const handleLogin = useCallback((username) => {
     setUsername(username);
@@ -52,6 +55,7 @@ function App() {
   const handleBack = useCallback(() => setView('dashboard'), []);
   
   const handleSaveDocument = useCallback(() => {
+    setViewToast('Document uploaded successfully!');
     setView('dashboard');
   }, []);
 
@@ -62,6 +66,7 @@ function App() {
   }, []);
 
   const handleSave = useCallback((savedRecord) => {
+    setViewToast('Patient updated successfully!');
     setView('dashboard');
   }, []);
 
@@ -97,7 +102,7 @@ function App() {
       if (view === 'addDocument') {
           return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
       }
-      return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} />;
+      return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} />;
     }
 
     if (view === 'edit') {
@@ -137,7 +142,7 @@ function App() {
                   }}
                />;
       case 'documents':
-        return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} />;
+        return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} />;
       case 'patients':
         return (
           <PatientRecords
@@ -145,6 +150,8 @@ function App() {
             onEdit={handleEdit}
             onAddPatient={handleAddPatient}
             onAddAppointment={handleAddAppointmentForPatient}
+            initialToastMessage={viewToast}
+            clearPending={clearViewToast}
           />
         );
       case 'dashboard':

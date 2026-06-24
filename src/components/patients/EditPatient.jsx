@@ -35,7 +35,7 @@ export default function EditPatient({ record, onBack, onSave }) {
       if (response.ok) {
         const savedRecord = await response.json();
         setToast({ open: true, message: 'Patient updated successfully!', severity: 'success' });
-        setTimeout(() => onSave(savedRecord), 1500);
+        onSave(savedRecord);
       } else {
         setToast({ open: true, message: 'Failed to update record', severity: 'error' });
       }

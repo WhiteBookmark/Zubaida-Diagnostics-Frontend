@@ -113,7 +113,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             margin: 0mm;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif; color: #000; padding: 10mm; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; }
+        body { font-family: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif; color: #000; padding: 0mm 10mm 10mm 10mm; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background: transparent; }
         .receipt-canvas { width: 72mm; text-align: center; }
         .header-title { font-family: Georgia, serif; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
         .sub-header { font-size: 11px; color: #444; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
@@ -129,8 +129,8 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     <div class="receipt-canvas" id="ticket">
         <div class="header-title">The Clinic and Zubaida Diagnostic</div>
         <div class="info-row" style="margin-top: 8px;">
-            <span>1783 Block 14 Federal B. Area</span>
-            <span>03353706680</span>
+            <span style="margin-left: 15px;">1783 Block 14 Federal B. Area</span>
+            <span style="margin-right: 15px;">03353706680</span>
         </div>
         <div class="token-container">
             <div class="token-value">${appointment.tokenNumber || 'N/A'}</div>

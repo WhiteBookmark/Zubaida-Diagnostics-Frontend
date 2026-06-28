@@ -56,7 +56,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       if (currentCursor) {
         url += `&cursor=${currentCursor}`;
       }
-      
+
       setIsLoading(true);
       fetch(url)
         .then(res => res.json())
@@ -67,11 +67,11 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             setNextCursor(result.nextCursor || null);
             if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
             if (result.nextCursor) {
-               setCursorHistory(prev => {
-                  const newHistory = [...prev];
-                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
-                  return newHistory;
-               });
+              setCursorHistory(prev => {
+                const newHistory = [...prev];
+                newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                return newHistory;
+              });
             }
           } else if (Array.isArray(result)) {
             setData(result);
@@ -119,7 +119,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         .sub-header { font-size: 11px; color: #444; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
         .token-container { margin: 5px 0 15px 0; padding: 10px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; }
         .token-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; }
-        .token-value { font-family: Georgia, serif; font-size: 48px; font-weight: 900; line-height: 1.1; margin: 4px 0; }
+        .token-value { font-family: Georgia, serif; font-size: 48px; font-weight: 900; line-height: 1.1; margin: 4px 0; font-variant-numeric: lining-nums; }
         .meta-data { font-size: 11px; margin-top: 10px; }
         .info-row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 15px; }
         .footer-notice { font-size: 10px; margin-top: 8px; font-weight: 600; }
@@ -128,20 +128,29 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
 <body>
     <div class="receipt-canvas" id="ticket">
         <div class="header-title">The Clinic and Zubaida Diagnostic</div>
-        <div class="info-row">
-            <span>MR: ${appointment.patient?.mrNumber || 'N/A'}</span>
-            <span>${appointment.dateTime ? new Date(appointment.dateTime).toLocaleString() : ''}</span>
+        <div class="info-row" style="margin-top: 8px;">
+            <span>1783 Block 14 Federal B. Area</span>
+            <span>03353706680</span>
         </div>
         <div class="token-container">
             <div class="token-value">${appointment.tokenNumber || 'N/A'}</div>
+            <div class="meta-data" style="margin-top: 5px;">${appointment.patient?.name || 'N/A'}</div>
         </div>
         ${qrDataUrl ? `
         <div class="qr-container" style="margin: 15px 0;">
             <img src="${qrDataUrl}" alt="QR Code" width="80" height="80" />
         </div>` : ''}
-        <div class="meta-data">
-          ${appointment.patient?.name || 'N/A'}
-        </div>
+        <div style="display: inline-block; text-align: left;">
+            <div class="meta-data" style="margin-top: 4px;">
+              MR: ${appointment.patient?.mrNumber || 'N/A'}
+            </div>
+            <div class="meta-data" style="margin-top: 4px;">
+              Amount Paid: Rs. ${appointment.amountPaid || '0'}
+            </div>
+            <div class="meta-data" style="margin-top: 4px;">
+              Date & Time: ${appointment.dateTime ? new Date(appointment.dateTime).toLocaleString() : ''}
+            </div>
+            </div>
     </div>
     <script>
         window.onload = function() { window.print(); window.close(); }

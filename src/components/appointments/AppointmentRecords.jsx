@@ -98,8 +98,15 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
 
     let qrDataUrl = '';
     try {
-      const mrNumber = String(appointment.patient?.mrNumber ?? appointment.mrNumber ?? 'N/A').trim() || 'N/A';
-      qrDataUrl = await QRCode.toDataURL(mrNumber, { width: 100, margin: 1 });
+      const patient = appointment.patient || {};
+      const mrNumber = String(patient.mrNumber ?? appointment.mrNumber ?? 'N/A').trim() || 'N/A';
+      const qrDataObj = {
+        "MR Number": mrNumber,
+        "Name": patient.name || 'N/A',
+        "Father's Name": patient.fatherName || 'N/A',
+        "Age": patient.age !== undefined && patient.age !== null ? String(patient.age) : 'N/A'
+      };
+      qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrDataObj), { width: 100, margin: 1 });
     } catch (err) {
       console.error('Failed to generate QR code:', err);
     }

@@ -101,16 +101,12 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
   }, []);
 
   const handleOpenDocument = useCallback((row) => {
-    const path = row.original.filePath;
-    if (path) {
-      let normalizedPath = path.replace(/\\/g, '/');
-      if (normalizedPath.startsWith('/')) {
-        normalizedPath = normalizedPath.substring(1);
-      }
-      const url = normalizedPath.startsWith('http') ? normalizedPath : `${window.location.origin}/${normalizedPath}`;
+    const fileName = row.original.fileName;
+    if (fileName) {
+      const url = `${window.location.origin}/document/${fileName}`;
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
-      setToast({ open: true, message: 'File path not available', severity: 'warning' });
+      setToast({ open: true, message: 'File name not available', severity: 'warning' });
     }
   }, []);
 
@@ -137,16 +133,12 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     { accessorKey: 'patient.name', header: 'Patient Name' },
     { accessorKey: 'type', header: 'Document Type' },
     {
-      accessorKey: 'filePath',
+      accessorKey: 'fileName',
       header: 'File Path',
       cell: info => {
-        const path = info.getValue();
-        if (!path) return 'N/A';
-        let normalizedPath = path.replace(/\\/g, '/');
-        if (normalizedPath.startsWith('/')) {
-          normalizedPath = normalizedPath.substring(1);
-        }
-        return `${window.location.origin}/${normalizedPath}`;
+        const fileName = info.getValue();
+        if (!fileName) return 'N/A';
+        return `${window.location.origin}/document/${fileName}`;
       }
     },
     {

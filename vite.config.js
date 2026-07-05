@@ -8,8 +8,7 @@ export default defineConfig({
     allowedHosts: ["rummage-reprint-unclog.ngrok-free.dev"],
     proxy: {
       '/api': 'http://localhost:3000',
-      '/uploads': 'http://localhost:3000',
-      '/documents': 'http://localhost:3000'
+      '/document': 'http://localhost:3000'
     }
   }
 })

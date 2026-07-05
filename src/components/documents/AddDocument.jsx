@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Button, Snackbar, Alert } from '@mui/material';
+import { Button, Snackbar, Alert, IconButton } from '@mui/material';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import CloseIcon from '@mui/icons-material/Close';
 import '../../styles/Auth.css';
 
 export default function AddDocument({ onBack, onSave }) {
@@ -143,38 +144,50 @@ export default function AddDocument({ onBack, onSave }) {
           <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>File</label>
           <div style={{
             display: 'flex',
-            alignItems: 'center',
+            flexDirection: 'column',
             gap: '12px',
             background: 'rgba(255, 255, 255, 0.3)',
             backdropFilter: 'blur(8px)',
             border: '1px solid rgba(255, 255, 255, 0.6)',
             borderRadius: '8px',
-            padding: '8px 12px',
+            padding: '12px',
+            position: 'relative',
           }}>
-            <Button
-              variant="contained"
-              component="label"
-              sx={{ textTransform: 'none' }}
-            >
-              Choose File
-              <input
-                type="file"
-                hidden
-                onChange={handleFileChange}
-                required={!file}
-              />
-            </Button>
-            <Button
-              variant="outlined"
-              onClick={handlePasteClick}
-              sx={{ textTransform: 'none' }}
-              startIcon={<ContentPasteIcon />}
-            >
-              Paste
-            </Button>
-            <span style={{ fontSize: '14px', color: '#0f172a', opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {file && (
+              <IconButton 
+                size="small" 
+                onClick={() => setFile(null)} 
+                style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 1 }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            )}
+            <div style={{ fontSize: '14px', color: '#0f172a', opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: file ? '28px' : '0' }}>
               {file ? file.name : 'No file selected'}
-            </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+              <Button
+                variant="contained"
+                component="label"
+                sx={{ textTransform: 'none' }}
+              >
+                Choose File
+                <input
+                  type="file"
+                  hidden
+                  onChange={handleFileChange}
+                  required={!file}
+                />
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handlePasteClick}
+                sx={{ textTransform: 'none' }}
+                startIcon={<ContentPasteIcon />}
+              >
+                Paste
+              </Button>
+            </div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>

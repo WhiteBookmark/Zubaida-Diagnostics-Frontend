@@ -323,6 +323,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
       <Dialog
         open={deleteDialogOpen}
         onClose={handleCloseDeleteDialog}
+        transitionDuration={0}
         PaperProps={{
           className: 'glass',
           style: { padding: '16px', borderRadius: '16px', background: 'var(--glass-bg)', backdropFilter: 'var(--glass-blur)' }

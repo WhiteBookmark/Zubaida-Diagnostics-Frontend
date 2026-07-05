@@ -177,7 +177,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     if (!rowToDelete) return;
     
     try {
-      const response = await fetch(`/api/uploads/${rowToDelete.original.patientId}/documents/${rowToDelete.original.id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/uploads/documents/${rowToDelete.original.id}`, { method: 'DELETE' });
       if (response.ok) {
         setData(prev => prev.filter(item => item.id !== rowToDelete.original.id));
         setToast({ open: true, message: 'Document deleted successfully', severity: 'success' });

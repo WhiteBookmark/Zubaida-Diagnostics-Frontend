@@ -103,7 +103,11 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
   const handleOpenDocument = useCallback((row) => {
     const path = row.original.filePath;
     if (path) {
-      const url = path.startsWith('http') ? path : `/${path}`;
+      let normalizedPath = path.replace(/\\/g, '/');
+      if (normalizedPath.startsWith('/')) {
+        normalizedPath = normalizedPath.substring(1);
+      }
+      const url = normalizedPath.startsWith('http') ? normalizedPath : `${window.location.origin}/${normalizedPath}`;
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       setToast({ open: true, message: 'File path not available', severity: 'warning' });
@@ -132,7 +136,19 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     { accessorKey: 'patient.mrNumber', header: 'MR Number' },
     { accessorKey: 'patient.name', header: 'Patient Name' },
     { accessorKey: 'type', header: 'Document Type' },
-    { accessorKey: 'filePath', header: 'File Path' },
+    {
+      accessorKey: 'filePath',
+      header: 'File Path',
+      cell: info => {
+        const path = info.getValue();
+        if (!path) return 'N/A';
+        let normalizedPath = path.replace(/\\/g, '/');
+        if (normalizedPath.startsWith('/')) {
+          normalizedPath = normalizedPath.substring(1);
+        }
+        return `${window.location.origin}/${normalizedPath}`;
+      }
+    },
     {
       accessorKey: 'uploadedAt',
       header: 'Uploaded At',
@@ -161,7 +177,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     if (!rowToDelete) return;
     
     try {
-      const response = await fetch(`/api/documents/${rowToDelete.original.id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/uploads/${rowToDelete.original.patientId}/documents/${rowToDelete.original.id}`, { method: 'DELETE' });
       if (response.ok) {
         setData(prev => prev.filter(item => item.id !== rowToDelete.original.id));
         setToast({ open: true, message: 'Document deleted successfully', severity: 'success' });

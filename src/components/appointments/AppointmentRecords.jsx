@@ -15,7 +15,7 @@ import AddAppointmentRecord from './AddAppointmentRecord';
 import logo from '../../assets/Logo.png';
 import QRCode from 'qrcode';
 
-export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null }) {
+export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey }) {
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,44 +49,48 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     setCursorHistory([null]);
   }, [searchTerm, pagination.pageSize]);
 
+  const fetchData = useCallback(() => {
+    const currentCursor = cursorHistory[pagination.pageIndex];
+    let url = `/api/appointments?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+    if (currentCursor) {
+      url += `&cursor=${currentCursor}`;
+    }
+
+    setIsLoading(true);
+    fetch(url)
+      .then(res => res.json())
+      .then(result => {
+        setIsLoading(false);
+        if (result && Array.isArray(result.data)) {
+          setData(result.data);
+          setNextCursor(result.nextCursor || null);
+          if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
+          if (result.nextCursor) {
+            setCursorHistory(prev => {
+              const newHistory = [...prev];
+              newHistory[pagination.pageIndex + 1] = result.nextCursor;
+              return newHistory;
+            });
+          }
+        } else if (Array.isArray(result)) {
+          setData(result);
+          setNextCursor(null);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setIsLoading(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey]);
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      const currentCursor = cursorHistory[pagination.pageIndex];
-      let url = `/api/appointments?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
-      if (currentCursor) {
-        url += `&cursor=${currentCursor}`;
-      }
-
-      setIsLoading(true);
-      fetch(url)
-        .then(res => res.json())
-        .then(result => {
-          setIsLoading(false);
-          if (result && Array.isArray(result.data)) {
-            setData(result.data);
-            setNextCursor(result.nextCursor || null);
-            if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
-            if (result.nextCursor) {
-              setCursorHistory(prev => {
-                const newHistory = [...prev];
-                newHistory[pagination.pageIndex + 1] = result.nextCursor;
-                return newHistory;
-              });
-            }
-          } else if (Array.isArray(result)) {
-            setData(result);
-            setNextCursor(null);
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          setIsLoading(false);
-        });
+      fetchData();
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize]);
+  }, [fetchData]);
 
   const handlePrintToken = useCallback(async (appointment) => {
     const printWindow = window.open('', '', 'width=400,height=600');
@@ -217,7 +221,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     return <AddAppointmentRecord onBack={() => setShowAddForm(false)} onAdd={(newRecord, message) => {
       setShowAddForm(false);
       if (message) setToast({ open: true, message, severity: 'success' });
-      fetch('/api/appointments').then(res => res.json()).then(setData);
+      fetchData();
       handlePrintToken(newRecord);
     }} />;
   }

@@ -16,7 +16,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import AddPatient from './AddPatient';
 import logo from '../../assets/Logo.png';
 
-export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, initialToastMessage, clearPending }) {
+export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, initialToastMessage, clearPending, refreshKey }) {
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,44 +54,48 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     setCursorHistory([null]);
   }, [searchTerm, pagination.pageSize]);
 
+  const fetchData = useCallback(() => {
+    const currentCursor = cursorHistory[pagination.pageIndex];
+    let url = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+    if (currentCursor) {
+      url += `&cursor=${currentCursor}`;
+    }
+    
+    setIsLoading(true);
+    fetch(url)
+      .then(res => res.json())
+      .then(result => {
+        setIsLoading(false);
+        if (result && Array.isArray(result.data)) {
+          setData(result.data);
+          setNextCursor(result.nextCursor || null);
+          if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
+          if (result.nextCursor) {
+             setCursorHistory(prev => {
+                const newHistory = [...prev];
+                newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                return newHistory;
+             });
+          }
+        } else if (Array.isArray(result)) {
+          setData(result);
+          setNextCursor(null);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setIsLoading(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey]);
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      const currentCursor = cursorHistory[pagination.pageIndex];
-      let url = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
-      if (currentCursor) {
-        url += `&cursor=${currentCursor}`;
-      }
-      
-      setIsLoading(true);
-      fetch(url)
-        .then(res => res.json())
-        .then(result => {
-          setIsLoading(false);
-          if (result && Array.isArray(result.data)) {
-            setData(result.data);
-            setNextCursor(result.nextCursor || null);
-            if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
-            if (result.nextCursor) {
-               setCursorHistory(prev => {
-                  const newHistory = [...prev];
-                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
-                  return newHistory;
-               });
-            }
-          } else if (Array.isArray(result)) {
-            setData(result);
-            setNextCursor(null);
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          setIsLoading(false);
-        });
+      fetchData();
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize]);
+  }, [fetchData]);
 
   const columns = useMemo(
     () => [
@@ -172,6 +176,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       if (response.ok) {
         setData(prev => prev.filter(item => item.id !== rowToDelete.original.id));
         setToast({ open: true, message: 'Record deleted successfully', severity: 'success' });
+        fetchData();
       } else {
         setToast({ open: true, message: 'Failed to delete record', severity: 'error' });
       }
@@ -181,7 +186,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     } finally {
       handleCloseDeleteDialog();
     }
-  }, [rowToDelete, setData]);
+  }, [rowToDelete, setData, fetchData]);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') {

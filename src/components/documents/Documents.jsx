@@ -12,7 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-export default function Documents({ onAddDocument, initialToastMessage, clearPending }) {
+export default function Documents({ onAddDocument, initialToastMessage, clearPending, refreshKey }) {
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +84,7 @@ export default function Documents({ onAddDocument, initialToastMessage, clearPen
         setIsLoading(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -94,19 +94,6 @@ export default function Documents({ onAddDocument, initialToastMessage, clearPen
     return () => clearTimeout(delayDebounceFn);
   }, [fetchData]);
 
-  const populateRandomData = async () => {
-      try {
-          const response = await fetch('/api/documents/populate', { method: 'POST' });
-          if (response.ok) {
-              fetchData();
-          } else {
-              alert('Failed to populate random data');
-          }
-      } catch (error) {
-          console.error('Error populating data:', error);
-          alert('Error populating data');
-      }
-  };
 
   const handleDeleteClick = useCallback((row) => {
     setRowToDelete(row);
@@ -178,6 +165,7 @@ export default function Documents({ onAddDocument, initialToastMessage, clearPen
       if (response.ok) {
         setData(prev => prev.filter(item => item.id !== rowToDelete.original.id));
         setToast({ open: true, message: 'Document deleted successfully', severity: 'success' });
+        fetchData();
       } else {
         setToast({ open: true, message: 'Failed to delete document', severity: 'error' });
       }
@@ -187,7 +175,7 @@ export default function Documents({ onAddDocument, initialToastMessage, clearPen
     } finally {
       handleCloseDeleteDialog();
     }
-  }, [rowToDelete, setData]);
+  }, [rowToDelete, setData, fetchData]);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') {

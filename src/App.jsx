@@ -57,6 +57,7 @@ function App() {
   const handleSaveDocument = useCallback(() => {
     setViewToast('Document uploaded successfully!');
     setView('dashboard');
+    setResetKey(prev => prev + 1);
   }, []);
 
   const handleNavigate = useCallback((pageId) => {
@@ -68,6 +69,7 @@ function App() {
   const handleSave = useCallback((savedRecord) => {
     setViewToast('Patient updated successfully!');
     setView('dashboard');
+    setResetKey(prev => prev + 1);
   }, []);
 
   const handleAddPatient = useCallback(() => setView('addPatient'), []);
@@ -76,6 +78,7 @@ function App() {
     setNewMrNumber(newPatient.mrNumber);
     setPendingToast(toastMessage || '');
     setView('addAppointment');
+    setResetKey(prev => prev + 1);
   }, []);
 
   const handleAddAppointmentForPatient = useCallback((patient) => {
@@ -89,6 +92,7 @@ function App() {
     setPendingAppointmentToast(message);
     setView('dashboard');
     setCurrentPage('appointments');
+    setResetKey(prev => prev + 1);
   }, []);
 
   if (!isLoggedIn) {
@@ -102,7 +106,7 @@ function App() {
       if (view === 'addDocument') {
           return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
       }
-      return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} />;
+      return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
     }
 
     if (view === 'edit') {
@@ -140,9 +144,10 @@ function App() {
                     setPendingAppointmentPrint(null);
                     setPendingAppointmentToast('');
                   }}
+                  refreshKey={resetKey}
                />;
       case 'documents':
-        return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} />;
+        return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
       case 'patients':
         return (
           <PatientRecords
@@ -152,6 +157,7 @@ function App() {
             onAddAppointment={handleAddAppointmentForPatient}
             initialToastMessage={viewToast}
             clearPending={clearViewToast}
+            refreshKey={resetKey}
           />
         );
       case 'dashboard':

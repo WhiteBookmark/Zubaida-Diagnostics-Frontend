@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Snackbar, Alert } from '@mui/material';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import '../../styles/Auth.css';
 
 export default function AddDocument({ onBack, onSave }) {
@@ -9,6 +10,73 @@ export default function AddDocument({ onBack, onSave }) {
   });
   const [file, setFile] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+
+  useEffect(() => {
+    const handleGlobalPaste = (e) => {
+      const active = document.activeElement;
+      if (
+        active &&
+        (active.tagName === 'INPUT' ||
+          active.tagName === 'TEXTAREA' ||
+          active.isContentEditable)
+      ) {
+        return;
+      }
+
+      const items = e.clipboardData?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === 'file') {
+            const pastedFile = items[i].getAsFile();
+            if (pastedFile) {
+              setFile(pastedFile);
+              setToast({ open: true, message: 'File pasted from clipboard!', severity: 'success' });
+              e.preventDefault();
+              return;
+            }
+          }
+        }
+      }
+    };
+
+    document.addEventListener('paste', handleGlobalPaste);
+    return () => {
+      document.removeEventListener('paste', handleGlobalPaste);
+    };
+  }, []);
+
+  const handlePasteClick = async () => {
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.read) {
+        setToast({ open: true, message: 'Clipboard API not supported. Please press Ctrl+V.', severity: 'info' });
+        return;
+      }
+      const clipboardItems = await navigator.clipboard.read();
+      for (const item of clipboardItems) {
+        const fileType = item.types.find(t => !t.includes('text/plain') && !t.includes('text/html'));
+        if (fileType) {
+          const blob = await item.getType(fileType);
+          const extension = fileType.split('/')[1]?.split('+')[0] || 'bin';
+          const pastedFile = new File([blob], `Pasted-File-${Date.now()}.${extension}`, { type: fileType });
+          setFile(pastedFile);
+          setToast({ open: true, message: 'File pasted from clipboard!', severity: 'success' });
+          return;
+        }
+      }
+      setToast({
+        open: true,
+        message: 'OS-copied files are restricted. Please press Ctrl + V to paste.',
+        severity: 'info',
+      });
+    } catch (err) {
+      console.error('Failed to read clipboard:', err);
+      setToast({
+        open: true,
+        message: 'Clipboard access restricted. Please press Ctrl + V to paste.',
+        severity: 'info',
+      });
+    }
+  };
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -95,6 +163,14 @@ export default function AddDocument({ onBack, onSave }) {
                 onChange={handleFileChange}
                 required={!file}
               />
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handlePasteClick}
+              sx={{ textTransform: 'none' }}
+              startIcon={<ContentPasteIcon />}
+            >
+              Paste
             </Button>
             <span style={{ fontSize: '14px', color: '#0f172a', opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {file ? file.name : 'No file selected'}

@@ -13,8 +13,8 @@ import './styles/App.css'
 import './styles/Auth.css'
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [username, setUsername] = useState('')
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'))
+  const [username, setUsername] = useState(() => localStorage.getItem('username') || '')
   const [currentPage, setCurrentPage] = useState('dashboard')
   const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument', 'addPatient', 'addAppointment'
   const [resetKey, setResetKey] = useState(0)
@@ -29,7 +29,16 @@ function App() {
     setViewToast('');
   }, []);
 
-  const handleLogin = useCallback((username) => {
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    setUsername('');
+    setIsLoggedIn(false);
+  }, []);
+
+  const handleLogin = useCallback((username, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
     setUsername(username);
     setIsLoggedIn(true);
     const departmentUsers = ['X-Ray Department', 'Ultrasound Department', 'Lab Department'];
@@ -37,10 +46,27 @@ function App() {
       setCurrentPage('documents');
     }
   }, []);
-  const handleLogout = useCallback(() => {
-    setUsername('');
-    setIsLoggedIn(false);
-  }, []);
+
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = async (url, options = {}) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        options.headers = {
+          ...options.headers,
+          'Authorization': `Bearer ${token}`
+        };
+      }
+      const response = await originalFetch(url, options);
+      if (response.status === 401 && !url.includes('/api/auth/login')) {
+        handleLogout();
+      }
+      return response;
+    };
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [handleLogout]);
 
   const handleEdit = useCallback((record) => {
     setRecordToEdit(record);

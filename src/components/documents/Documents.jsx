@@ -116,7 +116,7 @@ export default function Documents({ onAddDocument, initialToastMessage, clearPen
   const handleOpenDocument = useCallback((row) => {
     const path = row.original.filePath;
     if (path) {
-      const url = path.startsWith('http') ? path : `http://localhost:3000/${path}`;
+      const url = path.startsWith('http') ? path : `/${path}`;
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       setToast({ open: true, message: 'File path not available', severity: 'warning' });

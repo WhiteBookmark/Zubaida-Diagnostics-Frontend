@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, CircularProgress } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -10,28 +10,29 @@ export default function Dashboard() {
     appointments: 0,
     documents: 0
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCounts = async () => {
       try {
         const [patientsRes, appointmentsRes, documentsRes] = await Promise.all([
-          fetch('/api/patients'),
-          fetch('/api/appointments'),
-          fetch('/api/documents')
+          fetch('/api/patients/count'),
+          fetch('/api/appointments/count'),
+          fetch('/api/documents/count')
         ]);
         const pData = await patientsRes.json();
         const aData = await appointmentsRes.json();
         const dData = await documentsRes.json();
 
-        const getCount = (res) => Array.isArray(res) ? res.length : (res.data ? res.data.length : 0);
-
         setCounts({
-          patients: getCount(pData),
-          appointments: getCount(aData),
-          documents: getCount(dData)
+          patients: typeof pData.count === 'number' ? pData.count : 0,
+          appointments: typeof aData.count === 'number' ? aData.count : 0,
+          documents: typeof dData.count === 'number' ? dData.count : 0
         });
       } catch (err) {
         console.error('Error fetching counts:', err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCounts();
@@ -85,9 +86,13 @@ export default function Dashboard() {
             }}
           >
             {stat.icon}
-            <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1, color: 'var(--text-h)' }}>
-              {stat.count}
-            </Typography>
+            {loading ? (
+              <CircularProgress size={24} sx={{ color: 'var(--accent)', mt: 1.5, mb: 1 }} />
+            ) : (
+              <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1, color: 'var(--text-h)' }}>
+                {stat.count}
+              </Typography>
+            )}
             <Typography variant="body2" sx={{ color: 'var(--text)', mt: 0.5 }}>
               {stat.title}
             </Typography>

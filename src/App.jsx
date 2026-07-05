@@ -12,6 +12,29 @@ import AddDocument from './components/documents/AddDocument'
 import './styles/App.css'
 import './styles/Auth.css'
 
+let logoutCallback = null;
+
+// Initialize global fetch interceptor immediately on file load, preventing mounting race conditions
+if (!window.__originalFetch) {
+  window.__originalFetch = window.fetch;
+  window.fetch = async (url, options = {}) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`
+      };
+    }
+    const response = await window.__originalFetch(url, options);
+    if (response.status === 401 && !url.includes('/api/auth/login')) {
+      if (logoutCallback) {
+        logoutCallback();
+      }
+    }
+    return response;
+  };
+}
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('token'))
   const [username, setUsername] = useState(() => localStorage.getItem('username') || '')
@@ -48,23 +71,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const originalFetch = window.fetch;
-    window.fetch = async (url, options = {}) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        options.headers = {
-          ...options.headers,
-          'Authorization': `Bearer ${token}`
-        };
-      }
-      const response = await originalFetch(url, options);
-      if (response.status === 401 && !url.includes('/api/auth/login')) {
-        handleLogout();
-      }
-      return response;
-    };
+    logoutCallback = handleLogout;
     return () => {
-      window.fetch = originalFetch;
+      logoutCallback = null;
     };
   }, [handleLogout]);
 

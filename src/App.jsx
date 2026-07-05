@@ -6,7 +6,6 @@ import EditPatient from './components/patients/EditPatient'
 import AddPatient from './components/patients/AddPatient'
 import AddAppointmentRecord from './components/appointments/AddAppointmentRecord'
 import Header from './components/common/Header'
-import VitalRecords from './components/vitals/VitalRecords'
 import AppointmentRecords from './components/appointments/AppointmentRecords'
 import Documents from './components/documents/Documents'
 import AddDocument from './components/documents/AddDocument'
@@ -133,8 +132,6 @@ function App() {
     }
 
     switch (currentPage) {
-      case 'vitals':
-        return <VitalRecords key={`vitals-${resetKey}`} />;
       case 'appointments':
         return <AppointmentRecords 
                   key={`appointments-${resetKey}`} 

@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import LockIcon from '@mui/icons-material/Lock';
 import logo from '../assets/Logo.png';
 import '../styles/Auth.css';
 
@@ -55,7 +53,6 @@ export default function Login({ onLogin }) {
         
         <div className="input-group">
           <label className="input-label" htmlFor="username">
-            <PersonIcon className="input-icon" />
             Username
           </label>
           <input
@@ -70,7 +67,6 @@ export default function Login({ onLogin }) {
 
         <div className="input-group">
           <label className="input-label" htmlFor="password">
-            <LockIcon className="input-icon" />
             Password
           </label>
           <input

@@ -58,8 +58,9 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard glass" style={{ padding: '40px', margin: '0 20px 40px 20px' }}>
-      <div className="header" style={{ marginBottom: '2rem' }}>
+      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center' }}>
         <h2>Dashboard Overview</h2>
+        {loading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
       </div>
 
       <Box sx={{ 

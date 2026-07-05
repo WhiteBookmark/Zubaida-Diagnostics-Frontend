@@ -12,7 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
-export default function Documents({ onAddDocument, initialToastMessage, clearPending, refreshKey }) {
+export default function DocumentRecords({ onAddDocument, initialToastMessage, clearPending, refreshKey }) {
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);

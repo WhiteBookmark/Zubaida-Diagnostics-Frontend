@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import Login from './pages/LoginPage'
-import Dashboard from './components/patients/Dashboard'
+import Dashboard from './components/common/Dashboard'
 import PatientRecords from './components/patients/PatientRecords'
 import EditPatient from './components/patients/EditPatient'
 import AddPatient from './components/patients/AddPatient'
 import AddAppointmentRecord from './components/appointments/AddAppointmentRecord'
 import Header from './components/common/Header'
 import AppointmentRecords from './components/appointments/AppointmentRecords'
-import Documents from './components/documents/Documents'
+import DocumentRecords from './components/documents/DocumentRecords'
 import AddDocument from './components/documents/AddDocument'
 import './styles/App.css'
 import './styles/Auth.css'
@@ -131,7 +131,7 @@ function App() {
       if (view === 'addDocument') {
           return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
       }
-      return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
+      return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
     }
 
     if (view === 'edit') {
@@ -170,7 +170,7 @@ function App() {
                   refreshKey={resetKey}
                />;
       case 'documents':
-        return <Documents key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
+        return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
       case 'patients':
         return (
           <PatientRecords

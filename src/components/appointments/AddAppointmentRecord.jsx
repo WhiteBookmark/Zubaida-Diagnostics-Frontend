@@ -26,6 +26,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
   }, []);
 
   const [toast, setToast] = useState({ open: !!initialToastMessage, message: initialToastMessage || '', severity: 'success' });
+  const [errors, setErrors] = useState({});
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -33,36 +34,66 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (name === 'amountPaid') {
+      const val = parseFloat(value);
+      if (value !== '' && (isNaN(val) || val < 0)) {
+        setErrors(prev => ({ ...prev, amountPaid: 'Amount paid cannot be negative' }));
+      } else if (value !== '' && val > 1000000) {
+        setErrors(prev => ({ ...prev, amountPaid: 'Amount paid cannot exceed 1,000,000' }));
+      } else {
+        setErrors(prev => ({ ...prev, amountPaid: null }));
+      }
+    }
+    if (name === 'mrNumber') {
+      const val = parseInt(value, 10);
+      if (value !== '' && (!/^\d+$/.test(value) || isNaN(val) || val < 1 || val > 2147483647)) {
+        setErrors(prev => ({ ...prev, mrNumber: 'MR Number must be a number between 1 and 2,147,483,647' }));
+      } else {
+        setErrors(prev => ({ ...prev, mrNumber: null }));
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const patientRes = await fetch(`/api/patients?search=${formData.mrNumber}`);
-      const patientData = await patientRes.json();
 
-      if (!patientData.data || patientData.data.length === 0) {
-        setToast({ open: true, message: 'Patient not found with this MR Number', severity: 'error' });
+    const mrNum = parseInt(formData.mrNumber, 10);
+    if (!/^\d+$/.test(formData.mrNumber) || isNaN(mrNum) || mrNum < 1 || mrNum > 2147483647) {
+      setErrors(prev => ({ ...prev, mrNumber: 'MR Number must be a number between 1 and 2,147,483,647' }));
+      setToast({ open: true, message: 'Invalid MR Number format or range', severity: 'error' });
+      return;
+    }
+
+    const amount = formData.amountPaid ? parseFloat(formData.amountPaid) : null;
+    if (amount !== null) {
+      if (isNaN(amount) || amount < 0) {
+        setErrors(prev => ({ ...prev, amountPaid: 'Amount paid cannot be negative' }));
+        setToast({ open: true, message: 'Amount paid cannot be negative', severity: 'error' });
         return;
       }
+      if (amount > 1000000) {
+        setErrors(prev => ({ ...prev, amountPaid: 'Amount paid cannot exceed 1,000,000' }));
+        setToast({ open: true, message: 'Amount paid cannot exceed 1,000,000', severity: 'error' });
+        return;
+      }
+    }
 
-      const patient = patientData.data[0];
+    try {
       const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          patientId: patient.id,
+          mrNumber: formData.mrNumber,
           dateTime: formData.dateTime,
           amountPaid: formData.amountPaid,
         }),
       });
+
       if (response.ok) {
         const newRecord = await response.json();
-        if (!newRecord.patient) {
-          newRecord.patient = patient;
-        }
-        onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {formData.mrNumber} with patient name {patient.name}</span>);
+        onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || formData.mrNumber} for {newRecord.patient?.name || 'N/A'}</span>);
       } else {
         const errorData = await response.json();
         setToast({ open: true, message: `Failed to add appointment: ${errorData.error || 'Unknown error'}`, severity: 'error' });
@@ -78,16 +109,45 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
         <h2>Add New Appointment Record</h2>
         <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>MR Number</label>
-          <input name="mrNumber" type="text" value={formData.mrNumber} onChange={handleChange} required autoComplete="off" />
+          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: 'hsl(222, 47%, 11%)', fontFamily: 'var(--heading)' }}>MR Number</label>
+          <input
+            name="mrNumber"
+            type="text"
+            value={formData.mrNumber}
+            onChange={handleChange}
+            required
+            autoComplete="off"
+            style={errors.mrNumber ? { borderColor: 'hsl(0, 84%, 60%)' } : {}}
+          />
+          {errors.mrNumber && (
+            <span style={{ color: 'hsl(0, 84%, 60%)', fontSize: '12px', marginTop: '4px', display: 'block', fontFamily: 'var(--sans)' }}>
+              {errors.mrNumber}
+            </span>
+          )}
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Date & Time</label>
+          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: 'hsl(222, 47%, 11%)', fontFamily: 'var(--heading)' }}>Date & Time</label>
           <input name="dateTime" type="datetime-local" value={formData.dateTime} onChange={handleChange} required autoComplete="off" />
         </div>
         <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Amount Paid</label>
-          <input name="amountPaid" type="number" step="0.01" value={formData.amountPaid} onChange={handleChange} autoComplete="off" ref={amountPaidRef} />
+          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: 'hsl(222, 47%, 11%)', fontFamily: 'var(--heading)' }}>Amount Paid</label>
+          <input
+            name="amountPaid"
+            type="number"
+            step="0.01"
+            min="0"
+            max="1000000"
+            value={formData.amountPaid}
+            onChange={handleChange}
+            autoComplete="off"
+            ref={amountPaidRef}
+            style={errors.amountPaid ? { borderColor: 'hsl(0, 84%, 60%)' } : {}}
+          />
+          {errors.amountPaid && (
+            <span style={{ color: 'hsl(0, 84%, 60%)', fontSize: '12px', marginTop: '4px', display: 'block', fontFamily: 'var(--sans)' }}>
+              {errors.amountPaid}
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>

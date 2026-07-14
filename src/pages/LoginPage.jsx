@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
+import { Person, Lock } from '@mui/icons-material';
 import logo from '../assets/Logo.png';
 import '../styles/Auth.css';
 
@@ -55,28 +56,34 @@ export default function Login({ onLogin }) {
           <label className="input-label" htmlFor="username">
             Username
           </label>
-          <input
-            id="username"
-            type="text"
-            placeholder="Enter username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            disabled={loading}
-          />
+          <div className="input-with-icon">
+            <Person className="input-icon" />
+            <input
+              id="username"
+              type="text"
+              placeholder="Enter username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+            />
+          </div>
         </div>
 
         <div className="input-group">
           <label className="input-label" htmlFor="password">
             Password
           </label>
-          <input
-            id="password"
-            type="password"
-            placeholder="Enter password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-          />
+          <div className="input-with-icon">
+            <Lock className="input-icon" />
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+            />
+          </div>
         </div>
 
         <Button 
@@ -84,9 +91,16 @@ export default function Login({ onLogin }) {
           type="submit" 
           fullWidth 
           disabled={loading}
-          sx={{ mt: 1 }}
+          sx={{ mt: 1, gap: 1 }}
         >
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading ? (
+            <>
+              <CircularProgress size={20} color="inherit" />
+              Signing In...
+            </>
+          ) : (
+            'Sign In'
+          )}
         </Button>
       </form>
     </div>

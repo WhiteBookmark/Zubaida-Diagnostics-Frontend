@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Button, Snackbar, Alert } from '@mui/material';
+import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Badge, CalendarToday, Payments } from '@mui/icons-material';
 import '../../styles/Auth.css';
 
 export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '', initialToastMessage = '' }) {
@@ -27,6 +28,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
 
   const [toast, setToast] = useState({ open: !!initialToastMessage, message: initialToastMessage || '', severity: 'success' });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -80,6 +82,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       }
     }
 
+    setLoading(true);
     try {
       const response = await fetch('/api/appointments', {
         method: 'POST',
@@ -101,6 +104,8 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
     } catch (error) {
       console.error('Error adding appointment:', error);
       setToast({ open: true, message: 'Error adding appointment: ' + error.message, severity: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -108,50 +113,84 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
         <h2>Add New Appointment Record</h2>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: 'hsl(222, 47%, 11%)', fontFamily: 'var(--heading)' }}>MR Number</label>
-          <input
-            name="mrNumber"
-            type="text"
-            value={formData.mrNumber}
-            onChange={handleChange}
-            required
-            autoComplete="off"
-            style={errors.mrNumber ? { borderColor: 'hsl(0, 84%, 60%)' } : {}}
-          />
+        <div className="input-group">
+          <label className="input-label" htmlFor="mrNumber">MR Number</label>
+          <div className="input-with-icon">
+            <Badge className="input-icon" />
+            <input
+              id="mrNumber"
+              name="mrNumber"
+              type="text"
+              value={formData.mrNumber}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              autoComplete="off"
+              style={errors.mrNumber ? { borderColor: 'hsl(0, 84%, 60%)' } : {}}
+            />
+          </div>
           {errors.mrNumber && (
             <span style={{ color: 'hsl(0, 84%, 60%)', fontSize: '12px', marginTop: '4px', display: 'block', fontFamily: 'var(--sans)' }}>
               {errors.mrNumber}
             </span>
           )}
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: 'hsl(222, 47%, 11%)', fontFamily: 'var(--heading)' }}>Date & Time</label>
-          <input name="dateTime" type="datetime-local" value={formData.dateTime} onChange={handleChange} required autoComplete="off" />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="dateTime">Date & Time</label>
+          <div className="input-with-icon">
+            <CalendarToday className="input-icon" />
+            <input 
+              id="dateTime" 
+              name="dateTime" 
+              type="datetime-local" 
+              value={formData.dateTime} 
+              onChange={handleChange} 
+              required 
+              disabled={loading} 
+              autoComplete="off" 
+            />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: 'hsl(222, 47%, 11%)', fontFamily: 'var(--heading)' }}>Amount Paid</label>
-          <input
-            name="amountPaid"
-            type="number"
-            step="0.01"
-            min="0"
-            max="1000000"
-            value={formData.amountPaid}
-            onChange={handleChange}
-            autoComplete="off"
-            ref={amountPaidRef}
-            style={errors.amountPaid ? { borderColor: 'hsl(0, 84%, 60%)' } : {}}
-          />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="amountPaid">Amount Paid</label>
+          <div className="input-with-icon">
+            <Payments className="input-icon" />
+            <input
+              id="amountPaid"
+              name="amountPaid"
+              type="number"
+              step="0.01"
+              min="0"
+              max="1000000"
+              value={formData.amountPaid}
+              onChange={handleChange}
+              disabled={loading}
+              autoComplete="off"
+              ref={amountPaidRef}
+              style={errors.amountPaid ? { borderColor: 'hsl(0, 84%, 60%)' } : {}}
+            />
+          </div>
           {errors.amountPaid && (
             <span style={{ color: 'hsl(0, 84%, 60%)', fontSize: '12px', marginTop: '4px', display: 'block', fontFamily: 'var(--sans)' }}>
               {errors.amountPaid}
             </span>
           )}
         </div>
+
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
-          <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
-          <Button variant="contained" fullWidth type="submit">Add</Button>
+          <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
+          <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
+            {loading ? (
+              <>
+                <CircularProgress size={20} color="inherit" />
+                Adding...
+              </>
+            ) : (
+              'Add'
+            )}
+          </Button>
         </div>
       </form>
       <Snackbar

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { mockData } from '../../utils/mockData';
-import { Box, Button, TextField, Select, MenuItem, InputLabel, FormControl, Snackbar, Alert } from '@mui/material';
+import { Box, Button, TextField, Select, MenuItem, InputLabel, FormControl, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email } from '@mui/icons-material';
 import '../../styles/Auth.css';
 
 export default function AddPatient({ onBack, onAdd }) {
@@ -15,6 +16,7 @@ export default function AddPatient({ onBack, onAdd }) {
   });
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [loading, setLoading] = useState(false);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -55,6 +57,7 @@ export default function AddPatient({ onBack, onAdd }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch('/api/patients', {
         method: 'POST',
@@ -82,6 +85,8 @@ export default function AddPatient({ onBack, onAdd }) {
     } catch (error) {
       console.error(error);
       setToast({ open: true, message: 'Error creating patient: ' + error.message, severity: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,40 +94,78 @@ export default function AddPatient({ onBack, onAdd }) {
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Add New Patient Record</h2>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Name</label>
-          <input name="name" value={formData.name} onChange={handleChange} autoFocus required />
+        
+        <div className="input-group">
+          <label className="input-label" htmlFor="name">Name</label>
+          <div className="input-with-icon">
+            <Person className="input-icon" />
+            <input id="name" name="name" value={formData.name} onChange={handleChange} autoFocus required disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Father Name</label>
-          <input name="fatherName" value={formData.fatherName} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="fatherName">Father Name</label>
+          <div className="input-with-icon">
+            <SupervisorAccount className="input-icon" />
+            <input id="fatherName" name="fatherName" value={formData.fatherName} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Mother Name</label>
-          <input name="motherName" value={formData.motherName} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="motherName">Mother Name</label>
+          <div className="input-with-icon">
+            <Person className="input-icon" />
+            <input id="motherName" name="motherName" value={formData.motherName} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Date of Birth</label>
-          <input name="dob" type="date" value={formData.dob} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="dob">Date of Birth</label>
+          <div className="input-with-icon">
+            <CalendarToday className="input-icon" />
+            <input id="dob" name="dob" type="date" value={formData.dob} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Age</label>
-          <input name="age" type="number" value={formData.age} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="age">Age</label>
+          <div className="input-with-icon">
+            <Cake className="input-icon" />
+            <input id="age" name="age" type="number" value={formData.age} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Phone</label>
-          <input name="phone" value={formData.phone} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="phone">Phone</label>
+          <div className="input-with-icon">
+            <Phone className="input-icon" />
+            <input id="phone" name="phone" value={formData.phone} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Email</label>
-          <input name="email" type="email" value={formData.email} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="email">Email</label>
+          <div className="input-with-icon">
+            <Email className="input-icon" />
+            <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
+
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
-          <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
+          <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
           {import.meta.env.DEV && (
-            <Button variant="contained" fullWidth onClick={fillRandomData}>Fill Random Data</Button>
+            <Button variant="contained" fullWidth onClick={fillRandomData} disabled={loading}>Fill Random Data</Button>
           )}
-          <Button variant="contained" fullWidth type="submit">Add</Button>
+          <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
+            {loading ? (
+              <>
+                <CircularProgress size={20} color="inherit" />
+                Adding...
+              </>
+            ) : (
+              'Add'
+            )}
+          </Button>
         </div>
       </form>
       <Snackbar 

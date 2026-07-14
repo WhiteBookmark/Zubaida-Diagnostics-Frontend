@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Snackbar, Alert } from '@mui/material';
+import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Badge, Person, SupervisorAccount, CalendarToday, Cake, Phone, Email } from '@mui/icons-material';
 import '../../styles/Auth.css';
 
 export default function EditPatient({ record, onBack, onSave }) {
@@ -9,6 +10,7 @@ export default function EditPatient({ record, onBack, onSave }) {
   });
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [loading, setLoading] = useState(false);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -22,6 +24,7 @@ export default function EditPatient({ record, onBack, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch(`/api/patients/${formData.id}`, {
         method: 'PUT',
@@ -42,6 +45,8 @@ export default function EditPatient({ record, onBack, onSave }) {
     } catch (err) {
       console.error(err);
       setToast({ open: true, message: 'Error updating record', severity: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,41 +54,83 @@ export default function EditPatient({ record, onBack, onSave }) {
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Edit Patient Record</h2>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>MR Number</label>
-          <input name="mrNumber" value={formData.mrNumber || ''} onChange={handleChange} disabled />
+        
+        <div className="input-group">
+          <label className="input-label" htmlFor="mrNumber">MR Number</label>
+          <div className="input-with-icon">
+            <Badge className="input-icon" />
+            <input id="mrNumber" name="mrNumber" value={formData.mrNumber || ''} onChange={handleChange} disabled />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Name</label>
-          <input name="name" value={formData.name || ''} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="name">Name</label>
+          <div className="input-with-icon">
+            <Person className="input-icon" />
+            <input id="name" name="name" value={formData.name || ''} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Father Name</label>
-          <input name="fatherName" value={formData.fatherName || ''} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="fatherName">Father Name</label>
+          <div className="input-with-icon">
+            <SupervisorAccount className="input-icon" />
+            <input id="fatherName" name="fatherName" value={formData.fatherName || ''} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Mother Name</label>
-          <input name="motherName" value={formData.motherName || ''} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="motherName">Mother Name</label>
+          <div className="input-with-icon">
+            <Person className="input-icon" />
+            <input id="motherName" name="motherName" value={formData.motherName || ''} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Date of Birth</label>
-          <input name="dateOfBirth" type="date" value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="dateOfBirth">Date of Birth</label>
+          <div className="input-with-icon">
+            <CalendarToday className="input-icon" />
+            <input id="dateOfBirth" name="dateOfBirth" type="date" value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Age</label>
-          <input name="age" type="number" value={formData.age || ''} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="age">Age</label>
+          <div className="input-with-icon">
+            <Cake className="input-icon" />
+            <input id="age" name="age" type="number" value={formData.age || ''} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Phone</label>
-          <input name="phone" value={formData.phone || ''} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="phone">Phone</label>
+          <div className="input-with-icon">
+            <Phone className="input-icon" />
+            <input id="phone" name="phone" value={formData.phone || ''} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Email</label>
-          <input name="email" type="email" value={formData.email || ''} onChange={handleChange} />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="email">Email</label>
+          <div className="input-with-icon">
+            <Email className="input-icon" />
+            <input id="email" name="email" type="email" value={formData.email || ''} onChange={handleChange} disabled={loading} />
+          </div>
         </div>
+
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
-          <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
-          <Button variant="contained" fullWidth type="submit">Save</Button>
+          <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
+          <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
+            {loading ? (
+              <>
+                <CircularProgress size={20} color="inherit" />
+                Saving...
+              </>
+            ) : (
+              'Save'
+            )}
+          </Button>
         </div>
       </form>
       <Snackbar 

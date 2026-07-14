@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button, Snackbar, Alert, IconButton } from '@mui/material';
+import { Button, Snackbar, Alert, IconButton, CircularProgress } from '@mui/material';
+import { Badge, Description } from '@mui/icons-material';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CloseIcon from '@mui/icons-material/Close';
 import '../../styles/Auth.css';
@@ -11,6 +12,7 @@ export default function AddDocument({ onBack, onSave }) {
   });
   const [file, setFile] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handleGlobalPaste = (e) => {
@@ -103,6 +105,7 @@ export default function AddDocument({ onBack, onSave }) {
     data.append('file', file);
     data.append('type', formData.type);
 
+    setLoading(true);
     try {
       const response = await fetch(`/api/uploads/${formData.mrNumber}/documents`, {
         method: 'POST',
@@ -119,6 +122,8 @@ export default function AddDocument({ onBack, onSave }) {
     } catch (error) {
       console.error(error);
       setToast({ open: true, message: 'Error uploading document: ' + error.message, severity: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,13 +131,20 @@ export default function AddDocument({ onBack, onSave }) {
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
         <h2>Add New Document</h2>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>MR Number</label>
-          <input name="mrNumber" value={formData.mrNumber} onChange={handleChange} required />
+        <div className="input-group">
+          <label className="input-label" htmlFor="mrNumber">MR Number</label>
+          <div className="input-with-icon">
+            <Badge className="input-icon" />
+            <input id="mrNumber" name="mrNumber" value={formData.mrNumber} onChange={handleChange} required disabled={loading} />
+          </div>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>Document Type</label>
-          <input name="type" value={formData.type} onChange={handleChange} list="document-type-options" required />
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="type">Document Type</label>
+          <div className="input-with-icon">
+            <Description className="input-icon" />
+            <input id="type" name="type" value={formData.type} onChange={handleChange} list="document-type-options" required disabled={loading} />
+          </div>
           <datalist id="document-type-options">
             <option value="X-Ray" />
             <option value="Ultrasound" />
@@ -140,8 +152,9 @@ export default function AddDocument({ onBack, onSave }) {
             <option value="Prescription" />
           </datalist>
         </div>
-        <div style={{ width: '100%', textAlign: 'left' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500, color: '#0f172a' }}>File</label>
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="file-upload">File</label>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -152,11 +165,14 @@ export default function AddDocument({ onBack, onSave }) {
             borderRadius: '8px',
             padding: '12px',
             position: 'relative',
+            width: '100%',
+            boxSizing: 'border-box'
           }}>
             {file && (
               <IconButton 
                 size="small" 
                 onClick={() => setFile(null)} 
+                disabled={loading}
                 style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 1 }}
               >
                 <CloseIcon fontSize="small" />
@@ -169,19 +185,23 @@ export default function AddDocument({ onBack, onSave }) {
               <Button
                 variant="contained"
                 component="label"
+                disabled={loading}
                 sx={{ textTransform: 'none' }}
               >
                 Choose File
                 <input
+                  id="file-upload"
                   type="file"
                   hidden
                   onChange={handleFileChange}
                   required={!file}
+                  disabled={loading}
                 />
               </Button>
               <Button
                 variant="outlined"
                 onClick={handlePasteClick}
+                disabled={loading}
                 sx={{ textTransform: 'none' }}
                 startIcon={<ContentPasteIcon />}
               >
@@ -190,9 +210,19 @@ export default function AddDocument({ onBack, onSave }) {
             </div>
           </div>
         </div>
+
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
-          <Button variant="contained" fullWidth onClick={onBack}>Cancel</Button>
-          <Button variant="contained" fullWidth type="submit">Upload</Button>
+          <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
+          <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
+            {loading ? (
+              <>
+                <CircularProgress size={20} color="inherit" />
+                Uploading...
+              </>
+            ) : (
+              'Upload'
+            )}
+          </Button>
         </div>
       </form>
       <Snackbar 

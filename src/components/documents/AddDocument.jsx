@@ -107,7 +107,7 @@ export default function AddDocument({ onBack, onSave }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/uploads/${formData.mrNumber}/documents`, {
+      const response = await fetch(`/api/documents/${formData.mrNumber}`, {
         method: 'POST',
         body: data,
       });

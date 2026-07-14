@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { mockData } from '../../utils/mockData';
-import { Box, Button, TextField, Select, MenuItem, InputLabel, FormControl, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
 import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email } from '@mui/icons-material';
 import '../../styles/Auth.css';
 
@@ -58,6 +58,7 @@ export default function AddPatient({ onBack, onAdd }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const parsedAge = parseInt(formData.age, 10);
     try {
       const response = await fetch('/api/patients', {
         method: 'POST',
@@ -69,7 +70,7 @@ export default function AddPatient({ onBack, onAdd }) {
           fatherName: formData.fatherName,
           motherName: formData.motherName,
           dateOfBirth: formData.dob,
-          age: parseInt(formData.age),
+          age: isNaN(parsedAge) ? null : parsedAge,
           phone: formData.phone,
           email: formData.email,
         }),

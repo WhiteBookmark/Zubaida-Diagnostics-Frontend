@@ -25,6 +25,7 @@ export default function EditPatient({ record, onBack, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const parsedAge = parseInt(formData.age, 10);
     try {
       const response = await fetch(`/api/patients/${formData.id}`, {
         method: 'PUT',
@@ -32,7 +33,7 @@ export default function EditPatient({ record, onBack, onSave }) {
         body: JSON.stringify({
           ...formData,
           dateOfBirth: formData.dateOfBirth,
-          age: parseInt(formData.age),
+          age: isNaN(parsedAge) ? null : parsedAge,
         })
       });
       if (response.ok) {

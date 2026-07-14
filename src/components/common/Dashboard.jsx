@@ -13,29 +13,60 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    const fetchCount = async (url) => {
+      const response = await fetch(url, { signal });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data && typeof data.count === 'number') {
+        return data.count;
+      }
+      if (data && typeof data.count === 'string' && data.count.trim() !== '') {
+        const parsed = Number(data.count);
+        if (!isNaN(parsed)) {
+          return parsed;
+        }
+      }
+      throw new Error('Invalid count response structure');
+    };
+
     const fetchCounts = async () => {
       try {
-        const [patientsRes, appointmentsRes, documentsRes] = await Promise.all([
-          fetch('/api/patients/count'),
-          fetch('/api/appointments/count'),
-          fetch('/api/documents/count')
+        const [patientsRes, appointmentsRes, documentsRes] = await Promise.allSettled([
+          fetchCount('/api/patients/count'),
+          fetchCount('/api/appointments/count'),
+          fetchCount('/api/documents/count')
         ]);
-        const pData = await patientsRes.json();
-        const aData = await appointmentsRes.json();
-        const dData = await documentsRes.json();
+
+        if (!isMounted) return;
 
         setCounts({
-          patients: typeof pData.count === 'number' ? pData.count : 0,
-          appointments: typeof aData.count === 'number' ? aData.count : 0,
-          documents: typeof dData.count === 'number' ? dData.count : 0
+          patients: patientsRes.status === 'fulfilled' ? patientsRes.value : 'N/A',
+          appointments: appointmentsRes.status === 'fulfilled' ? appointmentsRes.value : 'N/A',
+          documents: documentsRes.status === 'fulfilled' ? documentsRes.value : 'N/A'
         });
       } catch (err) {
-        console.error('Error fetching counts:', err);
+        if (err.name !== 'AbortError') {
+          console.error('Error fetching counts:', err);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchCounts();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   const statCards = [

@@ -143,14 +143,14 @@ export default function AddDocument({ onBack, onSave }) {
           <label className="input-label" htmlFor="type">Document Type</label>
           <div className="input-with-icon">
             <Description className="input-icon" />
-            <input id="type" name="type" value={formData.type} onChange={handleChange} list="document-type-options" required disabled={loading} />
+            <select id="type" name="type" value={formData.type} onChange={handleChange} required disabled={loading}>
+              <option value="" disabled>Select Document Type</option>
+              <option value="X-Ray">X-Ray</option>
+              <option value="Ultrasound">Ultrasound</option>
+              <option value="Lab Result">Lab Result</option>
+              <option value="Prescription">Prescription</option>
+            </select>
           </div>
-          <datalist id="document-type-options">
-            <option value="X-Ray" />
-            <option value="Ultrasound" />
-            <option value="Lab Result" />
-            <option value="Prescription" />
-          </datalist>
         </div>
 
         <div className="input-group">

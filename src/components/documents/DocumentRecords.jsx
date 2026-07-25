@@ -137,23 +137,77 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
       cell: info => {
         const fileName = info.getValue();
         if (!fileName) return 'N/A';
+        
         const url = `${window.location.origin}/document/${fileName}`;
+        const isPdf = /\.pdf$/i.test(fileName);
+        const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName);
+
         return (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: '#2563eb',
-              textDecoration: 'none',
-              wordBreak: 'break-all',
-              fontWeight: 500
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-            onMouseOut={(e) => (e.currentTarget.style.textDecoration = 'none')}
-          >
-            {url}
-          </a>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {/* Clickable Mini Snapshot / Thumbnail */}
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Click to open file"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '38px',
+                height: '38px',
+                borderRadius: '6px',
+                overflow: 'hidden',
+                border: '1px solid rgba(255, 255, 255, 0.6)',
+                background: 'rgba(255, 255, 255, 0.3)',
+                flexShrink: 0,
+                textDecoration: 'none',
+                position: 'relative'
+              }}
+            >
+              {isImage ? (
+                <img
+                  src={url}
+                  alt="thumb"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              ) : isPdf ? (
+                <iframe
+                  src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
+                  title="pdf-thumb"
+                  tabIndex={-1}
+                  style={{
+                    width: '140%',
+                    height: '140%',
+                    border: 'none',
+                    pointerEvents: 'none',
+                    transform: 'scale(0.71)',
+                    transformOrigin: 'top left',
+                    overflow: 'hidden'
+                  }}
+                />
+              ) : (
+                <span style={{ fontSize: '9px', fontWeight: 700, color: 'inherit' }}>FILE</span>
+              )}
+            </a>
+
+            {/* File Path Link with Normal Text Color */}
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: 'inherit', // Retains normal text color instead of hyperlink blue
+                textDecoration: 'none',
+                wordBreak: 'break-all',
+                fontWeight: 500
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+              onMouseOut={(e) => (e.currentTarget.style.textDecoration = 'none')}
+            >
+              {url}
+            </a>
+          </Box>
         );
       }
     },

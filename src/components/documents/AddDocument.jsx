@@ -6,9 +6,18 @@ import CloseIcon from '@mui/icons-material/Close';
 import '../../styles/Auth.css';
 
 export default function AddDocument({ onBack, onSave }) {
-  const [formData, setFormData] = useState({
-    mrNumber: '',
-    type: '',
+  const [formData, setFormData] = useState(() => {
+    const storedUsername = localStorage.getItem('username') || '';
+    let defaultType = '';
+    
+    if (storedUsername === 'X-Ray Department') defaultType = 'X-Ray';
+    else if (storedUsername === 'Ultrasound Department') defaultType = 'Ultrasound';
+    else if (storedUsername === 'Lab Department') defaultType = 'Lab Result';
+
+    return {
+      mrNumber: '',
+      type: defaultType,
+    };
   });
   const [file, setFile] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
@@ -290,27 +299,22 @@ export default function AddDocument({ onBack, onSave }) {
                 />
               </div>
             ) : file.type === 'application/pdf' ? (
+              /* Lightweight, zero-lag PDF preview card instead of a heavy iframe */
               <div style={{
                 width: '100%',
-                height: '160px',
-                overflow: 'hidden',
+                height: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+                color: '#ffffff',
                 borderRadius: '6px',
-                position: 'relative',
-                background: '#fff',
-                border: '1px solid rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
               }}>
-                {/* pointerEvents: 'none' makes it behave as a static visual snapshot without scroll/interactive hijacking */}
-                <iframe
-                  src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-                  title="PDF Snapshot Preview"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    pointerEvents: 'none',
-                    overflow: 'hidden'
-                  }}
-                />
+                <Description sx={{ fontSize: 40, mb: 0.5, opacity: 0.9 }} />
+                <span style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.5px' }}>PDF Document Selected</span>
+                <span style={{ fontSize: '11px', opacity: 0.8, marginTop: '4px' }}>Ready for instant upload</span>
               </div>
             ) : (
               <div style={{ fontSize: '13px', color: '#64748b', padding: '20px 0' }}>

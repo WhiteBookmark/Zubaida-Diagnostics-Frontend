@@ -169,23 +169,26 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
                 <img
                   src={url}
                   alt="thumb"
+                  loading="lazy" // Ensures images off-screen don't slow down initial table load
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               ) : isPdf ? (
-                <iframe
-                  src={`${url}#toolbar=0&navpanes=0&scrollbar=0`}
-                  title="pdf-thumb"
-                  tabIndex={-1}
-                  style={{
-                    width: '140%',
-                    height: '140%',
-                    border: 'none',
-                    pointerEvents: 'none',
-                    transform: 'scale(0.71)',
-                    transformOrigin: 'top left',
-                    overflow: 'hidden'
+                /* Ultra-fast CSS badge that eliminates iframe RAM bloat and UI bugs */
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: '#ffffff',
+                    boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)'
                   }}
-                />
+                >
+                  <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px', lineHeight: 1 }}>PDF</span>
+                </Box>
               ) : (
                 <span style={{ fontSize: '9px', fontWeight: 700, color: 'inherit' }}>FILE</span>
               )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button, Snackbar, Alert, IconButton, CircularProgress } from '@mui/material';
 import { Badge, Description } from '@mui/icons-material';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
@@ -13,6 +13,20 @@ export default function AddDocument({ onBack, onSave }) {
   const [file, setFile] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(false);
+
+  // Generate preview URL using useMemo and revoke object URL on cleanup
+  const previewUrl = useMemo(() => {
+    if (!file) return null;
+    return URL.createObjectURL(file);
+  }, [file]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   useEffect(() => {
     const handleGlobalPaste = (e) => {
@@ -178,9 +192,23 @@ export default function AddDocument({ onBack, onSave }) {
                 <CloseIcon fontSize="small" />
               </IconButton>
             )}
-            <div style={{ fontSize: '14px', color: '#0f172a', opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: file ? '28px' : '0' }}>
-              {file ? file.name : 'No file selected'}
+            
+            {/* Updated File Display with Ctrl + V hint */}
+            <div style={{ fontSize: '14px', color: '#0f172a', opacity: 0.7, paddingRight: file ? '28px' : '0' }}>
+              {file ? (
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                  {file.name}
+                </div>
+              ) : (
+                <>
+                  <div>No file selected</div>
+                  <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
+                    Press Ctrl + V to paste the file here
+                  </div>
+                </>
+              )}
             </div>
+
             <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
               <Button
                 variant="contained"
@@ -211,6 +239,7 @@ export default function AddDocument({ onBack, onSave }) {
           </div>
         </div>
 
+        {/* Upload and Cancel Buttons */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
           <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
@@ -224,6 +253,72 @@ export default function AddDocument({ onBack, onSave }) {
             )}
           </Button>
         </div>
+
+        {/* File Preview Snapshot Box Below Upload & Cancel Buttons */}
+        {file && previewUrl && (
+          <div style={{
+            marginTop: '15px',
+            width: '100%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.5)',
+            borderRadius: '8px',
+            padding: '10px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a', marginBottom: '8px', alignSelf: 'flex-start' }}>
+              Selected File Preview:
+            </div>
+            
+            {file.type.startsWith('image/') ? (
+              <div style={{
+                width: '100%',
+                maxHeight: '160px',
+                overflow: 'hidden',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: '6px',
+                background: 'rgba(0,0,0,0.05)'
+              }}>
+                <img
+                  src={previewUrl}
+                  alt="Selected preview"
+                  style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain', display: 'block' }}
+                />
+              </div>
+            ) : file.type === 'application/pdf' ? (
+              <div style={{
+                width: '100%',
+                height: '160px',
+                overflow: 'hidden',
+                borderRadius: '6px',
+                position: 'relative',
+                background: '#fff',
+                border: '1px solid rgba(0,0,0,0.1)'
+              }}>
+                {/* pointerEvents: 'none' makes it behave as a static visual snapshot without scroll/interactive hijacking */}
+                <iframe
+                  src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                  title="PDF Snapshot Preview"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    pointerEvents: 'none',
+                    overflow: 'hidden'
+                  }}
+                />
+              </div>
+            ) : (
+              <div style={{ fontSize: '13px', color: '#64748b', padding: '20px 0' }}>
+                Preview not available for this file format.
+              </div>
+            )}
+          </div>
+        )}
       </form>
       <Snackbar 
         open={toast.open} 

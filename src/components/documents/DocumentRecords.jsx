@@ -3,7 +3,6 @@ import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
 import { Box, Button, Tooltip, IconButton, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, Select, MenuItem, CircularProgress } from '@mui/material';
@@ -138,7 +137,24 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
       cell: info => {
         const fileName = info.getValue();
         if (!fileName) return 'N/A';
-        return `${window.location.origin}/document/${fileName}`;
+        const url = `${window.location.origin}/document/${fileName}`;
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: '#2563eb',
+              textDecoration: 'none',
+              wordBreak: 'break-all',
+              fontWeight: 500
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseOut={(e) => (e.currentTarget.style.textDecoration = 'none')}
+          >
+            {url}
+          </a>
+        );
       }
     },
     {

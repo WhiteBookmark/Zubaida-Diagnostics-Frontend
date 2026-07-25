@@ -299,22 +299,26 @@ export default function AddDocument({ onBack, onSave }) {
                 />
               </div>
             ) : file.type === 'application/pdf' ? (
-              /* Lightweight, zero-lag PDF preview card instead of a heavy iframe */
+              /* Interactive, scrollable embedded PDF Viewer */
               <div style={{
                 width: '100%',
-                height: '120px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-                color: '#ffffff',
+                height: '450px', // Tall enough to comfortably read and scroll multiple pages
                 borderRadius: '6px',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
+                overflow: 'hidden',
+                background: '#fff',
+                border: '1px solid rgba(0,0,0,0.15)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
               }}>
-                <Description sx={{ fontSize: 40, mb: 0.5, opacity: 0.9 }} />
-                <span style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.5px' }}>PDF Document Selected</span>
-                <span style={{ fontSize: '11px', opacity: 0.8, marginTop: '4px' }}>Ready for instant upload</span>
+                <iframe
+                  src={previewUrl} // Standard URL without restricting toolbars or scrollbars
+                  title="Interactive PDF Preview"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    display: 'block'
+                  }}
+                />
               </div>
             ) : (
               <div style={{ fontSize: '13px', color: '#64748b', padding: '20px 0' }}>

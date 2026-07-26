@@ -133,6 +133,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             padding: 0 !important;
             background: #fff !important;
             color: #000 !important;
+            overflow: visible !important;
         }
         body {
             font-family: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -146,6 +147,11 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             text-align: center;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+            /* Rotate 180deg to compensate for the bc-95AC thermal printer feeding
+               paper in reverse order — first printed line exits at the top of the
+               visible receipt. Rotating the content here makes it print correctly. */
+            transform: rotate(180deg);
+            transform-origin: center center;
         }
         .header-title { font-family: Georgia, serif; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
         .sub-header { font-size: 11px; color: #444; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }

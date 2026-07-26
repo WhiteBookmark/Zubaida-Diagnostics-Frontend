@@ -203,14 +203,46 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
           )}
         </div>
 
-        <div className="input-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: 'var(--heading-font)', fontSize: '14px', color: 'hsl(215, 20%, 65%)' }}>
+        <div 
+          className="input-group" 
+          style={{ 
+            width: '100%', 
+            display: 'flex', 
+            flexDirection: 'row', 
+            justifyContent: 'flex-start', 
+            alignItems: 'center', 
+            marginTop: '12px' 
+          }}
+        >
+          <label 
+            className="input-label" 
+            htmlFor="printFromServer"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              cursor: 'pointer', 
+              fontFamily: 'var(--heading), Georgia, serif', 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              color: 'var(--text, #0f172a)',
+              margin: 0,
+              userSelect: 'none'
+            }}
+          >
             <input
+              id="printFromServer"
               type="checkbox"
               checked={printFromServer}
               onChange={(e) => setPrintFromServer(e.target.checked)}
               disabled={loading}
-              style={{ width: '18px', height: '18px', accentColor: 'hsl(210, 100%, 50%)', cursor: 'pointer' }}
+              style={{ 
+                width: '18px', 
+                height: '18px', 
+                accentColor: 'var(--primary, #2563eb)', 
+                cursor: 'pointer', 
+                margin: 0 
+              }}
             />
             Print from Server
           </label>

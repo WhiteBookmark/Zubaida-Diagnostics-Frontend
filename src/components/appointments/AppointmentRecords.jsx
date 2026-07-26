@@ -113,6 +113,9 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     }
 
     try {
+      // Optimized HTML template for thermal receipt token printing.
+      // Resetting @page margins, avoiding flexbox on body, and using page-break-inside: avoid
+      // prevents multi-page splitting and reverse page ordering issues in Linux CUPS/zj-80 drivers.
       const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -121,20 +124,38 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     <title>Print Token</title>
     <style>
         @page {
-            size: 80mm auto;
-            margin: 0mm;
+            margin: 0 !important;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif; color: #000; padding: 0mm 10mm 10mm 10mm; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; background: transparent; }
-        .receipt-canvas { width: 72mm; text-align: center; }
+        html, body {
+            width: 80mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            color: #000 !important;
+        }
+        body {
+            font-family: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif;
+            padding: 4mm 4mm 8mm 4mm !important;
+            display: block !important; /* Avoids Flexbox page-break bugs in Linux print engines */
+        }
+        .receipt-canvas {
+            width: 100%;
+            max-width: 72mm;
+            margin: 0 auto;
+            text-align: center;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
         .header-title { font-family: Georgia, serif; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; }
         .sub-header { font-size: 11px; color: #444; margin-bottom: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
-        .token-container { margin: 5px 0 15px 0; padding: 10px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; }
+        .token-container { margin: 5px 0 15px 0; padding: 10px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; page-break-inside: avoid !important; }
         .token-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; }
         .token-value { font-family: Georgia, serif; font-size: 48px; font-weight: 900; line-height: 1.1; margin: 4px 0; font-variant-numeric: lining-nums; }
         .meta-data { font-size: 11px; margin-top: 10px; }
         .info-row { display: flex; justify-content: space-between; font-size: 11px; margin-top: 15px; }
         .footer-notice { font-size: 10px; margin-top: 8px; font-weight: 600; }
+        .qr-container { margin: 15px 0; page-break-inside: avoid !important; }
     </style>
 </head>
 <body>
@@ -149,10 +170,10 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             <div class="meta-data" style="margin-top: 5px;">${appointment.patient?.name || 'N/A'}</div>
         </div>
         ${qrDataUrl ? `
-        <div class="qr-container" style="margin: 15px 0;">
+        <div class="qr-container">
             <img src="${qrDataUrl}" alt="QR Code" width="80" height="80" />
         </div>` : ''}
-        <div style="display: inline-block; text-align: left;">
+        <div style="display: inline-block; text-align: left; page-break-inside: avoid !important;">
             <div class="meta-data" style="margin-top: 4px;">
               MR: ${appointment.patient?.mrNumber || 'N/A'}
             </div>
@@ -162,7 +183,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             <div class="meta-data" style="margin-top: 4px;">
               Date & Time: ${appointment.dateTime ? new Date(appointment.dateTime).toLocaleString() : ''}
             </div>
-            </div>
+        </div>
     </div>
     <script>
         window.onload = function() { window.print(); window.close(); }

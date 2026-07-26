@@ -3,7 +3,6 @@ import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
 import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem, Tooltip, CircularProgress } from '@mui/material';
@@ -12,7 +11,6 @@ import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
 import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
-import logo from '../../assets/Logo.png';
 import QRCode from 'qrcode';
 
 export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey }) {
@@ -211,16 +209,38 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     }
   }, [initialToastMessage, initialPrintRecord, clearPending, handlePrintToken]);
 
+  const handlePrintTokenServer = useCallback(async (appointment) => {
+    try {
+      const res = await fetch(`/api/appointments/${appointment.id}/print`, { method: 'POST' });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setToast({ open: true, message: `Token ${appointment.tokenNumber} printed on server!`, severity: 'success' });
+      } else {
+        setToast({ open: true, message: `Server print failed: ${result.error || 'Unknown error'}`, severity: 'error' });
+      }
+    } catch (err) {
+      console.error('Failed to trigger server print:', err);
+      setToast({ open: true, message: 'Server print error: ' + err.message, severity: 'error' });
+    }
+  }, []);
+
   const columns = useMemo(() => [
     {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <Tooltip title="Print Token">
-          <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
-            <PrintIcon />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: '4px' }}>
+          <Tooltip title="Print Token (Server Thermal Hardware)">
+            <IconButton onClick={() => handlePrintTokenServer(row.original)} color="secondary" size="small">
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Print Token (Browser Dialog)">
+            <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       )
     },
     { accessorKey: 'patient.mrNumber', header: 'MR Number' },
@@ -232,7 +252,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     },
     { accessorKey: 'tokenNumber', header: 'Token' },
     { accessorKey: 'amountPaid', header: 'Paid (Rs)' }
-  ], [handlePrintToken]);
+  ], [handlePrintToken, handlePrintTokenServer]);
 
   const table = useReactTable({
     columns,
@@ -247,11 +267,13 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   });
 
   if (showAddForm) {
-    return <AddAppointmentRecord onBack={() => setShowAddForm(false)} onAdd={(newRecord, message) => {
+    return <AddAppointmentRecord onBack={() => setShowAddForm(false)} onAdd={(newRecord, message, shouldPrintBrowser = true) => {
       setShowAddForm(false);
       if (message) setToast({ open: true, message, severity: 'success' });
       fetchData();
-      handlePrintToken(newRecord);
+      if (shouldPrintBrowser) {
+        handlePrintToken(newRecord);
+      }
     }} />;
   }
 

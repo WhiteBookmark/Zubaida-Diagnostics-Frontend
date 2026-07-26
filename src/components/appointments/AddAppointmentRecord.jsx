@@ -26,6 +26,15 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
     }
   }, []);
 
+  const [printFromServer, setPrintFromServer] = useState(() => {
+    const saved = localStorage.getItem('printFromServer');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('printFromServer', printFromServer);
+  }, [printFromServer]);
+
   const [toast, setToast] = useState({ open: !!initialToastMessage, message: initialToastMessage || '', severity: 'success' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -96,7 +105,22 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
 
       if (response.ok) {
         const newRecord = await response.json();
-        onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || formData.mrNumber} for {newRecord.patient?.name || 'N/A'}</span>);
+        
+        if (printFromServer) {
+          try {
+            const printRes = await fetch(`/api/appointments/${newRecord.id}/print`, { method: 'POST' });
+            if (!printRes.ok) {
+              console.error('Server printing failed');
+            }
+          } catch (pErr) {
+            console.error('Error triggering server print:', pErr);
+          }
+          // Pass newRecord without initialPrintRecord (which triggers browser dialog)
+          onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || formData.mrNumber} for {newRecord.patient?.name || 'N/A'} (Printed from Server)</span>, false);
+        } else {
+          // Unchecked: Trigger default browser printing dialog
+          onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || formData.mrNumber} for {newRecord.patient?.name || 'N/A'}</span>, true);
+        }
       } else {
         const errorData = await response.json();
         setToast({ open: true, message: `Failed to add appointment: ${errorData.error || 'Unknown error'}`, severity: 'error' });
@@ -177,6 +201,19 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
               {errors.amountPaid}
             </span>
           )}
+        </div>
+
+        <div className="input-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontFamily: 'var(--heading-font)', fontSize: '14px', color: 'hsl(215, 20%, 65%)' }}>
+            <input
+              type="checkbox"
+              checked={printFromServer}
+              onChange={(e) => setPrintFromServer(e.target.checked)}
+              disabled={loading}
+              style={{ width: '18px', height: '18px', accentColor: 'hsl(210, 100%, 50%)', cursor: 'pointer' }}
+            />
+            Print from Server
+          </label>
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>

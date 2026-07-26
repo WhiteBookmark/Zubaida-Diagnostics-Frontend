@@ -224,22 +224,29 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     }
   }, []);
 
+  const isLinux = typeof window !== 'undefined' && /Linux|X11/i.test(navigator.userAgent);
+  const isWindows = typeof window !== 'undefined' && /Win/i.test(navigator.userAgent);
+
   const columns = useMemo(() => [
     {
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
         <Box sx={{ display: 'flex', gap: '4px' }}>
-          <Tooltip title="Print Token (Server Thermal Hardware)">
-            <IconButton onClick={() => handlePrintTokenServer(row.original)} color="secondary" size="small">
-              <PrintIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Print Token (Browser Dialog)">
-            <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
-              <PrintIcon />
-            </IconButton>
-          </Tooltip>
+          {!isWindows && (
+            <Tooltip title="Print Token (Server Thermal Hardware)">
+              <IconButton onClick={() => handlePrintTokenServer(row.original)} color="secondary" size="small">
+                <PrintIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {!isLinux && (
+            <Tooltip title="Print Token (Browser Dialog)">
+              <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
+                <PrintIcon />
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       )
     },
@@ -252,7 +259,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     },
     { accessorKey: 'tokenNumber', header: 'Token' },
     { accessorKey: 'amountPaid', header: 'Paid (Rs)' }
-  ], [handlePrintToken, handlePrintTokenServer]);
+  ], [handlePrintToken, handlePrintTokenServer, isLinux, isWindows]);
 
   const table = useReactTable({
     columns,

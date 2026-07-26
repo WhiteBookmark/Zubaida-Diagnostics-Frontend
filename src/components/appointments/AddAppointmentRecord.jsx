@@ -26,7 +26,12 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
     }
   }, []);
 
+  const isLinux = typeof window !== 'undefined' && /Linux|X11/i.test(navigator.userAgent);
+  const isWindows = typeof window !== 'undefined' && /Win/i.test(navigator.userAgent);
+
   const [printFromServer, setPrintFromServer] = useState(() => {
+    if (isLinux) return true;
+    if (isWindows) return false;
     const saved = localStorage.getItem('printFromServer');
     return saved !== null ? saved === 'true' : true;
   });
@@ -233,18 +238,18 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
             <input
               id="printFromServer"
               type="checkbox"
-              checked={printFromServer}
+              checked={isLinux ? true : (isWindows ? false : printFromServer)}
               onChange={(e) => setPrintFromServer(e.target.checked)}
-              disabled={loading}
+              disabled={loading || isLinux || isWindows}
               style={{ 
                 width: '18px', 
                 height: '18px', 
                 accentColor: 'var(--primary, #2563eb)', 
-                cursor: 'pointer', 
+                cursor: (isLinux || isWindows) ? 'not-allowed' : 'pointer', 
                 margin: 0 
               }}
             />
-            Print from Server
+            Print from Server {isLinux ? '(Forced on Linux)' : (isWindows ? '(Disabled on Windows)' : '')}
           </label>
         </div>
 

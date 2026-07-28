@@ -1,19 +1,21 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
-import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem, Tooltip, CircularProgress } from '@mui/material';
+import { Box, Button, IconButton, TextField, InputAdornment, Select, MenuItem, Tooltip, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
+import EditIcon from '@mui/icons-material/Edit';
 import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import QRCode from 'qrcode';
 
 export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey }) {
+  const searchInputRef = useRef(null); // Added ref for search input
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +23,18 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  
+  // Added state for editing appointment records
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [recordToEdit, setRecordToEdit] = useState(null);
+  const [editAmountPaid, setEditAmountPaid] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // Focus search box automatically when page/component opens
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
   const [pagination, setPagination] = useState(() => {
     const savedSize = localStorage.getItem('appointmentRecordsPageSize');
     return {
@@ -36,6 +50,44 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
     setToast(prev => ({ ...prev, open: false }));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!recordToEdit) return;
+    const parsedAmount = parseFloat(editAmountPaid);
+    if (isNaN(parsedAmount) || parsedAmount < 0) {
+      setToast({ open: true, message: 'Please enter a valid positive amount.', severity: 'error' });
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      const response = await fetch(`/api/appointments/${recordToEdit.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amountPaid: parsedAmount,
+          isFinalized: true, // Flag prevents future editing
+          isEdited: true
+        })
+      });
+
+      if (response.ok) {
+        const updatedRecord = await response.json();
+        setData(prev => prev.map(item => item.id === updatedRecord.id ? { ...updatedRecord, isFinalized: true, isEdited: true } : item));
+        setToast({ open: true, message: 'Amount paid updated and record finalized successfully!', severity: 'success' });
+        setEditDialogOpen(false);
+        setRecordToEdit(null);
+      } else {
+        const err = await response.json();
+        setToast({ open: true, message: `Update failed: ${err.error || 'Unknown error'}`, severity: 'error' });
+      }
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      setToast({ open: true, message: 'Server connection error during update.', severity: 'error' });
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
 
   const [cursorHistory, setCursorHistory] = useState([null]);
@@ -231,24 +283,43 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
-        <Box sx={{ display: 'flex', gap: '4px' }}>
-          {!isWindows && (
-            <Tooltip title="Print Token (Server Thermal Hardware)">
-              <IconButton onClick={() => handlePrintTokenServer(row.original)} color="secondary" size="small">
-                <PrintIcon />
-              </IconButton>
+      cell: ({ row }) => {
+        const isFinalized = row.original.isFinalized || row.original.isEdited;
+        return (
+          <Box sx={{ display: 'flex', gap: '4px' }}>
+            <Tooltip title={isFinalized ? "Record Finalized (Amount Locked)" : "Edit Amount Paid"}>
+              <span>
+                <IconButton 
+                  onClick={() => {
+                    setRecordToEdit(row.original);
+                    setEditAmountPaid(row.original.amountPaid ?? '');
+                    setEditDialogOpen(true);
+                  }} 
+                  color="primary" 
+                  size="small"
+                  disabled={isFinalized}
+                >
+                  <EditIcon />
+                </IconButton>
+              </span>
             </Tooltip>
-          )}
-          {!isLinux && (
-            <Tooltip title="Print Token (Browser Dialog)">
-              <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
-                <PrintIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Box>
-      )
+            {!isWindows && (
+              <Tooltip title="Print Token (Server Thermal Hardware)">
+                <IconButton onClick={() => handlePrintTokenServer(row.original)} color="secondary" size="small">
+                  <PrintIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!isLinux && (
+              <Tooltip title="Print Token (Browser Dialog)">
+                <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
+                  <PrintIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        );
+      }
     },
     { accessorKey: 'patient.mrNumber', header: 'MR Number' },
     { accessorKey: 'patient.name', header: 'Patient Name' },
@@ -291,6 +362,8 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
           <TextField
+            autoFocus
+            inputRef={searchInputRef}
             variant="outlined"
             placeholder="Search appointments..."
             value={searchTerm}
@@ -403,6 +476,52 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           </Button>
         </Box>
       </Box>
+
+      {/* One-Time Edit Modal Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => !isSavingEdit && setEditDialogOpen(false)}
+        PaperProps={{
+          className: 'glass',
+          style: { padding: '20px', borderRadius: '16px', background: 'var(--glass-bg)', backdropFilter: 'var(--glass-blur)', minWidth: '350px' }
+        }}
+      >
+        <DialogTitle sx={{ color: 'var(--text-h)', fontWeight: 'bold', px: 1 }}>Edit Appointment Record</DialogTitle>
+        <DialogContent sx={{ px: 1, py: 2 }}>
+          <DialogContentText sx={{ color: 'var(--text)', mb: 2, fontSize: '14px' }}>
+            You are editing the amount paid for MR Number <strong>{recordToEdit?.patient?.mrNumber || recordToEdit?.mrNumber}</strong>.
+            <br /><br />
+            <span style={{ color: '#dc2626', fontWeight: 600 }}>Note: To prevent abuse, this modification can only be performed ONCE. Saving will finalize this record permanently.</span>
+          </DialogContentText>
+          <TextField
+            autoFocus
+            label="Amount Paid (Rs)"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={editAmountPaid}
+            onChange={(e) => setEditAmountPaid(e.target.value)}
+            disabled={isSavingEdit}
+            inputProps={{ min: 0, step: "0.01" }}
+            sx={{
+              mt: 1,
+              '& .MuiOutlinedInput-root': {
+                background: 'rgba(255, 255, 255, 0.4)',
+                borderRadius: '8px',
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 1, pt: 2 }}>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={isSavingEdit} sx={{ color: 'var(--text)' }}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveEdit} variant="contained" disabled={isSavingEdit} sx={{ fontWeight: 'bold' }}>
+            {isSavingEdit ? 'Finalizing...' : 'Save & Finalize'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={toast.open}
         autoHideDuration={6000}

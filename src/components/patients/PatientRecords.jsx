@@ -1,10 +1,8 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   flexRender,
 } from '@tanstack/react-table';
 import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment, Select, MenuItem, CircularProgress } from '@mui/material';
@@ -13,10 +11,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
-import AddPatient from './AddPatient';
-import logo from '../../assets/Logo.png';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, initialToastMessage, clearPending, refreshKey }) {
+  const searchInputRef = useRef(null); // Added ref for search input
+
+  // Focus search box automatically when page/component opens
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
+
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -97,6 +100,11 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     return () => clearTimeout(delayDebounceFn);
   }, [fetchData]);
 
+  const handleDeleteClick = useCallback((row) => {
+    setRowToDelete(row);
+    setDeleteDialogOpen(true);
+  }, []);
+
   const columns = useMemo(
     () => [
       {
@@ -138,7 +146,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       { accessorKey: 'phone', header: 'Phone' },
       { accessorKey: 'email', header: 'Email' },
     ],
-    [onEdit, onAddAppointment]
+    [onEdit, onAddAppointment, handleDeleteClick]
   );
 
   const table = useReactTable({
@@ -155,11 +163,6 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     manualPagination: true,
     pageCount: nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1,
   });
-
-  const handleDeleteClick = useCallback((row) => {
-    setRowToDelete(row);
-    setDeleteDialogOpen(true);
-  }, []);
 
   const handleCloseDeleteDialog = () => {
     setDeleteDialogOpen(false);
@@ -202,6 +205,8 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
           <TextField
+            autoFocus
+            inputRef={searchInputRef}
             variant="outlined"
             placeholder="Search patients..."
             value={searchTerm}

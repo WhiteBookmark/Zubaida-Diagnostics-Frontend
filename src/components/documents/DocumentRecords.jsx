@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -12,6 +12,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 export default function DocumentRecords({ onAddDocument, initialToastMessage, clearPending, refreshKey }) {
+  const searchInputRef = useRef(null); // Added ref for search input
   const [data, setData] = useState([]);
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,11 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
   
   const [cursorHistory, setCursorHistory] = useState([null]);
   const [nextCursor, setNextCursor] = useState(null);
+
+  // Focus search box automatically when page/component opens
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('documentRecordsPageSize', pagination.pageSize);
@@ -140,6 +146,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         
         const url = `${window.location.origin}/document/${fileName}`;
         const isPdf = /\.pdf$/i.test(fileName);
+        const isDoc = /\.(doc|docx)$/i.test(fileName);
         const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(fileName);
 
         return (
@@ -169,11 +176,10 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
                 <img
                   src={url}
                   alt="thumb"
-                  loading="lazy" // Ensures images off-screen don't slow down initial table load
+                  loading="lazy"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               ) : isPdf ? (
-                /* Ultra-fast CSS badge that eliminates iframe RAM bloat and UI bugs */
                 <Box
                   sx={{
                     width: '100%',
@@ -189,6 +195,22 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
                 >
                   <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px', lineHeight: 1 }}>PDF</span>
                 </Box>
+              ) : isDoc ? (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    color: '#ffffff',
+                    boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', lineHeight: 1 }}>DOC</span>
+                </Box>
               ) : (
                 <span style={{ fontSize: '9px', fontWeight: 700, color: 'inherit' }}>FILE</span>
               )}
@@ -200,7 +222,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                color: 'inherit', // Retains normal text color instead of hyperlink blue
+                color: 'inherit',
                 textDecoration: 'none',
                 wordBreak: 'break-all',
                 fontWeight: 500
@@ -272,6 +294,8 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
           <TextField
+            autoFocus
+            inputRef={searchInputRef}
             variant="outlined"
             placeholder="Search documents..."
             value={searchTerm}

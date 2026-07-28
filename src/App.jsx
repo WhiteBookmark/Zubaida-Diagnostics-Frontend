@@ -100,7 +100,7 @@ function App() {
     setResetKey(prev => prev + 1);
   }, []);
 
-  const handleSave = useCallback((savedRecord) => {
+  const handleSave = useCallback(() => {
     setViewToast('Patient updated successfully!');
     setView('dashboard');
     setResetKey(prev => prev + 1);

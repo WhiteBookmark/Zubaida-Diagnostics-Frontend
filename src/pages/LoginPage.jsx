@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Button, CircularProgress } from '@mui/material';
-import { Person, Lock } from '@mui/icons-material';
+import { Person, Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import logo from '../assets/Logo.png';
 import '../styles/Auth.css';
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -73,16 +74,32 @@ export default function Login({ onLogin }) {
           <label className="input-label" htmlFor="password">
             Password
           </label>
-          <div className="input-with-icon">
+          <div className="input-with-icon" style={{ position: 'relative' }}>
             <Lock className="input-icon" />
             <input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
+              style={{ paddingRight: '40px' }}
             />
+            <div
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                color: '#64748b',
+                zIndex: 2
+              }}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+            </div>
           </div>
         </div>
 

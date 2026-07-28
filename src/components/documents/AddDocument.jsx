@@ -229,6 +229,7 @@ export default function AddDocument({ onBack, onSave }) {
                 <input
                   id="file-upload"
                   type="file"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.svg,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   hidden
                   onChange={handleFileChange}
                   required={!file}
@@ -319,6 +320,13 @@ export default function AddDocument({ onBack, onSave }) {
                     display: 'block'
                   }}
                 />
+              </div>
+            ) : /\.(doc|docx)$/i.test(file.name) || file.type.includes('word') ? (
+              /* Word Document visual confirmation card */
+              <div style={{ width: '100%', padding: '30px 20px', textAlign: 'center', background: 'rgba(37, 99, 235, 0.1)', border: '1px dashed #2563eb', borderRadius: '8px', color: '#0f172a' }}>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#2563eb', marginBottom: '4px' }}>📄 Word Document Selected</div>
+                <div style={{ fontSize: '13px', opacity: 0.8 }}>{file.name}</div>
+                <div style={{ fontSize: '11px', marginTop: '8px', color: '#64748b' }}>Ready for upload. (Browser inline preview is restricted for Word formats)</div>
               </div>
             ) : (
               <div style={{ fontSize: '13px', color: '#64748b', padding: '20px 0' }}>

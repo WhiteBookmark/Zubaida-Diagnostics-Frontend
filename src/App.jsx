@@ -121,8 +121,8 @@ function App() {
     setView('addAppointment');
   }, []);
 
-  const handleAppointmentAdded = useCallback((newRecord, message) => {
-    setPendingAppointmentPrint(newRecord);
+  const handleAppointmentAdded = useCallback((newRecord, message, shouldPrintBrowser = true) => {
+    setPendingAppointmentPrint(shouldPrintBrowser ? newRecord : null);
     setPendingAppointmentToast(message);
     setView('dashboard');
     setCurrentPage('appointments');

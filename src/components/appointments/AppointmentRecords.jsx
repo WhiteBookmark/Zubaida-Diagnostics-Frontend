@@ -249,17 +249,21 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     }
   }, []);
 
+  const isLinux = typeof window !== 'undefined' && /Linux|X11/i.test(navigator.userAgent);
+  const isWindows = typeof window !== 'undefined' && /Win/i.test(navigator.userAgent);
+
   useEffect(() => {
     if (initialToastMessage) {
       setToast({ open: true, message: initialToastMessage, severity: 'success' });
     }
-    if (initialPrintRecord) {
+    // Only open the browser print dialog if the OS is Windows
+    if (initialPrintRecord && isWindows) {
       handlePrintToken(initialPrintRecord);
     }
     if (initialToastMessage || initialPrintRecord) {
       if (clearPending) clearPending();
     }
-  }, [initialToastMessage, initialPrintRecord, clearPending, handlePrintToken]);
+  }, [initialToastMessage, initialPrintRecord, clearPending, handlePrintToken, isWindows]);
 
   const handlePrintTokenServer = useCallback(async (appointment) => {
     try {
@@ -275,9 +279,6 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       setToast({ open: true, message: 'Server print error: ' + err.message, severity: 'error' });
     }
   }, []);
-
-  const isLinux = typeof window !== 'undefined' && /Linux|X11/i.test(navigator.userAgent);
-  const isWindows = typeof window !== 'undefined' && /Win/i.test(navigator.userAgent);
 
   const columns = useMemo(() => [
     {
@@ -349,7 +350,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       setShowAddForm(false);
       if (message) setToast({ open: true, message, severity: 'success' });
       fetchData();
-      if (shouldPrintBrowser) {
+      if (shouldPrintBrowser && isWindows) {
         handlePrintToken(newRecord);
       }
     }} />;

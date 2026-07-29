@@ -158,7 +158,7 @@ export default function AddDocument({ onBack, onSave }) {
           <label className="input-label" htmlFor="mrNumber">MR Number</label>
           <div className="input-with-icon">
             <Badge className="input-icon" />
-            <input id="mrNumber" name="mrNumber" value={formData.mrNumber} onChange={handleChange} required disabled={loading} />
+            <input id="mrNumber" name="mrNumber" value={formData.mrNumber} onChange={handleChange} autoFocus required disabled={loading} />
           </div>
         </div>
 

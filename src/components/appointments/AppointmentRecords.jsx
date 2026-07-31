@@ -155,7 +155,8 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         "Name": patient.name || 'N/A',
         "Father's Name": patient.fatherName || 'N/A',
         "Age": patient.age !== undefined && patient.age !== null ? String(patient.age) : 'N/A',
-        "Phone": patient.phone || 'N/A'
+        "Phone": patient.phone || 'N/A',
+        "GUID": appointment.guid || appointment.id || appointment._id || 'N/A'
       };
       qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrDataObj), { width: 100, margin: 1 });
     } catch (err) {

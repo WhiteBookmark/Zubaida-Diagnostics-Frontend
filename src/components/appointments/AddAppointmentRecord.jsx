@@ -63,8 +63,9 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       }
     }
     if (name === 'mrNumber') {
-      const val = parseInt(value, 10);
-      if (value !== '' && (!/^\d+$/.test(value) || isNaN(val) || val < 1 || val > 2147483647)) {
+      const trimmedVal = String(value ?? '').trim();
+      const val = parseInt(trimmedVal, 10);
+      if (trimmedVal !== '' && (!/^\d+$/.test(trimmedVal) || isNaN(val) || val < 1 || val > 2147483647)) {
         setErrors(prev => ({ ...prev, mrNumber: 'MR Number must be a number between 1 and 2,147,483,647' }));
       } else {
         setErrors(prev => ({ ...prev, mrNumber: null }));
@@ -75,14 +76,15 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const mrNum = parseInt(formData.mrNumber, 10);
-    if (!/^\d+$/.test(formData.mrNumber) || isNaN(mrNum) || mrNum < 1 || mrNum > 2147483647) {
+    const trimmedMrNumber = String(formData.mrNumber ?? '').trim();
+    const mrNum = parseInt(trimmedMrNumber, 10);
+    if (!/^\d+$/.test(trimmedMrNumber) || isNaN(mrNum) || mrNum < 1 || mrNum > 2147483647) {
       setErrors(prev => ({ ...prev, mrNumber: 'MR Number must be a number between 1 and 2,147,483,647' }));
       setToast({ open: true, message: 'Invalid MR Number format or range', severity: 'error' });
       return;
     }
 
-    const amount = formData.amountPaid ? parseFloat(formData.amountPaid) : null;
+    const amount = formData.amountPaid !== '' && formData.amountPaid !== null ? parseFloat(formData.amountPaid) : null;
     if (amount !== null) {
       if (isNaN(amount) || amount < 0) {
         setErrors(prev => ({ ...prev, amountPaid: 'Amount paid cannot be negative' }));
@@ -102,7 +104,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mrNumber: formData.mrNumber,
+          mrNumber: trimmedMrNumber,
           dateTime: formData.dateTime,
           amountPaid: formData.amountPaid,
         }),
@@ -121,10 +123,10 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
             console.error('Error triggering server print:', pErr);
           }
           // Pass newRecord without initialPrintRecord (which triggers browser dialog)
-          onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || formData.mrNumber} for {newRecord.patient?.name || 'N/A'} (Printed from Server)</span>, false);
+          onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || trimmedMrNumber} for {newRecord.patient?.name || 'N/A'} (Printed from Server)</span>, false);
         } else {
           // Unchecked: Trigger default browser printing dialog
-          onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || formData.mrNumber} for {newRecord.patient?.name || 'N/A'}</span>, true);
+          onAdd(newRecord, <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || trimmedMrNumber} for {newRecord.patient?.name || 'N/A'}</span>, true);
         }
       } else {
         const errorData = await response.json();
@@ -150,6 +152,10 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
               id="mrNumber"
               name="mrNumber"
               type="text"
+              inputMode="numeric"
+              pattern="[0-9]+"
+              min="1"
+              max="2147483647"
               value={formData.mrNumber}
               onChange={handleChange}
               required

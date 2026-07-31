@@ -32,6 +32,11 @@ export default function EditPatient({ record, onBack, onSave }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          name: String(formData.name ?? '').trim(),
+          fatherName: String(formData.fatherName ?? '').trim(),
+          motherName: String(formData.motherName ?? '').trim(),
+          phone: String(formData.phone ?? '').trim(),
+          email: String(formData.email ?? '').trim(),
           dateOfBirth: formData.dateOfBirth,
           age: isNaN(parsedAge) ? null : parsedAge,
         })
@@ -50,6 +55,8 @@ export default function EditPatient({ record, onBack, onSave }) {
       setLoading(false);
     }
   };
+
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <div className="auth-container">
@@ -92,7 +99,7 @@ export default function EditPatient({ record, onBack, onSave }) {
           <label className="input-label" htmlFor="dateOfBirth">Date of Birth</label>
           <div className="input-with-icon">
             <CalendarToday className="input-icon" />
-            <input id="dateOfBirth" name="dateOfBirth" type="date" value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''} onChange={handleChange} disabled={loading} />
+            <input id="dateOfBirth" name="dateOfBirth" type="date" max={todayStr} value={formData.dateOfBirth ? formData.dateOfBirth.split('T')[0] : ''} onChange={handleChange} disabled={loading} />
           </div>
         </div>
 
@@ -100,7 +107,7 @@ export default function EditPatient({ record, onBack, onSave }) {
           <label className="input-label" htmlFor="age">Age</label>
           <div className="input-with-icon">
             <Cake className="input-icon" />
-            <input id="age" name="age" type="number" value={formData.age || ''} onChange={handleChange} disabled={loading} />
+            <input id="age" name="age" type="number" min="0" max="150" step="1" value={formData.age || ''} onChange={handleChange} disabled={loading} />
           </div>
         </div>
 
@@ -108,7 +115,7 @@ export default function EditPatient({ record, onBack, onSave }) {
           <label className="input-label" htmlFor="phone">Phone</label>
           <div className="input-with-icon">
             <Phone className="input-icon" />
-            <input id="phone" name="phone" value={formData.phone || ''} onChange={handleChange} disabled={loading} />
+            <input id="phone" name="phone" type="tel" pattern="[0-9+() -]{7,20}" maxLength="20" title="Enter a valid phone number" value={formData.phone || ''} onChange={handleChange} disabled={loading} />
           </div>
         </div>
 

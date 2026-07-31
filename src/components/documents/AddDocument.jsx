@@ -119,8 +119,16 @@ export default function AddDocument({ onBack, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || !formData.mrNumber) {
-      setToast({ open: true, message: 'Please enter an MR Number and select a file.', severity: 'error' });
+    const trimmedMrNumber = String(formData.mrNumber ?? '').trim();
+    const mrNum = parseInt(trimmedMrNumber, 10);
+
+    if (!trimmedMrNumber || !/^\d+$/.test(trimmedMrNumber) || isNaN(mrNum) || mrNum < 1 || mrNum > 2147483647) {
+      setToast({ open: true, message: 'Please enter a valid numeric MR Number (1 to 2,147,483,647)', severity: 'error' });
+      return;
+    }
+
+    if (!file) {
+      setToast({ open: true, message: 'Please select a file.', severity: 'error' });
       return;
     }
 
@@ -130,7 +138,7 @@ export default function AddDocument({ onBack, onSave }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/documents/${formData.mrNumber}`, {
+      const response = await fetch(`/api/documents/${trimmedMrNumber}`, {
         method: 'POST',
         body: data,
       });
@@ -158,7 +166,20 @@ export default function AddDocument({ onBack, onSave }) {
           <label className="input-label" htmlFor="mrNumber">MR Number</label>
           <div className="input-with-icon">
             <Badge className="input-icon" />
-            <input id="mrNumber" name="mrNumber" value={formData.mrNumber} onChange={handleChange} autoFocus required disabled={loading} />
+            <input
+              id="mrNumber"
+              name="mrNumber"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]+"
+              min="1"
+              max="2147483647"
+              value={formData.mrNumber}
+              onChange={handleChange}
+              autoFocus
+              required
+              disabled={loading}
+            />
           </div>
         </div>
 

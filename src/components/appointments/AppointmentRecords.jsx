@@ -23,7 +23,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
-  
+
   // Added state for editing appointment records
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState(null);
@@ -290,13 +290,13 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           <Box sx={{ display: 'flex', gap: '4px' }}>
             <Tooltip title={isFinalized ? "Record Finalized (Amount Locked)" : "Edit Amount Paid"}>
               <span>
-                <IconButton 
+                <IconButton
                   onClick={() => {
                     setRecordToEdit(row.original);
                     setEditAmountPaid(row.original.amountPaid ?? '');
                     setEditDialogOpen(true);
-                  }} 
-                  color="primary" 
+                  }}
+                  color="primary"
                   size="small"
                   disabled={isFinalized}
                 >
@@ -492,7 +492,6 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           <DialogContentText sx={{ color: 'var(--text)', mb: 2, fontSize: '14px' }}>
             You are editing the amount paid for MR Number <strong>{recordToEdit?.patient?.mrNumber || recordToEdit?.mrNumber}</strong>.
             <br /><br />
-            <span style={{ color: '#dc2626', fontWeight: 600 }}>Note: To prevent abuse, this modification can only be performed ONCE. Saving will finalize this record permanently.</span>
           </DialogContentText>
           <TextField
             autoFocus

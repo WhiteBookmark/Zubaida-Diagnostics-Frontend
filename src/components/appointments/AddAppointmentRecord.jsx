@@ -14,7 +14,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
     return {
       mrNumber: initialMrNumber,
       dateTime: `${year}-${month}-${day}T${hours}:${minutes}`,
-      amountPaid: '',
+      amountPaid: '500',
     };
   });
 

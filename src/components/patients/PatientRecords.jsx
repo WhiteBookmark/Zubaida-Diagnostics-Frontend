@@ -142,7 +142,33 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         header: 'Date of Birth',
         cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
       },
-      { accessorKey: 'age', header: 'Age' },
+      {
+        accessorKey: 'age',
+        header: 'Age',
+        cell: info => {
+          const row = info.row.original;
+          const years = row.age ?? null;
+          const months = row.ageMonths ?? null;
+
+          if (years === null && months === null) return 'N/A';
+
+          let ageDisplay = [];
+          if (years !== null && years > 0) {
+            ageDisplay.push(`${years} year${years !== 1 ? 's' : ''}`);
+          }
+          if (months !== null && months > 0) {
+            ageDisplay.push(`${months} month${months !== 1 ? 's' : ''}`);
+          }
+
+          if (ageDisplay.length === 0) {
+            if (years === 0 && (months === 0 || months === null)) return '0 years';
+            if (months === 0) return '0 months';
+            return 'N/A';
+          }
+
+          return ageDisplay.join(' ');
+        }
+      },
       { accessorKey: 'phone', header: 'Phone' },
       { accessorKey: 'email', header: 'Email' },
     ],

@@ -228,6 +228,10 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             <div class="meta-data" style="margin-top: 4px;">
               MR: ${appointment.patient?.mrNumber || 'N/A'}
             </div>
+            ${appointment.patient?.phone ? `
+            <div class="meta-data" style="margin-top: 4px;">
+              Phone: ${appointment.patient.phone}
+            </div>` : ''}
             <div class="meta-data" style="margin-top: 4px;">
               Amount Paid: Rs. ${appointment.amountPaid || '0'}
             </div>

@@ -11,6 +11,7 @@ export default function AddPatient({ onBack, onAdd }) {
     motherName: '',
     dob: '',
     age: '',
+    ageMonths: 0,
     phone: '',
     email: '',
   });
@@ -32,6 +33,7 @@ export default function AddPatient({ onBack, onAdd }) {
       motherName: randomPatient.motherName,
       dob: randomPatient.dob,
       age: randomPatient.age.toString(),
+      ageMonths: Math.floor(Math.random() * 12),
       phone: '555-' + Math.floor(1000 + Math.random() * 9000),
       email: randomPatient.name.toLowerCase().replace(' ', '.') + '@example.com',
     });
@@ -44,12 +46,17 @@ export default function AddPatient({ onBack, onAdd }) {
     if (name === 'dob' && value) {
       const birthDate = new Date(value);
       const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
+      let ageYears = today.getFullYear() - birthDate.getFullYear();
+      let m = today.getMonth() - birthDate.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+        ageYears--;
+        m += 12;
       }
-      newFormData.age = age >= 0 ? age.toString() : '';
+      if (today.getDate() < birthDate.getDate() && m > 0) {
+        m--;
+      }
+      newFormData.age = ageYears >= 0 ? ageYears.toString() : '';
+      newFormData.ageMonths = ageYears >= 0 ? m : 0;
     }
 
     setFormData(newFormData);
@@ -59,6 +66,7 @@ export default function AddPatient({ onBack, onAdd }) {
     e.preventDefault();
     setLoading(true);
     const parsedAge = parseInt(formData.age, 10);
+    const parsedAgeMonths = parseInt(formData.ageMonths, 10);
     try {
       const response = await fetch('/api/patients', {
         method: 'POST',
@@ -71,6 +79,7 @@ export default function AddPatient({ onBack, onAdd }) {
           motherName: String(formData.motherName ?? '').trim(),
           dateOfBirth: formData.dob,
           age: isNaN(parsedAge) ? null : parsedAge,
+          ageMonths: isNaN(parsedAgeMonths) ? 0 : parsedAgeMonths,
           phone: String(formData.phone ?? '').trim(),
           email: String(formData.email ?? '').trim(),
         }),
@@ -131,10 +140,37 @@ export default function AddPatient({ onBack, onAdd }) {
         </div>
 
         <div className="input-group">
-          <label className="input-label" htmlFor="age">Age</label>
-          <div className="input-with-icon">
-            <Cake className="input-icon" />
-            <input id="age" name="age" type="number" min="0" max="150" step="1" value={formData.age} onChange={handleChange} disabled={loading} />
+          <label className="input-label" htmlFor="age">Age (Years & Months)</label>
+          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+            <div className="input-with-icon" style={{ flex: 1 }}>
+              <Cake className="input-icon" />
+              <input 
+                id="age" 
+                name="age" 
+                type="number" 
+                min="0" 
+                max="150" 
+                step="1" 
+                placeholder="Years" 
+                value={formData.age} 
+                onChange={handleChange} 
+                disabled={loading} 
+              />
+            </div>
+            <div className="input-with-icon" style={{ flex: 1 }}>
+              <Cake className="input-icon" />
+              <select 
+                id="ageMonths" 
+                name="ageMonths" 
+                value={formData.ageMonths} 
+                onChange={handleChange} 
+                disabled={loading}
+              >
+                {[...Array(13).keys()].map(m => (
+                  <option key={m} value={m}>{m} {m === 1 ? 'Month' : 'Months'}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

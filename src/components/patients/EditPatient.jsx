@@ -5,8 +5,8 @@ import '../../styles/Auth.css';
 
 export default function EditPatient({ record, onBack, onSave }) {
   const [formData, setFormData] = useState(() => {
-    const { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, phone, email } = record;
-    return { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, phone, email };
+    const { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, ageMonths, phone, email } = record;
+    return { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, ageMonths: ageMonths ?? 0, phone, email };
   });
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
@@ -18,14 +18,34 @@ export default function EditPatient({ record, onBack, onSave }) {
   };
 
   const handleChange = (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
+    const { name, value, type, checked } = e.target;
+    const val = type === 'checkbox' ? checked : value;
+    let newFormData = { ...formData, [name]: val };
+
+    if (name === 'dateOfBirth' && val) {
+      const birthDate = new Date(val);
+      const today = new Date();
+      let ageYears = today.getFullYear() - birthDate.getFullYear();
+      let m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        ageYears--;
+        m += 12;
+      }
+      if (today.getDate() < birthDate.getDate() && m > 0) {
+        m--;
+      }
+      newFormData.age = ageYears >= 0 ? ageYears.toString() : '';
+      newFormData.ageMonths = ageYears >= 0 ? m : 0;
+    }
+
+    setFormData(newFormData);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     const parsedAge = parseInt(formData.age, 10);
+    const parsedAgeMonths = parseInt(formData.ageMonths, 10);
     try {
       const response = await fetch(`/api/patients/${formData.id}`, {
         method: 'PUT',
@@ -39,6 +59,7 @@ export default function EditPatient({ record, onBack, onSave }) {
           email: String(formData.email ?? '').trim(),
           dateOfBirth: formData.dateOfBirth,
           age: isNaN(parsedAge) ? null : parsedAge,
+          ageMonths: isNaN(parsedAgeMonths) ? 0 : parsedAgeMonths,
         })
       });
       if (response.ok) {
@@ -104,10 +125,37 @@ export default function EditPatient({ record, onBack, onSave }) {
         </div>
 
         <div className="input-group">
-          <label className="input-label" htmlFor="age">Age</label>
-          <div className="input-with-icon">
-            <Cake className="input-icon" />
-            <input id="age" name="age" type="number" min="0" max="150" step="1" value={formData.age || ''} onChange={handleChange} disabled={loading} />
+          <label className="input-label" htmlFor="age">Age (Years & Months)</label>
+          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+            <div className="input-with-icon" style={{ flex: 1 }}>
+              <Cake className="input-icon" />
+              <input 
+                id="age" 
+                name="age" 
+                type="number" 
+                min="0" 
+                max="150" 
+                step="1" 
+                placeholder="Years" 
+                value={formData.age || ''} 
+                onChange={handleChange} 
+                disabled={loading} 
+              />
+            </div>
+            <div className="input-with-icon" style={{ flex: 1 }}>
+              <Cake className="input-icon" />
+              <select 
+                id="ageMonths" 
+                name="ageMonths" 
+                value={formData.ageMonths} 
+                onChange={handleChange} 
+                disabled={loading}
+              >
+                {[...Array(13).keys()].map(m => (
+                  <option key={m} value={m}>{m} {m === 1 ? 'Month' : 'Months'}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 

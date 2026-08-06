@@ -309,15 +309,13 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
                 </IconButton>
               </span>
             </Tooltip>
-            {!isWindows && (
-              <Tooltip title="Print Token (Server Thermal Hardware)">
-                <IconButton onClick={() => handlePrintTokenServer(row.original)} color="secondary" size="small">
-                  <PrintIcon />
-                </IconButton>
-              </Tooltip>
-            )}
+            <Tooltip title="Print Token (Server Thermal Printer)">
+              <IconButton onClick={() => handlePrintTokenServer(row.original)} color="secondary" size="small">
+                <PrintIcon />
+              </IconButton>
+            </Tooltip>
             {!isLinux && (
-              <Tooltip title="Print Token (Browser Dialog)">
+              <Tooltip title="Print Token (Browser Print Dialog)">
                 <IconButton onClick={() => handlePrintToken(row.original)} color="primary" size="small">
                   <PrintIcon />
                 </IconButton>
@@ -336,7 +334,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     },
     { accessorKey: 'tokenNumber', header: 'Token' },
     { accessorKey: 'amountPaid', header: 'Paid (Rs)' }
-  ], [handlePrintToken, handlePrintTokenServer, isLinux, isWindows]);
+  ], [handlePrintToken, handlePrintTokenServer, isLinux]);
 
   const table = useReactTable({
     columns,

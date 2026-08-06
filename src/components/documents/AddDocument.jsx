@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Button, Snackbar, Alert, IconButton, CircularProgress } from '@mui/material';
+import { Button, Snackbar, Alert, IconButton, CircularProgress, Box, Typography } from '@mui/material';
 import { Badge, Description } from '@mui/icons-material';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CloseIcon from '@mui/icons-material/Close';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
 import '../../styles/Auth.css';
 
 export default function AddDocument({ onBack, onSave }) {
@@ -19,23 +22,28 @@ export default function AddDocument({ onBack, onSave }) {
       type: defaultType,
     };
   });
-  const [file, setFile] = useState(null);
+
+  const [files, setFiles] = useState([]);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(false);
 
-  // Generate preview URL using useMemo and revoke object URL on cleanup
-  const previewUrl = useMemo(() => {
-    if (!file) return null;
-    return URL.createObjectURL(file);
-  }, [file]);
+  // Generate preview URLs using useMemo and revoke object URLs on cleanup
+  const previews = useMemo(() => {
+    return files.map(file => ({
+      file,
+      url: file.type.startsWith('image/') || file.type === 'application/pdf' ? URL.createObjectURL(file) : null
+    }));
+  }, [files]);
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      previews.forEach(p => {
+        if (p.url) {
+          URL.revokeObjectURL(p.url);
+        }
+      });
     };
-  }, [previewUrl]);
+  }, [previews]);
 
   useEffect(() => {
     const handleGlobalPaste = (e) => {
@@ -51,16 +59,24 @@ export default function AddDocument({ onBack, onSave }) {
 
       const items = e.clipboardData?.items;
       if (items) {
+        const pastedFiles = [];
         for (let i = 0; i < items.length; i++) {
           if (items[i].kind === 'file') {
             const pastedFile = items[i].getAsFile();
             if (pastedFile) {
-              setFile(pastedFile);
-              setToast({ open: true, message: 'File pasted from clipboard!', severity: 'success' });
-              e.preventDefault();
-              return;
+              pastedFiles.push(pastedFile);
             }
           }
+        }
+
+        if (pastedFiles.length > 0) {
+          setFiles(prev => [...prev, ...pastedFiles]);
+          setToast({
+            open: true,
+            message: `${pastedFiles.length} file(s) pasted from clipboard!`,
+            severity: 'success'
+          });
+          e.preventDefault();
         }
       }
     };
@@ -78,22 +94,32 @@ export default function AddDocument({ onBack, onSave }) {
         return;
       }
       const clipboardItems = await navigator.clipboard.read();
+      const pastedFiles = [];
+
       for (const item of clipboardItems) {
         const fileType = item.types.find(t => !t.includes('text/plain') && !t.includes('text/html'));
         if (fileType) {
           const blob = await item.getType(fileType);
           const extension = fileType.split('/')[1]?.split('+')[0] || 'bin';
           const pastedFile = new File([blob], `Pasted-File-${Date.now()}.${extension}`, { type: fileType });
-          setFile(pastedFile);
-          setToast({ open: true, message: 'File pasted from clipboard!', severity: 'success' });
-          return;
+          pastedFiles.push(pastedFile);
         }
       }
-      setToast({
-        open: true,
-        message: 'OS-copied files are restricted. Please press Ctrl + V to paste.',
-        severity: 'info',
-      });
+
+      if (pastedFiles.length > 0) {
+        setFiles(prev => [...prev, ...pastedFiles]);
+        setToast({
+          open: true,
+          message: `${pastedFiles.length} file(s) pasted from clipboard!`,
+          severity: 'success'
+        });
+      } else {
+        setToast({
+          open: true,
+          message: 'OS-copied files are restricted. Please press Ctrl + V to paste.',
+          severity: 'info',
+        });
+      }
     } catch (err) {
       console.error('Failed to read clipboard:', err);
       setToast({
@@ -114,7 +140,16 @@ export default function AddDocument({ onBack, onSave }) {
   };
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selected = Array.from(e.target.files || []);
+    if (selected.length > 0) {
+      setFiles(prev => [...prev, ...selected]);
+    }
+    // Reset file input value so re-selecting same files triggers onChange
+    e.target.value = '';
+  };
+
+  const removeFile = (indexToRemove) => {
+    setFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleSubmit = async (e) => {
@@ -127,13 +162,15 @@ export default function AddDocument({ onBack, onSave }) {
       return;
     }
 
-    if (!file) {
-      setToast({ open: true, message: 'Please select a file.', severity: 'error' });
+    if (files.length === 0) {
+      setToast({ open: true, message: 'Please select or paste at least one file.', severity: 'error' });
       return;
     }
 
     const data = new FormData();
-    data.append('file', file);
+    files.forEach(file => {
+      data.append('files', file);
+    });
     data.append('type', formData.type);
 
     setLoading(true);
@@ -145,14 +182,14 @@ export default function AddDocument({ onBack, onSave }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload document');
+        throw new Error(errorData.error || 'Failed to upload document(s)');
       }
 
-      setToast({ open: true, message: 'Document uploaded successfully!', severity: 'success' });
+      setToast({ open: true, message: `${files.length} document(s) uploaded successfully!`, severity: 'success' });
       onSave(); // Navigate back or refresh
     } catch (error) {
       console.error(error);
-      setToast({ open: true, message: 'Error uploading document: ' + error.message, severity: 'error' });
+      setToast({ open: true, message: 'Error uploading document(s): ' + error.message, severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -161,7 +198,7 @@ export default function AddDocument({ onBack, onSave }) {
   return (
     <div className="auth-container">
       <form onSubmit={handleSubmit} className="auth-form">
-        <h2>Add New Document</h2>
+        <h2>Add New Document(s)</h2>
         <div className="input-group">
           <label className="input-label" htmlFor="mrNumber">MR Number</label>
           <div className="input-with-icon">
@@ -198,62 +235,50 @@ export default function AddDocument({ onBack, onSave }) {
         </div>
 
         <div className="input-group">
-          <label className="input-label" htmlFor="file-upload">File</label>
+          <label className="input-label" htmlFor="file-upload">Files</label>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             gap: '12px',
-            background: 'rgba(255, 255, 255, 0.3)',
+            background: 'hsl(215, 30%, 96%)',
             backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255, 255, 255, 0.6)',
+            border: '1px dashed hsl(215, 25%, 75%)',
             borderRadius: '8px',
-            padding: '12px',
+            padding: '16px',
             position: 'relative',
             width: '100%',
             boxSizing: 'border-box'
           }}>
-            {file && (
-              <IconButton 
-                size="small" 
-                onClick={() => setFile(null)} 
-                disabled={loading}
-                style={{ position: 'absolute', top: '4px', right: '4px', zIndex: 1 }}
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            )}
-            
-            {/* Updated File Display with Ctrl + V hint */}
-            <div style={{ fontSize: '14px', color: '#0f172a', opacity: 0.7, paddingRight: file ? '28px' : '0' }}>
-              {file ? (
-                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
-                  {file.name}
+            <div style={{ fontSize: '14px', color: 'hsl(222, 47%, 11%)', textAlign: 'center' }}>
+              {files.length > 0 ? (
+                <div style={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)' }}>
+                  {files.length} file(s) selected
                 </div>
               ) : (
                 <>
-                  <div>No file selected</div>
-                  <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                    Press Ctrl + V to paste the file here
+                  <div style={{ fontWeight: 500 }}>No files selected</div>
+                  <div style={{ fontSize: '12px', color: 'hsl(215, 16%, 47%)', marginTop: '4px' }}>
+                    Press Ctrl + V repeatedly to paste multiple files here
                   </div>
                 </>
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <Button
                 variant="contained"
                 component="label"
                 disabled={loading}
                 sx={{ textTransform: 'none' }}
               >
-                Choose File
+                Choose Files
                 <input
                   id="file-upload"
                   type="file"
+                  multiple
                   accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.svg,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   hidden
                   onChange={handleFileChange}
-                  required={!file}
                   disabled={loading}
                 />
               </Button>
@@ -264,14 +289,96 @@ export default function AddDocument({ onBack, onSave }) {
                 sx={{ textTransform: 'none' }}
                 startIcon={<ContentPasteIcon />}
               >
-                Paste
+                Paste Clipboard
               </Button>
             </div>
           </div>
         </div>
 
+        {/* Selected Files List and Previews */}
+        {files.length > 0 && (
+          <Box sx={{
+            marginTop: '15px',
+            width: '100%',
+            background: 'hsl(0, 0%, 100%)',
+            border: '1px solid hsl(214, 32%, 91%)',
+            borderRadius: '8px',
+            padding: '12px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Selected Files ({files.length}):
+            </Typography>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: '300px', overflowY: 'auto', pr: 0.5 }}>
+              {previews.map(({ file, url }, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 1.5,
+                    background: 'hsl(210, 40%, 98%)',
+                    border: '1px solid hsl(214, 32%, 91%)',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1 }}>
+                    {file.type.startsWith('image/') && url ? (
+                      <img
+                        src={url}
+                        alt="Preview"
+                        style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid hsl(214, 32%, 85%)' }}
+                      />
+                    ) : file.type === 'application/pdf' ? (
+                      <PictureAsPdfIcon sx={{ color: 'hsl(0, 72%, 51%)', fontSize: 32 }} />
+                    ) : file.type.startsWith('image/') ? (
+                      <ImageIcon sx={{ color: 'hsl(217, 91%, 60%)', fontSize: 32 }} />
+                    ) : (
+                      <InsertDriveFileIcon sx={{ color: 'hsl(215, 16%, 47%)', fontSize: 32 }} />
+                    )}
+
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 600,
+                          color: 'hsl(222, 47%, 11%)',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {file.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'hsl(215, 16%, 47%)' }}>
+                        {(file.size / 1024).toFixed(1)} KB
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <IconButton
+                    size="small"
+                    onClick={() => removeFile(index)}
+                    disabled={loading}
+                    sx={{ color: 'hsl(0, 72%, 51%)' }}
+                    title="Remove file"
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+
         {/* Upload and Cancel Buttons */}
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '16px', width: '100%' }}>
           <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
           <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
             {loading ? (
@@ -280,86 +387,15 @@ export default function AddDocument({ onBack, onSave }) {
                 Uploading...
               </>
             ) : (
-              'Upload'
+              `Upload ${files.length} File(s)`
             )}
           </Button>
         </div>
-
-        {/* File Preview Snapshot Box Below Upload & Cancel Buttons */}
-        {file && previewUrl && (
-          <div style={{
-            marginTop: '15px',
-            width: '100%',
-            background: 'rgba(255, 255, 255, 0.2)',
-            border: '1px solid rgba(255, 255, 255, 0.5)',
-            borderRadius: '8px',
-            padding: '10px',
-            boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
-          }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a', marginBottom: '8px', alignSelf: 'flex-start' }}>
-              Selected File Preview:
-            </div>
-            
-            {file.type.startsWith('image/') ? (
-              <div style={{
-                width: '100%',
-                maxHeight: '160px',
-                overflow: 'hidden',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: '6px',
-                background: 'rgba(0,0,0,0.05)'
-              }}>
-                <img
-                  src={previewUrl}
-                  alt="Selected preview"
-                  style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain', display: 'block' }}
-                />
-              </div>
-            ) : file.type === 'application/pdf' ? (
-              /* Interactive, scrollable embedded PDF Viewer */
-              <div style={{
-                width: '100%',
-                height: '450px', // Tall enough to comfortably read and scroll multiple pages
-                borderRadius: '6px',
-                overflow: 'hidden',
-                background: '#fff',
-                border: '1px solid rgba(0,0,0,0.15)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-              }}>
-                <iframe
-                  src={previewUrl} // Standard URL without restricting toolbars or scrollbars
-                  title="Interactive PDF Preview"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    display: 'block'
-                  }}
-                />
-              </div>
-            ) : /\.(doc|docx)$/i.test(file.name) || file.type.includes('word') ? (
-              /* Word Document visual confirmation card */
-              <div style={{ width: '100%', padding: '30px 20px', textAlign: 'center', background: 'rgba(37, 99, 235, 0.1)', border: '1px dashed #2563eb', borderRadius: '8px', color: '#0f172a' }}>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#2563eb', marginBottom: '4px' }}>📄 Word Document Selected</div>
-                <div style={{ fontSize: '13px', opacity: 0.8 }}>{file.name}</div>
-                <div style={{ fontSize: '11px', marginTop: '8px', color: '#64748b' }}>Ready for upload. (Browser inline preview is restricted for Word formats)</div>
-              </div>
-            ) : (
-              <div style={{ fontSize: '13px', color: '#64748b', padding: '20px 0' }}>
-                Preview not available for this file format.
-              </div>
-            )}
-          </div>
-        )}
       </form>
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={6000} 
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
@@ -370,3 +406,4 @@ export default function AddDocument({ onBack, onSave }) {
     </div>
   );
 }
+

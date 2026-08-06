@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Snackbar, Alert, CircularProgress } from '@mui/material'
 import Login from './pages/LoginPage'
 import Dashboard from './components/common/Dashboard'
 import PatientRecords from './components/patients/PatientRecords'
@@ -9,6 +10,7 @@ import Header from './components/common/Header'
 import AppointmentRecords from './components/appointments/AppointmentRecords'
 import DocumentRecords from './components/documents/DocumentRecords'
 import AddDocument from './components/documents/AddDocument'
+import useQrScanner from './hooks/useQrScanner'
 import './styles/App.css'
 import './styles/Auth.css'
 
@@ -47,6 +49,7 @@ function App() {
   const [pendingAppointmentPrint, setPendingAppointmentPrint] = useState(null)
   const [pendingAppointmentToast, setPendingAppointmentToast] = useState('')
   const [viewToast, setViewToast] = useState('')
+  const [isScanProcessing, setIsScanProcessing] = useState(false)
 
   const clearViewToast = useCallback(() => {
     setViewToast('');
@@ -129,6 +132,90 @@ function App() {
     setResetKey(prev => prev + 1);
   }, []);
 
+  /**
+   * Zero-click QR scan handler: auto-creates appointment + triggers server thermal print.
+   * Called by the useQrScanner hook when a valid patient QR code JSON is detected.
+   */
+  const handleQrScan = useCallback(async (qrData) => {
+    // Prevent duplicate scans while one is already processing
+    if (isScanProcessing) return;
+    setIsScanProcessing(true);
+
+    const mrNumber = String(qrData['MR Number'] || '').trim();
+    if (!mrNumber || !/^\d+$/.test(mrNumber)) {
+      setIsScanProcessing(false);
+      return;
+    }
+
+    // Build current dateTime in the same format as AddAppointmentRecord
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const dateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+    try {
+      // Step 1: Create appointment via existing API
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mrNumber: mrNumber,
+          dateTime: dateTime,
+          amountPaid: '500',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        // Show error toast and navigate to appointments page
+        setPendingAppointmentPrint(null);
+        setPendingAppointmentToast(
+          `QR Scan failed: ${errorData.error || 'Unknown error'}`
+        );
+        setView('dashboard');
+        setCurrentPage('appointments');
+        setResetKey(prev => prev + 1);
+        return;
+      }
+
+      const newRecord = await response.json();
+
+      // Step 2: Trigger server-side thermal print (never browser print dialog)
+      try {
+        const printRes = await fetch(`/api/appointments/${newRecord.id}/print`, { method: 'POST' });
+        if (!printRes.ok) {
+          console.error('Server printing failed after QR scan');
+        }
+      } catch (pErr) {
+        console.error('Error triggering server print after QR scan:', pErr);
+      }
+
+      // Step 3: Navigate to appointments page with success toast (no browser print dialog)
+      setPendingAppointmentPrint(null);
+      setPendingAppointmentToast(
+        <span><u>Token is {newRecord.tokenNumber}</u> for MR number {newRecord.patient?.mrNumber || mrNumber} for {newRecord.patient?.name || 'N/A'} (QR Scan — Printed from Server)</span>
+      );
+      setView('dashboard');
+      setCurrentPage('appointments');
+      setResetKey(prev => prev + 1);
+    } catch (error) {
+      console.error('QR scan appointment error:', error);
+      setPendingAppointmentPrint(null);
+      setPendingAppointmentToast(`QR Scan error: ${error.message}`);
+      setView('dashboard');
+      setCurrentPage('appointments');
+      setResetKey(prev => prev + 1);
+    } finally {
+      setIsScanProcessing(false);
+    }
+  }, [isScanProcessing]);
+
+  // Activate QR scanner hook — enabled only when logged in and not already processing a scan
+  useQrScanner(handleQrScan, { enabled: isLoggedIn && !isScanProcessing });
+
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} />;
   }
@@ -202,6 +289,13 @@ function App() {
     <>
       <Header currentPage={currentPage} setCurrentPage={handleNavigate} onLogout={handleLogout} username={username} />
       {renderContent()}
+      {isScanProcessing && (
+        <Snackbar open anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+          <Alert severity="info" variant="filled" icon={<CircularProgress size={20} color="inherit" />}>
+            Processing QR scan...
+          </Alert>
+        </Snackbar>
+      )}
     </>
   );
 }

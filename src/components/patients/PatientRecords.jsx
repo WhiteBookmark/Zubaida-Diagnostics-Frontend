@@ -137,6 +137,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       { accessorKey: 'name', header: 'Name' },
       { accessorKey: 'fatherName', header: "Father's Name" },
       { accessorKey: 'motherName', header: "Mother's Name" },
+      { accessorKey: 'husbandName', header: "Husband's Name" },
       {
         accessorKey: 'dateOfBirth',
         header: 'Date of Birth',

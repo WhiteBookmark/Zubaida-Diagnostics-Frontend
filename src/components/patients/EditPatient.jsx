@@ -5,8 +5,8 @@ import '../../styles/Auth.css';
 
 export default function EditPatient({ record, onBack, onSave }) {
   const [formData, setFormData] = useState(() => {
-    const { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, ageMonths, phone, email } = record;
-    return { id, mrNumber, name, fatherName, motherName, dateOfBirth, age, ageMonths: ageMonths ?? 0, phone, email };
+    const { id, mrNumber, name, fatherName, motherName, husbandName, dateOfBirth, age, ageMonths, phone, email } = record;
+    return { id, mrNumber, name, fatherName, motherName, husbandName: husbandName || '', dateOfBirth, age, ageMonths: ageMonths ?? 0, phone, email };
   });
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
@@ -55,6 +55,7 @@ export default function EditPatient({ record, onBack, onSave }) {
           name: String(formData.name ?? '').trim(),
           fatherName: String(formData.fatherName ?? '').trim(),
           motherName: String(formData.motherName ?? '').trim(),
+          husbandName: String(formData.husbandName ?? '').trim(),
           phone: String(formData.phone ?? '').trim(),
           email: String(formData.email ?? '').trim(),
           dateOfBirth: formData.dateOfBirth,
@@ -113,6 +114,14 @@ export default function EditPatient({ record, onBack, onSave }) {
           <div className="input-with-icon">
             <Person className="input-icon" />
             <input id="motherName" name="motherName" value={formData.motherName || ''} onChange={handleChange} disabled={loading} />
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="husbandName">Husband Name</label>
+          <div className="input-with-icon">
+            <SupervisorAccount className="input-icon" />
+            <input id="husbandName" name="husbandName" value={formData.husbandName || ''} onChange={handleChange} disabled={loading} />
           </div>
         </div>
 

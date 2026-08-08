@@ -9,6 +9,7 @@ export default function AddPatient({ onBack, onAdd }) {
     name: '',
     fatherName: '',
     motherName: '',
+    husbandName: '',
     dob: '',
     age: '',
     ageMonths: 0,
@@ -31,6 +32,7 @@ export default function AddPatient({ onBack, onAdd }) {
       name: randomPatient.name,
       fatherName: randomPatient.fatherName,
       motherName: randomPatient.motherName,
+      husbandName: 'Mr. ' + randomPatient.fatherName,
       dob: randomPatient.dob,
       age: randomPatient.age.toString(),
       ageMonths: Math.floor(Math.random() * 12),
@@ -77,6 +79,7 @@ export default function AddPatient({ onBack, onAdd }) {
           name: String(formData.name ?? '').trim(),
           fatherName: String(formData.fatherName ?? '').trim(),
           motherName: String(formData.motherName ?? '').trim(),
+          husbandName: String(formData.husbandName ?? '').trim(),
           dateOfBirth: formData.dob,
           age: isNaN(parsedAge) ? null : parsedAge,
           ageMonths: isNaN(parsedAgeMonths) ? 0 : parsedAgeMonths,
@@ -128,6 +131,14 @@ export default function AddPatient({ onBack, onAdd }) {
           <div className="input-with-icon">
             <Person className="input-icon" />
             <input id="motherName" name="motherName" value={formData.motherName} onChange={handleChange} disabled={loading} />
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="husbandName">Husband Name</label>
+          <div className="input-with-icon">
+            <SupervisorAccount className="input-icon" />
+            <input id="husbandName" name="husbandName" value={formData.husbandName} onChange={handleChange} disabled={loading} />
           </div>
         </div>
 

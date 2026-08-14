@@ -64,7 +64,12 @@ export default function AddDocument({ onBack, onSave }) {
           if (items[i].kind === 'file') {
             const pastedFile = items[i].getAsFile();
             if (pastedFile) {
-              pastedFiles.push(pastedFile);
+              const extension = pastedFile.type.split('/')[1]?.split('+')[0] || 'png';
+              const uniqueName = (!pastedFile.name || pastedFile.name === 'image.png')
+                ? `Pasted-Scan-${Date.now()}-${i + 1}.${extension}`
+                : pastedFile.name;
+              const renamedFile = new File([pastedFile], uniqueName, { type: pastedFile.type });
+              pastedFiles.push(renamedFile);
             }
           }
         }
@@ -96,12 +101,13 @@ export default function AddDocument({ onBack, onSave }) {
       const clipboardItems = await navigator.clipboard.read();
       const pastedFiles = [];
 
-      for (const item of clipboardItems) {
+      for (let i = 0; i < clipboardItems.length; i++) {
+        const item = clipboardItems[i];
         const fileType = item.types.find(t => !t.includes('text/plain') && !t.includes('text/html'));
         if (fileType) {
           const blob = await item.getType(fileType);
-          const extension = fileType.split('/')[1]?.split('+')[0] || 'bin';
-          const pastedFile = new File([blob], `Pasted-File-${Date.now()}.${extension}`, { type: fileType });
+          const extension = fileType.split('/')[1]?.split('+')[0] || 'png';
+          const pastedFile = new File([blob], `Pasted-Scan-${Date.now()}-${i + 1}.${extension}`, { type: fileType });
           pastedFiles.push(pastedFile);
         }
       }
@@ -181,8 +187,26 @@ export default function AddDocument({ onBack, onSave }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload document(s)');
+        let errorMessage = `Server error (${response.status})`;
+        if (response.status === 413) {
+          errorMessage = 'Uploaded files are too large for the server payload limit. Please upload fewer or smaller files.';
+        } else {
+          try {
+            const rawText = await response.text();
+            try {
+              const parsed = JSON.parse(rawText);
+              errorMessage = parsed.error || parsed.message || errorMessage;
+            } catch {
+              // Not valid JSON (e.g. Nginx/gateway HTML error page)
+              if (rawText && rawText.length < 150 && !rawText.includes('<html')) {
+                errorMessage = rawText;
+              }
+            }
+          } catch (readErr) {
+            console.error('Failed to read error response:', readErr);
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       setToast({ open: true, message: `${files.length} document(s) uploaded successfully!`, severity: 'success' });

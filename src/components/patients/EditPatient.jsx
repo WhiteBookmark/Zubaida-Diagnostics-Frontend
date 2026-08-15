@@ -185,7 +185,6 @@ export default function EditPatient({ record, onBack, onSave }) {
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
-          <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
           <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
             {loading ? (
               <>

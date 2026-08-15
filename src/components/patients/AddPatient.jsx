@@ -202,7 +202,6 @@ export default function AddPatient({ onBack, onAdd }) {
         </div>
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '10px', width: '100%' }}>
-          <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
           {import.meta.env.DEV && (
             <Button variant="contained" fullWidth onClick={fillRandomData} disabled={loading}>Fill Random Data</Button>
           )}

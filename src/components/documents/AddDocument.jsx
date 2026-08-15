@@ -12,7 +12,7 @@ export default function AddDocument({ onBack, onSave }) {
   const [formData, setFormData] = useState(() => {
     const storedUsername = localStorage.getItem('username') || '';
     let defaultType = '';
-    
+
     if (storedUsername === 'xray' || storedUsername === 'X-Ray Department') defaultType = 'X-Ray';
     else if (storedUsername === 'ultrasound' || storedUsername === 'Ultrasound Department') defaultType = 'Ultrasound';
     else if (storedUsername === 'lab' || storedUsername === 'Lab Department') defaultType = 'Lab Result';
@@ -92,50 +92,6 @@ export default function AddDocument({ onBack, onSave }) {
       document.removeEventListener('paste', handleGlobalPaste);
     };
   }, []);
-
-  const handlePasteClick = async () => {
-    try {
-      if (!navigator.clipboard || !navigator.clipboard.read) {
-        setToast({ open: true, message: 'Clipboard API not supported. Please press Ctrl+V.', severity: 'info' });
-        return;
-      }
-      const clipboardItems = await navigator.clipboard.read();
-      const pastedFiles = [];
-
-      for (let i = 0; i < clipboardItems.length; i++) {
-        const item = clipboardItems[i];
-        const fileType = item.types.find(t => !t.includes('text/plain') && !t.includes('text/html'));
-        if (fileType) {
-          const blob = await item.getType(fileType);
-          const extension = fileType.split('/')[1]?.split('+')[0] || 'png';
-          const pastedFile = new File([blob], `Pasted-Scan-${Date.now()}-${i + 1}.${extension}`, { type: fileType });
-          pastedFiles.push(pastedFile);
-        }
-      }
-
-      if (pastedFiles.length > 0) {
-        setFiles(prev => [...prev, ...pastedFiles]);
-        setToast({
-          open: true,
-          message: `${pastedFiles.length} file(s) pasted from clipboard!`,
-          severity: 'success'
-        });
-      } else {
-        setToast({
-          open: true,
-          message: 'OS-copied files are restricted. Please press Ctrl + V to paste.',
-          severity: 'info',
-        });
-      }
-    } catch (err) {
-      console.error('Failed to read clipboard:', err);
-      setToast({
-        open: true,
-        message: 'Clipboard access restricted. Please press Ctrl + V to paste.',
-        severity: 'info',
-      });
-    }
-  };
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -307,15 +263,6 @@ export default function AddDocument({ onBack, onSave }) {
                   disabled={loading}
                 />
               </Button>
-              <Button
-                variant="outlined"
-                onClick={handlePasteClick}
-                disabled={loading}
-                sx={{ textTransform: 'none' }}
-                startIcon={<ContentPasteIcon />}
-              >
-                Paste Clipboard
-              </Button>
             </div>
           </div>
         </div>
@@ -402,17 +349,16 @@ export default function AddDocument({ onBack, onSave }) {
           </Box>
         )}
 
-        {/* Upload and Cancel Buttons */}
+        {/* Upload Button */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '16px', width: '100%' }}>
-          <Button variant="contained" fullWidth onClick={onBack} disabled={loading}>Cancel</Button>
           <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
             {loading ? (
               <>
                 <CircularProgress size={20} color="inherit" />
-                Uploading...
+                Saving...
               </>
             ) : (
-              `Upload ${files.length} File(s)`
+              `Save ${files.length} File(s)`
             )}
           </Button>
         </div>

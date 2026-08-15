@@ -10,6 +10,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import PrintIcon from '@mui/icons-material/Print';
 import EditIcon from '@mui/icons-material/Edit';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import QRCode from 'qrcode';
@@ -331,15 +334,25 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         );
       }
     },
-    { accessorKey: 'patient.mrNumber', header: 'MR Number' },
-    { accessorKey: 'patient.name', header: 'Patient Name' },
+    { accessorKey: 'patient.mrNumber', header: 'MR Number', enableSorting: false },
+    { accessorKey: 'patient.name', header: 'Patient Name', enableSorting: false },
     {
       accessorKey: 'dateTime',
       header: 'Date/Time',
+      enableSorting: false,
       cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
     },
-    { accessorKey: 'tokenNumber', header: 'Token' },
-    { accessorKey: 'amountPaid', header: 'Paid (Rs)' }
+    {
+      accessorKey: 'tokenNumber',
+      header: 'Token',
+      enableSorting: true,
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.tokenNumber ?? 0;
+        const b = rowB.original.tokenNumber ?? 0;
+        return a - b;
+      }
+    },
+    { accessorKey: 'amountPaid', header: 'Paid (Rs)', enableSorting: false }
   ], [handlePrintToken, handlePrintTokenServer, isLinux]);
 
   const table = useReactTable({
@@ -430,11 +443,36 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         <thead>
           {table.getHeaderGroups().map(headerGroup => (
             <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <th key={header.id}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
-              ))}
+              {headerGroup.headers.map(header => {
+                const canSort = header.column.getCanSort();
+                const isSorted = header.column.getIsSorted();
+                return (
+                  <th
+                    key={header.id}
+                    onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                    style={{
+                      cursor: canSort ? 'pointer' : 'default',
+                      userSelect: 'none',
+                    }}
+                    title={canSort ? `Sort by ${header.column.columnDef.header}` : undefined}
+                  >
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {canSort && (
+                        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                          {isSorted === 'asc' ? (
+                            <ArrowUpwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                          ) : isSorted === 'desc' ? (
+                            <ArrowDownwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                          ) : (
+                            <UnfoldMoreIcon sx={{ fontSize: '16px', opacity: 0.4, color: 'var(--text)' }} />
+                          )}
+                        </Box>
+                      )}
+                    </Box>
+                  </th>
+                );
+              })}
             </tr>
           ))}
         </thead>

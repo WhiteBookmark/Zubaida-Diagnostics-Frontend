@@ -1,77 +1,119 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 /**
- * useQrScanner — Listens for USB HID barcode/QR scanner input (keyboard emulation).
+ * useQrScanner — Captures QR code JSON scans via hardware keyboard emulation or paste.
  *
- * Scanners like Henex type characters rapidly (< 50ms apart) then press Enter.
- * This hook distinguishes scanner input from human typing by timing keystrokes.
+ * Allows raw scanner text to appear in focused input boxes for real-time visual feedback,
+ * while detecting JSON structure ('{...}') without strict keystroke gap timers to prevent
+ * dropped scans on slower systems or heavy UI pages.
  *
  * @param {function} onScan - Callback receiving the parsed JSON object from the QR code.
  * @param {object} options
  * @param {boolean} options.enabled - Whether the listener is active (default: true).
- * @param {number} options.maxKeystrokeGap - Max ms between keystrokes to be considered scanner input (default: 50).
- * @param {number} options.minLength - Minimum buffer length to qualify as a scan (default: 10).
+ * @param {number} options.idleTimeoutMs - Milliseconds before resetting an abandoned incomplete buffer (default: 1500).
  */
-export default function useQrScanner(onScan, { enabled = true, maxKeystrokeGap = 50, minLength = 10 } = {}) {
+export default function useQrScanner(onScan, { enabled = true, idleTimeoutMs = 1500 } = {}) {
   const bufferRef = useRef('');
-  const lastKeystrokeRef = useRef(0);
-  const timerRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   const resetBuffer = useCallback(() => {
     bufferRef.current = '';
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   }, []);
+
+  const processPayload = useCallback((text, event) => {
+    if (!text || typeof text !== 'string') return false;
+    const raw = text.trim();
+    if (raw.startsWith('{') && raw.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(raw);
+        // Validate it has the expected MR Number field
+        if (parsed && typeof parsed === 'object' && parsed['MR Number']) {
+          if (event && typeof event.preventDefault === 'function') {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+
+          // If focused in an input/textarea, cleanly replace raw JSON with just the MR Number
+          const active = document.activeElement;
+          if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+            const mrNumber = String(parsed['MR Number']).trim();
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+              window.HTMLInputElement.prototype,
+              'value'
+            )?.set;
+            if (nativeInputValueSetter) {
+              nativeInputValueSetter.call(active, mrNumber);
+            } else {
+              active.value = mrNumber;
+            }
+            active.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          resetBuffer();
+          if (typeof onScan === 'function') {
+            onScan(parsed);
+          }
+          return true;
+        }
+      } catch {
+        // Not valid JSON — ignore
+      }
+    }
+    return false;
+  }, [onScan, resetBuffer]);
 
   useEffect(() => {
     if (!enabled) return;
 
     const handleKeyDown = (e) => {
-      const now = Date.now();
-
-      // If too much time has passed since last keystroke, reset — this is human typing
-      if (now - lastKeystrokeRef.current > maxKeystrokeGap && bufferRef.current.length > 0) {
-        resetBuffer();
-      }
-      lastKeystrokeRef.current = now;
-
       if (e.key === 'Enter') {
-        const raw = bufferRef.current.trim();
-        resetBuffer();
-
-        if (raw.length >= minLength) {
-          try {
-            const parsed = JSON.parse(raw);
-            // Validate it has the expected MR Number field
-            if (parsed && parsed['MR Number']) {
-              e.preventDefault();
-              e.stopPropagation();
-              onScan(parsed);
-            }
-          } catch {
-            // Not valid JSON — ignore, was probably human typing
-          }
+        const handled = processPayload(bufferRef.current, e);
+        if (handled || bufferRef.current.length > 0) {
+          resetBuffer();
         }
         return;
       }
 
-      // Only accumulate printable single characters (scanner sends key-by-key)
-      if (e.key.length === 1) {
-        bufferRef.current += e.key;
+      // Start buffering on '{' or continue if already buffering
+      if (e.key === '{' || bufferRef.current.length > 0) {
+        if (e.key && e.key.length === 1) {
+          // Allow character to type normally into active input for visual feedback
+          bufferRef.current += e.key;
 
-        // Safety: clear buffer if it grows too large without Enter (leak prevention)
-        if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(resetBuffer, 500);
+          // Auto-trigger if closing '}' completes valid JSON
+          if (e.key === '}' && bufferRef.current.startsWith('{')) {
+            // Allow event queue to render the character before cleaning and triggering scan
+            setTimeout(() => {
+              processPayload(bufferRef.current, e);
+            }, 0);
+          }
+
+          // Idle reset if scan is incomplete or abandoned
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(resetBuffer, idleTimeoutMs);
+        }
       }
     };
 
-    // Use capture phase so scanner input is caught before it reaches focused input fields
+    const handlePaste = (e) => {
+      const pasted = e.clipboardData?.getData('text');
+      if (pasted && typeof pasted === 'string' && pasted.trim().startsWith('{')) {
+        processPayload(pasted, e);
+      }
+    };
+
+    // Use capture phase so scanner Enter event is intercepted before submitting forms
     document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('paste', handlePaste, true);
+
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('paste', handlePaste, true);
       resetBuffer();
     };
-  }, [enabled, maxKeystrokeGap, minLength, onScan, resetBuffer]);
+  }, [enabled, idleTimeoutMs, processPayload, resetBuffer]);
 }

@@ -1,7 +1,7 @@
 import logo from '../../assets/Logo.png';
 
 export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
-  const departmentUsers = ['X-Ray Department', 'Ultrasound Department', 'Lab Department'];
+  const departmentUsers = ['xray', 'ultrasound', 'lab', 'prescription', 'X-Ray Department', 'Ultrasound Department', 'Lab Department'];
   const links = [
     { name: 'Patient Records', id: 'patients' },
     { name: 'Appointment Records', id: 'appointments' },

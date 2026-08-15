@@ -67,7 +67,7 @@ function App() {
     localStorage.setItem('username', username);
     setUsername(username);
     setIsLoggedIn(true);
-    const departmentUsers = ['X-Ray Department', 'Ultrasound Department', 'Lab Department'];
+    const departmentUsers = ['xray', 'ultrasound', 'lab', 'prescription', 'X-Ray Department', 'Ultrasound Department', 'Lab Department'];
     if (departmentUsers.includes(username)) {
       setCurrentPage('documents');
     }
@@ -221,7 +221,7 @@ function App() {
   }
 
   const renderContent = () => {
-    const isDepartmentUser = ['X-Ray Department', 'Ultrasound Department', 'Lab Department'].includes(username);
+    const isDepartmentUser = ['xray', 'ultrasound', 'lab', 'prescription', 'X-Ray Department', 'Ultrasound Department', 'Lab Department'].includes(username);
 
     if (isDepartmentUser) {
       if (view === 'addDocument') {

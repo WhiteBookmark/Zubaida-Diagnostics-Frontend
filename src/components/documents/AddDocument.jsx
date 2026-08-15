@@ -13,9 +13,10 @@ export default function AddDocument({ onBack, onSave }) {
     const storedUsername = localStorage.getItem('username') || '';
     let defaultType = '';
     
-    if (storedUsername === 'X-Ray Department') defaultType = 'X-Ray';
-    else if (storedUsername === 'Ultrasound Department') defaultType = 'Ultrasound';
-    else if (storedUsername === 'Lab Department') defaultType = 'Lab Result';
+    if (storedUsername === 'xray' || storedUsername === 'X-Ray Department') defaultType = 'X-Ray';
+    else if (storedUsername === 'ultrasound' || storedUsername === 'Ultrasound Department') defaultType = 'Ultrasound';
+    else if (storedUsername === 'lab' || storedUsername === 'Lab Department') defaultType = 'Lab Result';
+    else if (storedUsername === 'prescription') defaultType = 'Prescription';
 
     return {
       mrNumber: '',

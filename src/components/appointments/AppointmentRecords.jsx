@@ -13,6 +13,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import QRCode from 'qrcode';
+import { buildApiUrl } from '../../config/api';
 
 export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey }) {
   const searchInputRef = useRef(null); // Added ref for search input
@@ -22,6 +23,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isTodayOnly, setIsTodayOnly] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
   // Added state for editing appointment records
@@ -62,7 +64,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
 
     setIsSavingEdit(true);
     try {
-      const response = await fetch(`/api/appointments/${recordToEdit.id}`, {
+      const response = await fetch(buildApiUrl(`/api/appointments/${recordToEdit.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -97,14 +99,18 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   useEffect(() => {
     setPagination(prev => ({ ...prev, pageIndex: 0 }));
     setCursorHistory([null]);
-  }, [searchTerm, pagination.pageSize]);
+  }, [searchTerm, pagination.pageSize, isTodayOnly]);
 
   const fetchData = useCallback(() => {
     const currentCursor = cursorHistory[pagination.pageIndex];
-    let url = `/api/appointments?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
-    if (currentCursor) {
-      url += `&cursor=${currentCursor}`;
+    let endpoint = `/api/appointments?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+    if (isTodayOnly) {
+      endpoint += '&today=true';
     }
+    if (currentCursor) {
+      endpoint += `&cursor=${currentCursor}`;
+    }
+    const url = buildApiUrl(endpoint);
 
     setIsLoading(true);
     fetch(url)
@@ -132,7 +138,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         setIsLoading(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -365,6 +371,20 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         <h2>Appointment Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
+          <Button
+            variant={isTodayOnly ? "contained" : "outlined"}
+            onClick={() => setIsTodayOnly(prev => !prev)}
+            sx={{
+              whiteSpace: 'nowrap',
+              fontWeight: 600,
+              ...(isTodayOnly ? {
+                backgroundColor: 'hsla(221, 83%, 53%, 0.25)',
+                borderColor: 'var(--primary)',
+              } : {})
+            }}
+          >
+            Today's Appointments
+          </Button>
           <TextField
             autoFocus
             inputRef={searchInputRef}

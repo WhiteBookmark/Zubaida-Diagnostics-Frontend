@@ -10,6 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { buildApiUrl } from '../../config/api';
 
 export default function DocumentRecords({ onAddDocument, initialToastMessage, clearPending, refreshKey }) {
   const searchInputRef = useRef(null); // Added ref for search input
@@ -18,6 +19,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
   const [isLoading, setIsLoading] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isTodayOnly, setIsTodayOnly] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
@@ -51,14 +53,18 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
   useEffect(() => {
     setPagination(prev => ({ ...prev, pageIndex: 0 }));
     setCursorHistory([null]);
-  }, [searchTerm, pagination.pageSize]);
+  }, [searchTerm, pagination.pageSize, isTodayOnly]);
 
   const fetchData = useCallback(() => {
     const currentCursor = cursorHistory[pagination.pageIndex];
-    let url = `/api/documents?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
-    if (currentCursor) {
-      url += `&cursor=${currentCursor}`;
+    let endpoint = `/api/documents?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+    if (isTodayOnly) {
+      endpoint += '&today=true';
     }
+    if (currentCursor) {
+      endpoint += `&cursor=${currentCursor}`;
+    }
+    const url = buildApiUrl(endpoint);
     
     setIsLoading(true);
     fetch(url)
@@ -89,7 +95,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         setIsLoading(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -264,7 +270,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     if (!rowToDelete) return;
     
     try {
-      const response = await fetch(`/api/documents/${rowToDelete.original.id}`, { method: 'DELETE' });
+      const response = await fetch(buildApiUrl(`/api/documents/${rowToDelete.original.id}`), { method: 'DELETE' });
       if (response.ok) {
         setData(prev => prev.filter(item => item.id !== rowToDelete.original.id));
         setToast({ open: true, message: 'Document deleted successfully', severity: 'success' });
@@ -293,6 +299,20 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         <h2>Documents</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
+          <Button
+            variant={isTodayOnly ? "contained" : "outlined"}
+            onClick={() => setIsTodayOnly(prev => !prev)}
+            sx={{
+              whiteSpace: 'nowrap',
+              fontWeight: 600,
+              ...(isTodayOnly ? {
+                backgroundColor: 'hsla(221, 83%, 53%, 0.25)',
+                borderColor: 'var(--primary)',
+              } : {})
+            }}
+          >
+            Today's Documents
+          </Button>
           <TextField
             autoFocus
             inputRef={searchInputRef}

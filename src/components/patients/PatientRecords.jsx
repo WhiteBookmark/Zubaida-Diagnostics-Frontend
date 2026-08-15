@@ -11,6 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import { buildApiUrl } from '../../config/api';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, initialToastMessage, clearPending, refreshKey }) {
   const searchInputRef = useRef(null); // Added ref for search input
@@ -24,6 +25,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   const [approximateCount, setApproximateCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isTodayOnly, setIsTodayOnly] = useState(false);
   const [sorting, setSorting] = useState([]);
   
   const [cursorHistory, setCursorHistory] = useState([null]);
@@ -55,14 +57,18 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   useEffect(() => {
     setPagination(prev => ({ ...prev, pageIndex: 0 }));
     setCursorHistory([null]);
-  }, [searchTerm, pagination.pageSize]);
+  }, [searchTerm, pagination.pageSize, isTodayOnly]);
 
   const fetchData = useCallback(() => {
     const currentCursor = cursorHistory[pagination.pageIndex];
-    let url = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
-    if (currentCursor) {
-      url += `&cursor=${currentCursor}`;
+    let endpoint = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+    if (isTodayOnly) {
+      endpoint += '&today=true';
     }
+    if (currentCursor) {
+      endpoint += `&cursor=${currentCursor}`;
+    }
+    const url = buildApiUrl(endpoint);
     
     setIsLoading(true);
     fetch(url)
@@ -90,7 +96,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         setIsLoading(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -200,7 +206,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     if (!rowToDelete) return;
     
     try {
-      const response = await fetch(`/api/patients/${rowToDelete.original.id}`, {
+      const response = await fetch(buildApiUrl(`/api/patients/${rowToDelete.original.id}`), {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -231,6 +237,20 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         <h2>Patient Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
+          <Button
+            variant={isTodayOnly ? "contained" : "outlined"}
+            onClick={() => setIsTodayOnly(prev => !prev)}
+            sx={{
+              whiteSpace: 'nowrap',
+              fontWeight: 600,
+              ...(isTodayOnly ? {
+                backgroundColor: 'hsla(221, 83%, 53%, 0.25)',
+                borderColor: 'var(--primary)',
+              } : {})
+            }}
+          >
+            Today's Patients
+          </Button>
           <TextField
             autoFocus
             inputRef={searchInputRef}

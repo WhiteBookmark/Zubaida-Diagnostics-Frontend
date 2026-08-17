@@ -182,12 +182,21 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
               }}
             >
               {isImage ? (
-                <img
-                  src={url}
-                  alt="thumb"
-                  loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(221, 83%, 53%) 100%)',
+                    color: '#ffffff',
+                    boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px', lineHeight: 1 }}>IMG</span>
+                </Box>
               ) : isPdf ? (
                 <Box
                   sx={{

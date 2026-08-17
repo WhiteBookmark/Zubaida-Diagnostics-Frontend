@@ -1,12 +1,103 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Button, Snackbar, Alert, IconButton, CircularProgress, Box, Typography } from '@mui/material';
+import { useState, useEffect, useCallback } from 'react';
+import { Button, Snackbar, Alert, IconButton, CircularProgress, Box, Typography, LinearProgress } from '@mui/material';
 import { Badge, Description } from '@mui/icons-material';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import CloseIcon from '@mui/icons-material/Close';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
 import '../../styles/Auth.css';
+
+/**
+ * Asynchronously compresses and optimizes an image file (e.g. raw scanner bitmap/PNG)
+ * to prevent browser memory thrashing and huge network payload freezes.
+ * Preserves crisp diagnostic text and stamps while shrinking raw 30MB scans down to ~350KB-600KB.
+ *
+ * @param {File} file - The file to compress.
+ * @returns {Promise<File>} Compressed File or original if not an image.
+ */
+async function compressImageFile(file) {
+  if (!file || typeof file !== 'object') return file;
+
+  // Non-image files (PDF, Word docs) pass through untouched
+  const isImage = file.type?.startsWith('image/') || /\.(bmp|png|jpe?g|webp|tiff)$/i.test(file.name || '');
+  if (!isImage) return file;
+
+  return new Promise((resolve) => {
+    // If file is already small (< 500KB) and is JPEG/WebP, keep as is
+    if (file.size < 500 * 1024 && (file.type === 'image/jpeg' || file.type === 'image/webp')) {
+      return resolve(file);
+    }
+
+    const tempUrl = URL.createObjectURL(file);
+    const img = new window.Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(tempUrl);
+      try {
+        const MAX_DIM = 2200; // Optimal for high-DPI A4 medical scans
+        let width = img.naturalWidth || img.width;
+        let height = img.naturalHeight || img.height;
+
+        if (width <= 0 || height <= 0) {
+          return resolve(file);
+        }
+
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d', { alpha: false });
+        if (!ctx) return resolve(file);
+
+        // Fill white background for scans (cleanly handles transparent PNG / BMP conversions)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob || blob.size >= file.size) {
+              // If compressed blob is somehow larger, preserve original
+              return resolve(file);
+            }
+
+            const baseName = (file.name || `scan-${Date.now()}`).replace(/\.[^/.]+$/, '');
+            const optimizedFile = new File([blob], `${baseName}.jpg`, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+
+            resolve(optimizedFile);
+          },
+          'image/jpeg',
+          0.88
+        );
+      } catch (err) {
+        console.warn('[AddDocument] Image compression fallback to original:', err);
+        resolve(file);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(tempUrl);
+      resolve(file);
+    };
+
+    img.src = tempUrl;
+  });
+}
 
 export default function AddDocument({ onBack, onSave }) {
   const [formData, setFormData] = useState(() => {
@@ -24,66 +115,93 @@ export default function AddDocument({ onBack, onSave }) {
     };
   });
 
-  const [files, setFiles] = useState([]);
+  // Array of { id: string, file: File, previewUrl: string | null }
+  const [fileEntries, setFileEntries] = useState([]);
+  const [isProcessingFiles, setIsProcessingFiles] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(false);
 
-  // Generate preview URLs using useMemo and revoke object URLs on cleanup
-  const previews = useMemo(() => {
-    return files.map(file => ({
-      file,
-      url: file.type.startsWith('image/') || file.type === 'application/pdf' ? URL.createObjectURL(file) : null
-    }));
-  }, [files]);
-
+  // Clean up all object URLs when unmounting component
   useEffect(() => {
     return () => {
-      previews.forEach(p => {
-        if (p.url) {
-          URL.revokeObjectURL(p.url);
+      fileEntries.forEach(entry => {
+        if (entry.previewUrl) {
+          try {
+            URL.revokeObjectURL(entry.previewUrl);
+          } catch {
+            // Ignore already revoked URLs
+          }
         }
       });
     };
-  }, [previews]);
+  }, [fileEntries]);
 
-  useEffect(() => {
-    const handleGlobalPaste = (e) => {
-      const active = document.activeElement;
-      if (
-        active &&
-        (active.tagName === 'INPUT' ||
-          active.tagName === 'TEXTAREA' ||
-          active.isContentEditable)
-      ) {
-        return;
+  /**
+   * Processes incoming files with asynchronous image compression & safe URL generation.
+   */
+  const processIncomingFiles = useCallback(async (incomingList) => {
+    if (!incomingList || incomingList.length === 0) return;
+    setIsProcessingFiles(true);
+
+    try {
+      const newEntries = [];
+      for (let i = 0; i < incomingList.length; i++) {
+        const rawFile = incomingList[i];
+        const compressed = await compressImageFile(rawFile);
+        const isImgOrPdf = compressed.type?.startsWith('image/') || compressed.type === 'application/pdf';
+        const previewUrl = isImgOrPdf ? URL.createObjectURL(compressed) : null;
+
+        newEntries.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}-${i}`,
+          file: compressed,
+          previewUrl
+        });
       }
 
+      setFileEntries(prev => [...prev, ...newEntries]);
+      setToast({
+        open: true,
+        message: `${incomingList.length} file(s) ready for upload!`,
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('[AddDocument] Error processing files:', err);
+      setToast({
+        open: true,
+        message: 'Error processing selected files.',
+        severity: 'error'
+      });
+    } finally {
+      setIsProcessingFiles(false);
+    }
+  }, []);
+
+  /**
+   * Clipboard Paste Listener: Handles scanner clipboard pastes even if an input field is active.
+   */
+  useEffect(() => {
+    const handleGlobalPaste = (e) => {
       const items = e.clipboardData?.items;
-      if (items) {
-        const pastedFiles = [];
-        for (let i = 0; i < items.length; i++) {
-          if (items[i].kind === 'file') {
-            const pastedFile = items[i].getAsFile();
-            if (pastedFile) {
-              const extension = pastedFile.type.split('/')[1]?.split('+')[0] || 'png';
-              const uniqueName = (!pastedFile.name || pastedFile.name === 'image.png')
-                ? `Pasted-Scan-${Date.now()}-${i + 1}.${extension}`
-                : pastedFile.name;
-              const renamedFile = new File([pastedFile], uniqueName, { type: pastedFile.type });
-              pastedFiles.push(renamedFile);
-            }
+      if (!items || items.length === 0) return;
+
+      const pastedFiles = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file') {
+          const pastedFile = items[i].getAsFile();
+          if (pastedFile) {
+            const extension = pastedFile.type.split('/')[1]?.split('+')[0] || 'png';
+            const uniqueName = (!pastedFile.name || pastedFile.name === 'image.png')
+              ? `Pasted-Scan-${Date.now()}-${i + 1}.${extension}`
+              : pastedFile.name;
+            const renamedFile = new File([pastedFile], uniqueName, { type: pastedFile.type });
+            pastedFiles.push(renamedFile);
           }
         }
+      }
 
-        if (pastedFiles.length > 0) {
-          setFiles(prev => [...prev, ...pastedFiles]);
-          setToast({
-            open: true,
-            message: `${pastedFiles.length} file(s) pasted from clipboard!`,
-            severity: 'success'
-          });
-          e.preventDefault();
-        }
+      if (pastedFiles.length > 0) {
+        e.preventDefault();
+        processIncomingFiles(pastedFiles);
       }
     };
 
@@ -91,7 +209,7 @@ export default function AddDocument({ onBack, onSave }) {
     return () => {
       document.removeEventListener('paste', handleGlobalPaste);
     };
-  }, []);
+  }, [processIncomingFiles]);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -99,20 +217,30 @@ export default function AddDocument({ onBack, onSave }) {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleFileChange = (e) => {
     const selected = Array.from(e.target.files || []);
     if (selected.length > 0) {
-      setFiles(prev => [...prev, ...selected]);
+      processIncomingFiles(selected);
     }
     // Reset file input value so re-selecting same files triggers onChange
     e.target.value = '';
   };
 
-  const removeFile = (indexToRemove) => {
-    setFiles(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  const removeFile = (idToRemove) => {
+    setFileEntries(prev => {
+      const target = prev.find(item => item.id === idToRemove);
+      if (target && target.previewUrl) {
+        try {
+          URL.revokeObjectURL(target.previewUrl);
+        } catch {
+          // Ignore
+        }
+      }
+      return prev.filter(item => item.id !== idToRemove);
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -125,14 +253,14 @@ export default function AddDocument({ onBack, onSave }) {
       return;
     }
 
-    if (files.length === 0) {
+    if (fileEntries.length === 0) {
       setToast({ open: true, message: 'Please select or paste at least one file.', severity: 'error' });
       return;
     }
 
     const data = new FormData();
-    files.forEach(file => {
-      data.append('files', file);
+    fileEntries.forEach(entry => {
+      data.append('files', entry.file);
     });
     data.append('type', formData.type);
 
@@ -166,7 +294,7 @@ export default function AddDocument({ onBack, onSave }) {
         throw new Error(errorMessage);
       }
 
-      setToast({ open: true, message: `${files.length} document(s) uploaded successfully!`, severity: 'success' });
+      setToast({ open: true, message: `${fileEntries.length} document(s) uploaded successfully!`, severity: 'success' });
       onSave(); // Navigate back or refresh
     } catch (error) {
       console.error(error);
@@ -231,15 +359,22 @@ export default function AddDocument({ onBack, onSave }) {
             boxSizing: 'border-box'
           }}>
             <div style={{ fontSize: '14px', color: 'hsl(222, 47%, 11%)', textAlign: 'center' }}>
-              {files.length > 0 ? (
+              {isProcessingFiles ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)' }}>
+                    Optimizing scanned images for high performance...
+                  </Typography>
+                  <LinearProgress sx={{ width: '80%', borderRadius: 1 }} />
+                </Box>
+              ) : fileEntries.length > 0 ? (
                 <div style={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)' }}>
-                  {files.length} file(s) selected
+                  {fileEntries.length} file(s) selected
                 </div>
               ) : (
                 <>
                   <div style={{ fontWeight: 500 }}>No files selected</div>
                   <div style={{ fontSize: '12px', color: 'hsl(215, 16%, 47%)', marginTop: '4px' }}>
-                    Press Ctrl + V repeatedly to paste multiple files here
+                    Press Ctrl + V repeatedly to paste multiple files/scans here
                   </div>
                 </>
               )}
@@ -249,7 +384,7 @@ export default function AddDocument({ onBack, onSave }) {
               <Button
                 variant="contained"
                 component="label"
-                disabled={loading}
+                disabled={loading || isProcessingFiles}
                 sx={{ textTransform: 'none' }}
               >
                 Choose Files
@@ -260,7 +395,7 @@ export default function AddDocument({ onBack, onSave }) {
                   accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.svg,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   hidden
                   onChange={handleFileChange}
-                  disabled={loading}
+                  disabled={loading || isProcessingFiles}
                 />
               </Button>
             </div>
@@ -268,7 +403,7 @@ export default function AddDocument({ onBack, onSave }) {
         </div>
 
         {/* Selected Files List and Previews */}
-        {files.length > 0 && (
+        {fileEntries.length > 0 && (
           <Box sx={{
             marginTop: '15px',
             width: '100%',
@@ -282,13 +417,13 @@ export default function AddDocument({ onBack, onSave }) {
             gap: '10px'
           }}>
             <Typography variant="caption" sx={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Selected Files ({files.length}):
+              Selected Files ({fileEntries.length}):
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: '300px', overflowY: 'auto', pr: 0.5 }}>
-              {previews.map(({ file, url }, index) => (
+              {fileEntries.map(({ id, file, previewUrl }) => (
                 <Box
-                  key={index}
+                  key={id}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -301,9 +436,9 @@ export default function AddDocument({ onBack, onSave }) {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, flex: 1 }}>
-                    {file.type.startsWith('image/') && url ? (
+                    {file.type.startsWith('image/') && previewUrl ? (
                       <img
-                        src={url}
+                        src={previewUrl}
                         alt="Preview"
                         style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid hsl(214, 32%, 85%)' }}
                       />
@@ -336,8 +471,8 @@ export default function AddDocument({ onBack, onSave }) {
 
                   <IconButton
                     size="small"
-                    onClick={() => removeFile(index)}
-                    disabled={loading}
+                    onClick={() => removeFile(id)}
+                    disabled={loading || isProcessingFiles}
                     sx={{ color: 'hsl(0, 72%, 51%)' }}
                     title="Remove file"
                   >
@@ -351,14 +486,14 @@ export default function AddDocument({ onBack, onSave }) {
 
         {/* Upload Button */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '16px', width: '100%' }}>
-          <Button variant="contained" fullWidth type="submit" disabled={loading} sx={{ gap: 1 }}>
+          <Button variant="contained" fullWidth type="submit" disabled={loading || isProcessingFiles} sx={{ gap: 1 }}>
             {loading ? (
               <>
                 <CircularProgress size={20} color="inherit" />
                 Saving...
               </>
             ) : (
-              `Save ${files.length} File(s)`
+              `Save ${fileEntries.length} File(s)`
             )}
           </Button>
         </div>

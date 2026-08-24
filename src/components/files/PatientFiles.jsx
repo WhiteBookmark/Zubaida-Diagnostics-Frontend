@@ -184,13 +184,13 @@ export default function PatientFiles() {
   };
 
   return (
-    <div className="auth-container" style={{ maxWidth: '780px', margin: '30px auto', padding: '0 20px' }}>
-      <form onSubmit={handleOpenFile} className="auth-form" style={{ width: '100%', maxWidth: '720px' }}>
+    <div className="auth-container" style={{ maxWidth: '420px', margin: '30px auto', padding: '0 16px' }}>
+      <form onSubmit={handleOpenFile} className="auth-form" style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '8px' }}>
-          <FolderOpen sx={{ fontSize: 36, color: 'hsl(221, 83%, 53%)' }} />
-          <h2 style={{ margin: 0, color: 'hsl(222, 47%, 11%)' }}>Patient Files & Dossier</h2>
+          <FolderOpen sx={{ fontSize: 32, color: 'hsl(221, 83%, 53%)' }} />
+          <h2 style={{ margin: 0, color: 'hsl(222, 47%, 11%)', fontSize: '22px' }}>Patient Files & Dossier</h2>
         </div>
-        <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: 'hsl(215, 16%, 47%)', textAlign: 'center' }}>
+        <p style={{ margin: '0 0 18px 0', fontSize: '13px', color: 'hsl(215, 16%, 47%)', textAlign: 'center', lineHeight: '1.4' }}>
           Select document types and enter patient MR Number to compile and download all diagnostic records as a single PDF.
         </p>
 
@@ -273,9 +273,9 @@ export default function PatientFiles() {
             elevation={0}
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr' },
-              gap: '12px',
-              padding: '16px',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '8px',
+              padding: '12px',
               background: 'hsl(215, 30%, 97%)',
               border: '1px solid hsl(215, 25%, 85%)',
               borderRadius: '12px',
@@ -296,9 +296,9 @@ export default function PatientFiles() {
                 />
               }
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <MedicalServices sx={{ fontSize: 18, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '14px', color: 'hsl(222, 47%, 11%)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <MedicalServices sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
                     X-Ray
                   </Typography>
                 </Box>
@@ -320,9 +320,9 @@ export default function PatientFiles() {
                 />
               }
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocalHospital sx={{ fontSize: 18, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '14px', color: 'hsl(222, 47%, 11%)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <LocalHospital sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
                     Ultrasound
                   </Typography>
                 </Box>
@@ -344,9 +344,9 @@ export default function PatientFiles() {
                 />
               }
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <DescriptionOutlined sx={{ fontSize: 18, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '14px', color: 'hsl(222, 47%, 11%)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <DescriptionOutlined sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
                     Prescription
                   </Typography>
                 </Box>
@@ -368,9 +368,9 @@ export default function PatientFiles() {
                 />
               }
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Science sx={{ fontSize: 18, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '14px', color: 'hsl(222, 47%, 11%)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <Science sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
                     Lab Report
                   </Typography>
                 </Box>
@@ -383,7 +383,7 @@ export default function PatientFiles() {
         {loading && (
           <Box sx={{ width: '100%', mt: 2, p: 2, background: 'hsl(215, 30%, 97%)', borderRadius: 2, border: '1px solid hsl(215, 25%, 85%)' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)', fontSize: '13px' }}>
                 {progressStatus || 'Processing documents...'}
               </Typography>
               <Typography variant="caption" sx={{ fontWeight: 700, color: 'hsl(221, 83%, 53%)' }}>
@@ -420,24 +420,27 @@ export default function PatientFiles() {
               gap: 1.5,
               py: 1.2,
               fontSize: '16px',
-              fontWeight: 600,
+              fontWeight: 700,
+              color: '#ffffff !important',
               textTransform: 'none',
               fontFamily: 'Georgia, serif',
               background: 'linear-gradient(135deg, hsl(221, 83%, 53%) 0%, hsl(224, 76%, 45%) 100%)',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
               '&:hover': {
                 background: 'linear-gradient(135deg, hsl(221, 83%, 48%) 0%, hsl(224, 76%, 40%) 100%)',
+                boxShadow: '0 6px 16px rgba(37, 99, 235, 0.45)',
               }
             }}
           >
             {loading ? (
               <>
-                <CircularProgress size={22} color="inherit" />
-                <span>Compiling PDF Dossier...</span>
+                <CircularProgress size={22} sx={{ color: '#ffffff' }} />
+                <span style={{ color: '#ffffff', fontWeight: 700 }}>Compiling PDF Dossier...</span>
               </>
             ) : (
               <>
-                <PictureAsPdf sx={{ fontSize: 20 }} />
-                <span>Open File</span>
+                <PictureAsPdf sx={{ fontSize: 22, color: '#ffffff' }} />
+                <span style={{ color: '#ffffff', fontWeight: 700 }}>Open File</span>
               </>
             )}
           </Button>

@@ -247,14 +247,6 @@ export async function generatePatientDossierPdf(patient, documents, onProgress =
     color: rgb(0.2, 0.25, 0.35),
   });
 
-  coverPage.drawText(`Blood Group: ${patient.bloodGroup || 'N/A'}`, {
-    x: col2X,
-    y: currentY - 88,
-    size: 10,
-    font: fontRegular,
-    color: rgb(0.2, 0.25, 0.35),
-  });
-
   // Document Summary Table Header
   currentY -= 135;
   coverPage.drawText(`INCLUDED MEDICAL RECORDS (${sortedDocs.length} FILES)`, {
@@ -277,10 +269,9 @@ export async function generatePatientDossierPdf(patient, documents, onProgress =
     borderWidth: 1,
   });
 
-  coverPage.drawText('#', { x: MARGIN + 8, y: currentY - 12, size: 9, font: fontBold, color: rgb(0.1, 0.15, 0.25) });
-  coverPage.drawText('DOCUMENT TYPE', { x: MARGIN + 35, y: currentY - 12, size: 9, font: fontBold, color: rgb(0.1, 0.15, 0.25) });
-  coverPage.drawText('DATE & TIME', { x: MARGIN + 175, y: currentY - 12, size: 9, font: fontBold, color: rgb(0.1, 0.15, 0.25) });
-  coverPage.drawText('FILE NAME / FORMAT', { x: MARGIN + 325, y: currentY - 12, size: 9, font: fontBold, color: rgb(0.1, 0.15, 0.25) });
+  coverPage.drawText('#', { x: MARGIN + 12, y: currentY - 12, size: 9, font: fontBold, color: rgb(0.1, 0.15, 0.25) });
+  coverPage.drawText('DOCUMENT TYPE', { x: MARGIN + 60, y: currentY - 12, size: 9, font: fontBold, color: rgb(0.1, 0.15, 0.25) });
+  coverPage.drawText('RECORD DATE & TIME', { x: MARGIN + 310, y: currentY - 12, size: 9, font: fontBold, color: rgb(0.1, 0.15, 0.25) });
 
   currentY -= 22;
 
@@ -302,14 +293,10 @@ export async function generatePatientDossierPdf(patient, documents, onProgress =
     });
 
     const dateFormatted = doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleString() : 'N/A';
-    const displayFileName = (doc.fileName || '').length > 25
-      ? `${(doc.fileName || '').slice(0, 22)}...`
-      : (doc.fileName || 'N/A');
 
-    coverPage.drawText(String(i + 1), { x: MARGIN + 8, y: currentY - 11, size: 8, font: fontRegular, color: rgb(0.3, 0.35, 0.45) });
-    coverPage.drawText(String(doc.type || 'General'), { x: MARGIN + 35, y: currentY - 11, size: 8, font: fontBold, color: rgb(0.15, 0.2, 0.3) });
-    coverPage.drawText(dateFormatted, { x: MARGIN + 175, y: currentY - 11, size: 8, font: fontRegular, color: rgb(0.3, 0.35, 0.45) });
-    coverPage.drawText(displayFileName, { x: MARGIN + 325, y: currentY - 11, size: 8, font: fontRegular, color: rgb(0.3, 0.35, 0.45) });
+    coverPage.drawText(String(i + 1), { x: MARGIN + 12, y: currentY - 11, size: 8, font: fontRegular, color: rgb(0.3, 0.35, 0.45) });
+    coverPage.drawText(String(doc.type || 'General'), { x: MARGIN + 60, y: currentY - 11, size: 8, font: fontBold, color: rgb(0.15, 0.2, 0.3) });
+    coverPage.drawText(dateFormatted, { x: MARGIN + 310, y: currentY - 11, size: 8, font: fontRegular, color: rgb(0.3, 0.35, 0.45) });
 
     currentY -= 18;
     tableRowsCount++;
@@ -545,7 +532,7 @@ export async function generatePatientDossierPdf(patient, documents, onProgress =
         color: rgb(0.8, 0.1, 0.1),
       });
 
-      errorPage.drawText(`File: ${doc.fileName} (${dateFormatted})`, {
+      errorPage.drawText(`Document Type: ${doc.type || 'General Document'} (Date: ${dateFormatted})`, {
         x: MARGIN + 15,
         y: PAGE_HEIGHT - 95,
         size: 9,

@@ -186,13 +186,10 @@ export default function PatientFiles() {
   return (
     <div className="auth-container" style={{ maxWidth: '420px', margin: '30px auto', padding: '0 16px' }}>
       <form onSubmit={handleOpenFile} className="auth-form" style={{ width: '100%', maxWidth: '400px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '20px' }}>
           <FolderOpen sx={{ fontSize: 32, color: 'hsl(221, 83%, 53%)' }} />
           <h2 style={{ margin: 0, color: 'hsl(222, 47%, 11%)', fontSize: '22px' }}>Patient Files & Dossier</h2>
         </div>
-        <p style={{ margin: '0 0 18px 0', fontSize: '13px', color: 'hsl(215, 16%, 47%)', textAlign: 'center', lineHeight: '1.4' }}>
-          Select document types and enter patient MR Number to compile and download all diagnostic records as a single PDF.
-        </p>
 
         {/* MR Number Input Box (Copied from AddDocument with same attributes & styling) */}
         <div className="input-group">

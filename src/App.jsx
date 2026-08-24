@@ -10,6 +10,7 @@ import Header from './components/common/Header'
 import AppointmentRecords from './components/appointments/AppointmentRecords'
 import DocumentRecords from './components/documents/DocumentRecords'
 import AddDocument from './components/documents/AddDocument'
+import PatientFiles from './components/files/PatientFiles'
 import useQrScanner from './hooks/useQrScanner'
 import './styles/App.css'
 import './styles/Auth.css'
@@ -237,6 +238,9 @@ function App() {
       if (view === 'addDocument') {
           return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
       }
+      if (currentPage === 'files' && ['prescription', 'ps123', 'Prescription Department'].includes(username)) {
+          return <PatientFiles key={`files-${resetKey}`} />;
+      }
       return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
     }
 
@@ -264,6 +268,8 @@ function App() {
     }
 
     switch (currentPage) {
+      case 'files':
+        return <PatientFiles key={`files-${resetKey}`} />;
       case 'appointments':
         return <AppointmentRecords 
                   key={`appointments-${resetKey}`} 

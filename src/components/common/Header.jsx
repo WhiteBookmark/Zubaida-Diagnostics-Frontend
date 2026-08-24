@@ -2,13 +2,22 @@ import logo from '../../assets/Logo.png';
 
 export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
   const departmentUsers = ['xray', 'ultrasound', 'lab', 'prescription', 'X-Ray Department', 'Ultrasound Department', 'Lab Department', 'xr123', 'us123', 'lb123', 'ps123'];
+  const prescriptionUsers = ['prescription', 'ps123', 'Prescription Department'];
+
+  const isPrescription = prescriptionUsers.includes(username);
+  const isOtherDepartment = departmentUsers.includes(username) && !isPrescription;
+
   const links = [
     { name: 'Patient Records', id: 'patients' },
     { name: 'Appointment Records', id: 'appointments' },
     { name: 'Documents', id: 'documents' },
+    { name: 'Files', id: 'files' },
   ].filter(link => {
-    if (departmentUsers.includes(username)) {
+    if (isOtherDepartment) {
       return link.id === 'documents';
+    }
+    if (isPrescription) {
+      return link.id === 'documents' || link.id === 'files';
     }
     return true;
   });

@@ -275,10 +275,13 @@ export default function PatientFiles() {
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: '8px',
-              padding: '12px',
+              padding: '12px 16px',
               background: 'hsl(215, 30%, 97%)',
               border: '1px solid hsl(215, 25%, 85%)',
               borderRadius: '12px',
+              width: '100%',
+              boxSizing: 'border-box',
+              margin: '0 auto'
             }}
           >
             {/* X-Ray Checkbox */}

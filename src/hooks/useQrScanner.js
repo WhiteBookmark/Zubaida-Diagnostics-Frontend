@@ -15,6 +15,12 @@ import { useEffect, useRef, useCallback } from 'react';
 export default function useQrScanner(onScan, { enabled = true, idleTimeoutMs = 1500 } = {}) {
   const bufferRef = useRef('');
   const timeoutRef = useRef(null);
+  const onScanRef = useRef(onScan);
+  const lastProcessedRef = useRef(0);
+
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
 
   const resetBuffer = useCallback(() => {
     bufferRef.current = '';
@@ -28,10 +34,19 @@ export default function useQrScanner(onScan, { enabled = true, idleTimeoutMs = 1
     if (!text || typeof text !== 'string') return false;
     const raw = text.trim();
     if (raw.startsWith('{') && raw.endsWith('}')) {
+      // Debounce rapid double triggers (e.g. '}' and trailing 'Enter' from scanner)
+      const now = Date.now();
+      if (now - lastProcessedRef.current < 1000) {
+        resetBuffer();
+        return true;
+      }
+
       try {
         const parsed = JSON.parse(raw);
         // Validate it has the expected MR Number field
         if (parsed && typeof parsed === 'object' && parsed['MR Number']) {
+          lastProcessedRef.current = now;
+
           if (event && typeof event.preventDefault === 'function') {
             event.preventDefault();
             event.stopPropagation();
@@ -54,8 +69,8 @@ export default function useQrScanner(onScan, { enabled = true, idleTimeoutMs = 1
           }
 
           resetBuffer();
-          if (typeof onScan === 'function') {
-            onScan(parsed);
+          if (typeof onScanRef.current === 'function') {
+            onScanRef.current(parsed);
           }
           return true;
         }
@@ -64,7 +79,7 @@ export default function useQrScanner(onScan, { enabled = true, idleTimeoutMs = 1
       }
     }
     return false;
-  }, [onScan, resetBuffer]);
+  }, [resetBuffer]);
 
   useEffect(() => {
     if (!enabled) return;

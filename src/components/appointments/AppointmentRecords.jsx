@@ -266,6 +266,11 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   const isLinux = typeof window !== 'undefined' && /Linux|X11/i.test(navigator.userAgent);
   const isWindows = typeof window !== 'undefined' && /Win/i.test(navigator.userAgent);
 
+  const clearPendingRef = useRef(clearPending);
+  useEffect(() => {
+    clearPendingRef.current = clearPending;
+  }, [clearPending]);
+
   useEffect(() => {
     if (initialToastMessage) {
       setToast({ open: true, message: initialToastMessage, severity: 'success' });
@@ -275,9 +280,11 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       handlePrintToken(initialPrintRecord);
     }
     if (initialToastMessage || initialPrintRecord) {
-      if (clearPending) clearPending();
+      if (typeof clearPendingRef.current === 'function') {
+        clearPendingRef.current();
+      }
     }
-  }, [initialToastMessage, initialPrintRecord, clearPending, handlePrintToken, isWindows]);
+  }, [initialToastMessage, initialPrintRecord, isWindows, handlePrintToken]);
 
   const handlePrintTokenServer = useCallback(async (appointment) => {
     try {

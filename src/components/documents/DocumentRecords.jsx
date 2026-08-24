@@ -46,12 +46,19 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     localStorage.setItem('documentRecordsPageSize', pagination.pageSize);
   }, [pagination.pageSize]);
 
+  const clearPendingRef = useRef(clearPending);
+  useEffect(() => {
+    clearPendingRef.current = clearPending;
+  }, [clearPending]);
+
   useEffect(() => {
     if (initialToastMessage) {
       setToast({ open: true, message: initialToastMessage, severity: 'success' });
-      if (clearPending) clearPending();
+      if (typeof clearPendingRef.current === 'function') {
+        clearPendingRef.current();
+      }
     }
-  }, [initialToastMessage, clearPending]);
+  }, [initialToastMessage]);
 
   useEffect(() => {
     setPagination(prev => ({ ...prev, pageIndex: 0 }));

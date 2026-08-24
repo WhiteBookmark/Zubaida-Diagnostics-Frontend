@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Snackbar, Alert, CircularProgress } from '@mui/material'
 import Login from './pages/LoginPage'
 import Dashboard from './components/common/Dashboard'
@@ -132,17 +132,26 @@ function App() {
     setResetKey(prev => prev + 1);
   }, []);
 
+  const isScanProcessingRef = useRef(false);
+
+  const handleClearPendingAppointment = useCallback(() => {
+    setPendingAppointmentPrint(null);
+    setPendingAppointmentToast('');
+  }, []);
+
   /**
    * Zero-click QR scan handler: auto-creates appointment + triggers server thermal print.
    * Called by the useQrScanner hook when a valid patient QR code JSON is detected.
    */
   const handleQrScan = useCallback(async (qrData) => {
     // Prevent duplicate scans while one is already processing
-    if (isScanProcessing) return;
+    if (isScanProcessingRef.current) return;
+    isScanProcessingRef.current = true;
     setIsScanProcessing(true);
 
     const mrNumber = String(qrData['MR Number'] || '').trim();
     if (!mrNumber || !/^\d+$/.test(mrNumber)) {
+      isScanProcessingRef.current = false;
       setIsScanProcessing(false);
       return;
     }
@@ -209,9 +218,10 @@ function App() {
       setCurrentPage('appointments');
       setResetKey(prev => prev + 1);
     } finally {
+      isScanProcessingRef.current = false;
       setIsScanProcessing(false);
     }
-  }, [isScanProcessing]);
+  }, []);
 
   // Activate QR scanner hook — enabled only when logged in and not already processing a scan
   useQrScanner(handleQrScan, { enabled: isLoggedIn && !isScanProcessing });
@@ -259,10 +269,7 @@ function App() {
                   key={`appointments-${resetKey}`} 
                   initialPrintRecord={pendingAppointmentPrint}
                   initialToastMessage={pendingAppointmentToast}
-                  clearPending={() => {
-                    setPendingAppointmentPrint(null);
-                    setPendingAppointmentToast('');
-                  }}
+                  clearPending={handleClearPendingAppointment}
                   refreshKey={resetKey}
                />;
       case 'documents':

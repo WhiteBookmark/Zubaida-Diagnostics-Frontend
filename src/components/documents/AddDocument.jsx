@@ -108,6 +108,7 @@ export default function AddDocument({ onBack, onSave }) {
     else if (storedUsername === 'us123' || storedUsername === 'ultrasound' || storedUsername === 'Ultrasound Department') defaultType = 'Ultrasound';
     else if (storedUsername === 'lb123' || storedUsername === 'lab' || storedUsername === 'Lab Department') defaultType = 'Lab Result';
     else if (storedUsername === 'ps123' || storedUsername === 'prescription') defaultType = 'Prescription';
+    else if (storedUsername === 'pft123' || storedUsername === 'pft' || storedUsername === 'PFT Department') defaultType = 'PFT';
 
     return {
       mrNumber: '',
@@ -339,6 +340,7 @@ export default function AddDocument({ onBack, onSave }) {
               <option value="Ultrasound">Ultrasound</option>
               <option value="Lab Result">Lab Result</option>
               <option value="Prescription">Prescription</option>
+              <option value="PFT">PFT</option>
             </select>
           </div>
         </div>

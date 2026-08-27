@@ -19,7 +19,8 @@ import {
   DescriptionOutlined,
   LocalHospital,
   Science,
-  MedicalServices
+  MedicalServices,
+  Air
 } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import { generatePatientDossierPdf } from '../../utils/pdfDossierGenerator';
@@ -33,6 +34,7 @@ export default function PatientFiles() {
     ultrasound: true,
     prescription: true,
     labReport: true,
+    pft: true,
   });
 
   const [loading, setLoading] = useState(false);
@@ -64,6 +66,7 @@ export default function PatientFiles() {
       ultrasound: shouldSelect,
       prescription: shouldSelect,
       labReport: shouldSelect,
+      pft: shouldSelect,
     });
   };
 
@@ -138,6 +141,7 @@ export default function PatientFiles() {
         if (selectedTypes.ultrasound && (docType.includes('ultrasound') || docType.includes('us') || docType.includes('ultra'))) return true;
         if (selectedTypes.prescription && (docType.includes('prescription') || docType.includes('ps') || docType.includes('rx'))) return true;
         if (selectedTypes.labReport && (docType.includes('lab') || docType.includes('report') || docType.includes('result'))) return true;
+        if (selectedTypes.pft && (docType.includes('pft') || docType.includes('pulmonary'))) return true;
         return false;
       });
 
@@ -372,6 +376,30 @@ export default function PatientFiles() {
                   <Science sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
                   <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
                     Lab Report
+                  </Typography>
+                </Box>
+              }
+            />
+
+            {/* PFT Checkbox */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={selectedTypes.pft}
+                  onChange={handleCheckboxChange}
+                  name="pft"
+                  disabled={loading}
+                  sx={{
+                    color: 'hsl(221, 83%, 53%)',
+                    '&.Mui-checked': { color: 'hsl(221, 83%, 53%)' },
+                  }}
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <Air sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
+                    PFT
                   </Typography>
                 </Box>
               }

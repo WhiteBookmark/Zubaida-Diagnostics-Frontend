@@ -3,6 +3,7 @@ import { Box, Typography, CircularProgress } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FolderIcon from '@mui/icons-material/Folder';
+import { buildApiUrl } from '../../config/api';
 
 export default function Dashboard() {
   const [counts, setCounts] = useState({
@@ -38,9 +39,9 @@ export default function Dashboard() {
     const fetchCounts = async () => {
       try {
         const [patientsRes, appointmentsRes, documentsRes] = await Promise.allSettled([
-          fetchCount('/api/patients/count'),
-          fetchCount('/api/appointments/count'),
-          fetchCount('/api/documents/count')
+          fetchCount(buildApiUrl('/api/patients/count/exact')),
+          fetchCount(buildApiUrl('/api/appointments/count/exact')),
+          fetchCount(buildApiUrl('/api/documents/count/exact'))
         ]);
 
         if (!isMounted) return;

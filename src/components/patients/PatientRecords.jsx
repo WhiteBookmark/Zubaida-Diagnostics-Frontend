@@ -22,7 +22,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   }, []);
 
   const [data, setData] = useState([]);
-  const [approximateCount, setApproximateCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isTodayOnly, setIsTodayOnly] = useState(false);
@@ -85,7 +85,6 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         if (result && Array.isArray(result.data)) {
           setData(result.data);
           setNextCursor(result.nextCursor || null);
-          if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
           if (result.nextCursor) {
              setCursorHistory(prev => {
                 const newHistory = [...prev];
@@ -102,6 +101,19 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         console.error(err);
         setIsLoading(false);
       });
+
+    // Fetch exact count separately
+    fetch(buildApiUrl('/api/patients/count/exact'))
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch count');
+        return res.json();
+      })
+      .then(countResult => {
+        if (countResult && typeof countResult.count === 'number') {
+          setTotalCount(countResult.count);
+        }
+      })
+      .catch(err => console.error('Error fetching exact patient count:', err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly]);
 
@@ -334,7 +346,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
             <strong>
               {table.getState().pagination.pageIndex + 1}
             </strong>
-            {' '}(Roughly {approximateCount.toLocaleString()} Records)
+            {' '}({totalCount.toLocaleString()} Records)
           </span>
           <Select
             value={table.getState().pagination.pageSize}

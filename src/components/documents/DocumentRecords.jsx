@@ -18,7 +18,7 @@ import { buildApiUrl } from '../../config/api';
 export default function DocumentRecords({ onAddDocument, initialToastMessage, clearPending, refreshKey }) {
   const searchInputRef = useRef(null); // Added ref for search input
   const [data, setData] = useState([]);
-  const [approximateCount, setApproximateCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,7 +87,6 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         if (result && Array.isArray(result.data)) {
           setData(result.data);
           setNextCursor(result.nextCursor || null);
-          if (result.metadata?.approximateCount !== undefined) setApproximateCount(result.metadata.approximateCount);
           if (result.nextCursor) {
              setCursorHistory(prev => {
                 const newHistory = [...prev];
@@ -104,6 +103,19 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         console.error('Error fetching documents:', err);
         setIsLoading(false);
       });
+
+    // Fetch exact count separately
+    fetch(buildApiUrl('/api/documents/count/exact'))
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch count');
+        return res.json();
+      })
+      .then(countResult => {
+        if (countResult && typeof countResult.count === 'number') {
+          setTotalCount(countResult.count);
+        }
+      })
+      .catch(err => console.error('Error fetching exact document count:', err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly]);
 
@@ -434,7 +446,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
             <strong>
               {table.getState().pagination.pageIndex + 1}
             </strong>
-            {' '}(Roughly {approximateCount.toLocaleString()} Records)
+            {' '}({totalCount.toLocaleString()} Records)
           </span>
           <Select
             value={table.getState().pagination.pageSize}

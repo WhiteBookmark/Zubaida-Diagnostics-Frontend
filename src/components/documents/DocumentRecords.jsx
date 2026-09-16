@@ -5,6 +5,7 @@ import {
   getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Box, Button, Tooltip, IconButton, TextField, InputAdornment, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, Select, MenuItem, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -26,6 +27,9 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [isShowAll, setIsShowAll] = useState(() => localStorage.getItem('documentRecordsShowAll') === 'true');
+  const tableContainerRef = useRef(null);
+
   const [pagination, setPagination] = useState(() => {
     const savedSize = localStorage.getItem('documentRecordsPageSize');
     return {
@@ -46,6 +50,10 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     localStorage.setItem('documentRecordsPageSize', pagination.pageSize);
   }, [pagination.pageSize]);
 
+  useEffect(() => {
+    localStorage.setItem('documentRecordsShowAll', isShowAll);
+  }, [isShowAll]);
+
   const clearPendingRef = useRef(clearPending);
   useEffect(() => {
     clearPendingRef.current = clearPending;
@@ -61,18 +69,32 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
   }, [initialToastMessage]);
 
   useEffect(() => {
+    setIsShowAll(false);
     setPagination(prev => ({ ...prev, pageIndex: 0 }));
     setCursorHistory([null]);
-  }, [searchTerm, pagination.pageSize, isTodayOnly]);
+  }, [searchTerm, isTodayOnly]);
+
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    setCursorHistory([null]);
+  }, [pagination.pageSize]);
 
   const fetchData = useCallback(() => {
-    const currentCursor = cursorHistory[pagination.pageIndex];
-    let endpoint = `/api/documents?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
-    if (isTodayOnly) {
-      endpoint += '&today=true';
-    }
-    if (currentCursor) {
-      endpoint += `&cursor=${currentCursor}`;
+    let endpoint;
+    if (isShowAll) {
+      endpoint = `/api/documents?search=${encodeURIComponent(searchTerm)}&limit=all`;
+      if (isTodayOnly) {
+        endpoint += '&today=true';
+      }
+    } else {
+      const currentCursor = cursorHistory[pagination.pageIndex];
+      endpoint = `/api/documents?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+      if (isTodayOnly) {
+        endpoint += '&today=true';
+      }
+      if (currentCursor) {
+        endpoint += `&cursor=${currentCursor}`;
+      }
     }
     const url = buildApiUrl(endpoint);
     
@@ -86,13 +108,17 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         setIsLoading(false);
         if (result && Array.isArray(result.data)) {
           setData(result.data);
-          setNextCursor(result.nextCursor || null);
-          if (result.nextCursor) {
-             setCursorHistory(prev => {
-                const newHistory = [...prev];
-                newHistory[pagination.pageIndex + 1] = result.nextCursor;
-                return newHistory;
-             });
+          if (!isShowAll) {
+            setNextCursor(result.nextCursor || null);
+            if (result.nextCursor) {
+               setCursorHistory(prev => {
+                  const newHistory = [...prev];
+                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                  return newHistory;
+               });
+            }
+          } else {
+            setNextCursor(null);
           }
         } else if (Array.isArray(result)) {
           setData(result);
@@ -117,7 +143,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
       })
       .catch(err => console.error('Error fetching exact document count:', err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly, isShowAll]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -329,6 +355,20 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     setToast(prev => ({ ...prev, open: false }));
   };
 
+  const rows = table.getRowModel().rows;
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 52,
+    overscan: 15,
+  });
+
+  const virtualRows = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0]?.start || 0 : 0;
+  const paddingBottom = virtualRows.length > 0 ? totalSize - (virtualRows[virtualRows.length - 1]?.end || 0) : 0;
+
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '20px 20px 40px 20px' }}>
       <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
@@ -390,72 +430,159 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
           <Button variant="contained" onClick={onAddDocument}>Add New Document</Button>
         </Box>
       </div>
-      <table>
-        <thead>
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => {
-                const canSort = header.column.getCanSort();
-                const isSorted = header.column.getIsSorted();
-                return (
-                  <th
-                    key={header.id}
-                    onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                    style={{
-                      cursor: canSort ? 'pointer' : 'default',
-                      userSelect: 'none',
-                    }}
-                    title={canSort ? `Sort by ${header.column.columnDef.header}` : undefined}
-                  >
-                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {canSort && (
-                        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                          {isSorted === 'asc' ? (
-                            <ArrowUpwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
-                          ) : isSorted === 'desc' ? (
-                            <ArrowDownwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
-                          ) : (
-                            <UnfoldMoreIcon sx={{ fontSize: '16px', opacity: 0.4, color: 'var(--text)' }} />
+
+      {isShowAll ? (
+        <div
+          ref={tableContainerRef}
+          style={{ maxHeight: '70vh', overflow: 'auto', position: 'relative' }}
+        >
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'hsl(222, 47%, 11%)' }}>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => {
+                    const canSort = header.column.getCanSort();
+                    const isSorted = header.column.getIsSorted();
+                    return (
+                      <th
+                        key={header.id}
+                        onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                        style={{
+                          cursor: canSort ? 'pointer' : 'default',
+                          userSelect: 'none',
+                        }}
+                        title={canSort ? `Sort by ${header.column.columnDef.header}` : undefined}
+                      >
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {canSort && (
+                            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                              {isSorted === 'asc' ? (
+                                <ArrowUpwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : isSorted === 'desc' ? (
+                                <ArrowDownwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : (
+                                <UnfoldMoreIcon sx={{ fontSize: '16px', opacity: 0.4, color: 'var(--text)' }} />
+                              )}
+                            </Box>
                           )}
                         </Box>
-                      )}
-                    </Box>
-                  </th>
+                      </th>
+                    );
+                  })}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {paddingTop > 0 && (
+                <tr>
+                  <td style={{ height: `${paddingTop}px`, padding: 0, border: 'none' }} colSpan={columns.length} />
+                </tr>
+              )}
+              {virtualRows.map(virtualRow => {
+                const row = rows[virtualRow.index];
+                if (!row) return null;
+                return (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
                 );
               })}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map(row => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map(cell => (
-                <td key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
+              {paddingBottom > 0 && (
+                <tr>
+                  <td style={{ height: `${paddingBottom}px`, padding: 0, border: 'none' }} colSpan={columns.length} />
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table>
+            <thead>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => {
+                    const canSort = header.column.getCanSort();
+                    const isSorted = header.column.getIsSorted();
+                    return (
+                      <th
+                        key={header.id}
+                        onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                        style={{
+                          cursor: canSort ? 'pointer' : 'default',
+                          userSelect: 'none',
+                        }}
+                        title={canSort ? `Sort by ${header.column.columnDef.header}` : undefined}
+                      >
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {canSort && (
+                            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                              {isSorted === 'asc' ? (
+                                <ArrowUpwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : isSorted === 'desc' ? (
+                                <ArrowDownwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : (
+                                <UnfoldMoreIcon sx={{ fontSize: '16px', opacity: 0.4, color: 'var(--text)' }} />
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                      </th>
+                    );
+                  })}
+                </tr>
               ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map(row => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <span style={{ color: 'var(--text)' }}>
-            Page{' '}
-            <strong>
-              {table.getState().pagination.pageIndex + 1}
-            </strong>
-            {' '}of{' '}
-            <strong>
-              {Math.max(1, Math.ceil(totalCount / table.getState().pagination.pageSize))}
-            </strong>
-            {' '}({totalCount.toLocaleString()} Records)
-          </span>
+          {isShowAll ? (
+            <span style={{ color: 'var(--text)' }}>
+              Showing All <strong>{data.length.toLocaleString()}</strong> Records
+            </span>
+          ) : (
+            <span style={{ color: 'var(--text)' }}>
+              Page{' '}
+              <strong>
+                {table.getState().pagination.pageIndex + 1}
+              </strong>
+              {' '}of{' '}
+              <strong>
+                {Math.max(1, Math.ceil(totalCount / table.getState().pagination.pageSize))}
+              </strong>
+              {' '}({totalCount.toLocaleString()} Records)
+            </span>
+          )}
           <Select
-            value={table.getState().pagination.pageSize}
+            value={isShowAll ? 'all' : table.getState().pagination.pageSize}
             onChange={e => {
-              table.setPageSize(Number(e.target.value));
+              const val = e.target.value;
+              if (val === 'all') {
+                setIsShowAll(true);
+              } else {
+                setIsShowAll(false);
+                table.setPageSize(Number(val));
+              }
             }}
             size="small"
             sx={{
@@ -472,26 +599,29 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
                 Show {pageSize} Records
               </MenuItem>
             ))}
+            <MenuItem value="all">Show All Records</MenuItem>
           </Select>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
-          >
-            Next
-          </Button>
-        </Box>
+        {!isShowAll && (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
+            >
+              Next
+            </Button>
+          </Box>
+        )}
       </Box>
 
       <Dialog

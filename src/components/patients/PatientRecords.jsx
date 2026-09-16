@@ -5,6 +5,7 @@ import {
   getSortedRowModel,
   flexRender,
 } from '@tanstack/react-table';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Box, Button, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, TextField, InputAdornment, Select, MenuItem, CircularProgress } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -13,7 +14,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { buildApiUrl } from '../../config/api';
 
-export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, initialToastMessage, clearPending, refreshKey }) {
+export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, onViewFiles, initialToastMessage, clearPending, refreshKey }) {
   const searchInputRef = useRef(null); // Added ref for search input
 
   // Focus search box automatically when page/component opens
@@ -35,6 +36,9 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   const [rowToDelete, setRowToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
+  const [isShowAll, setIsShowAll] = useState(() => localStorage.getItem('patientRecordsShowAll') === 'true');
+  const tableContainerRef = useRef(null);
+
   const [pagination, setPagination] = useState(() => {
     const savedSize = localStorage.getItem('patientRecordsPageSize');
     return {
@@ -46,6 +50,10 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   useEffect(() => {
     localStorage.setItem('patientRecordsPageSize', pagination.pageSize);
   }, [pagination.pageSize]);
+
+  useEffect(() => {
+    localStorage.setItem('patientRecordsShowAll', isShowAll);
+  }, [isShowAll]);
 
   const clearPendingRef = useRef(clearPending);
   useEffect(() => {
@@ -62,18 +70,32 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   }, [initialToastMessage]);
 
   useEffect(() => {
+    setIsShowAll(false);
     setPagination(prev => ({ ...prev, pageIndex: 0 }));
     setCursorHistory([null]);
-  }, [searchTerm, pagination.pageSize, isTodayOnly]);
+  }, [searchTerm, isTodayOnly]);
+
+  useEffect(() => {
+    setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    setCursorHistory([null]);
+  }, [pagination.pageSize]);
 
   const fetchData = useCallback(() => {
-    const currentCursor = cursorHistory[pagination.pageIndex];
-    let endpoint = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
-    if (isTodayOnly) {
-      endpoint += '&today=true';
-    }
-    if (currentCursor) {
-      endpoint += `&cursor=${currentCursor}`;
+    let endpoint;
+    if (isShowAll) {
+      endpoint = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=all`;
+      if (isTodayOnly) {
+        endpoint += '&today=true';
+      }
+    } else {
+      const currentCursor = cursorHistory[pagination.pageIndex];
+      endpoint = `/api/patients?search=${encodeURIComponent(searchTerm)}&limit=${pagination.pageSize}`;
+      if (isTodayOnly) {
+        endpoint += '&today=true';
+      }
+      if (currentCursor) {
+        endpoint += `&cursor=${currentCursor}`;
+      }
     }
     const url = buildApiUrl(endpoint);
     
@@ -84,13 +106,17 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         setIsLoading(false);
         if (result && Array.isArray(result.data)) {
           setData(result.data);
-          setNextCursor(result.nextCursor || null);
-          if (result.nextCursor) {
-             setCursorHistory(prev => {
-                const newHistory = [...prev];
-                newHistory[pagination.pageIndex + 1] = result.nextCursor;
-                return newHistory;
-             });
+          if (!isShowAll) {
+            setNextCursor(result.nextCursor || null);
+            if (result.nextCursor) {
+               setCursorHistory(prev => {
+                  const newHistory = [...prev];
+                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                  return newHistory;
+               });
+            }
+          } else {
+            setNextCursor(null);
           }
         } else if (Array.isArray(result)) {
           setData(result);
@@ -115,7 +141,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       })
       .catch(err => console.error('Error fetching exact patient count:', err));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly]);
+  }, [searchTerm, pagination.pageIndex, pagination.pageSize, refreshKey, isTodayOnly, isShowAll]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -136,7 +162,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => (
-          <Box sx={{ display: 'flex', gap: '1px' }}>
+          <Box sx={{ display: 'flex', gap: '1px' }} onClick={(e) => e.stopPropagation()}>
             <Tooltip title="Add Appointment">
               <IconButton color="primary" onClick={() => onAddAppointment(row.original)}>
                 <EventIcon />
@@ -250,6 +276,20 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
     setToast(prev => ({ ...prev, open: false }));
   };
 
+  const rows = table.getRowModel().rows;
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 52,
+    overscan: 15,
+  });
+
+  const virtualRows = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0]?.start || 0 : 0;
+  const paddingBottom = virtualRows.length > 0 ? totalSize - (virtualRows[virtualRows.length - 1]?.end || 0) : 0;
+
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px 40px 20px' }}>
       <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
@@ -313,49 +353,117 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
           </Button>
         </Box>
       </div>
-      <div style={{ overflowX: 'auto' }}>
-        <table>
-          <thead>
-            {table.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <th key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map(row => (
-              <tr key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <td key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+
+      {isShowAll ? (
+        <div
+          ref={tableContainerRef}
+          style={{ maxHeight: '70vh', overflow: 'auto', position: 'relative' }}
+        >
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'hsl(222, 47%, 11%)' }}>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th key={header.id}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {paddingTop > 0 && (
+                <tr>
+                  <td style={{ height: `${paddingTop}px`, padding: 0, border: 'none' }} colSpan={columns.length} />
+                </tr>
+              )}
+              {virtualRows.map(virtualRow => {
+                const row = rows[virtualRow.index];
+                if (!row) return null;
+                return (
+                  <tr
+                    key={row.id}
+                    onClick={() => onViewFiles && onViewFiles(row.original.mrNumber)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+              {paddingBottom > 0 && (
+                <tr>
+                  <td style={{ height: `${paddingBottom}px`, padding: 0, border: 'none' }} colSpan={columns.length} />
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table>
+            <thead>
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <th key={header.id}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map(row => (
+                <tr
+                  key={row.id}
+                  onClick={() => onViewFiles && onViewFiles(row.original.mrNumber)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <span style={{ color: 'var(--text)' }}>
-            Page{' '}
-            <strong>
-              {table.getState().pagination.pageIndex + 1}
-            </strong>
-            {' '}of{' '}
-            <strong>
-              {Math.max(1, Math.ceil(totalCount / table.getState().pagination.pageSize))}
-            </strong>
-            {' '}({totalCount.toLocaleString()} Records)
-          </span>
+          {isShowAll ? (
+            <span style={{ color: 'var(--text)' }}>
+              Showing All <strong>{data.length.toLocaleString()}</strong> Records
+            </span>
+          ) : (
+            <span style={{ color: 'var(--text)' }}>
+              Page{' '}
+              <strong>
+                {table.getState().pagination.pageIndex + 1}
+              </strong>
+              {' '}of{' '}
+              <strong>
+                {Math.max(1, Math.ceil(totalCount / table.getState().pagination.pageSize))}
+              </strong>
+              {' '}({totalCount.toLocaleString()} Records)
+            </span>
+          )}
           <Select
-            value={table.getState().pagination.pageSize}
+            value={isShowAll ? 'all' : table.getState().pagination.pageSize}
             onChange={e => {
-              table.setPageSize(Number(e.target.value));
+              const val = e.target.value;
+              if (val === 'all') {
+                setIsShowAll(true);
+              } else {
+                setIsShowAll(false);
+                table.setPageSize(Number(val));
+              }
             }}
             size="small"
             sx={{
@@ -372,26 +480,29 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
                 Show {pageSize} Records
               </MenuItem>
             ))}
+            <MenuItem value="all">Show All Records</MenuItem>
           </Select>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
-          >
-            Next
-          </Button>
-        </Box>
+        {!isShowAll && (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'var(--text)', '&:disabled': { color: 'rgba(255,255,255,0.3)', borderColor: 'rgba(255,255,255,0.1)' } }}
+            >
+              Next
+            </Button>
+          </Box>
+        )}
       </Box>
 
       <Dialog

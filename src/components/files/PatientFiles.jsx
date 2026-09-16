@@ -26,9 +26,9 @@ import { buildApiUrl } from '../../config/api';
 import { generatePatientDossierPdf } from '../../utils/pdfDossierGenerator';
 import '../../styles/Auth.css';
 
-export default function PatientFiles() {
+export default function PatientFiles({ initialMrNumber }) {
   const inputRef = useRef(null);
-  const [mrNumber, setMrNumber] = useState('');
+  const [mrNumber, setMrNumber] = useState(initialMrNumber ? String(initialMrNumber) : '');
   const [selectedTypes, setSelectedTypes] = useState({
     xray: true,
     ultrasound: true,
@@ -36,6 +36,9 @@ export default function PatientFiles() {
     labReport: true,
     pft: true,
   });
+
+  const [availableTypes, setAvailableTypes] = useState(null); // null = not yet checked
+  const [isCheckingTypes, setIsCheckingTypes] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [progressStatus, setProgressStatus] = useState('');
@@ -46,6 +49,62 @@ export default function PatientFiles() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    const trimmedMr = String(mrNumber || '').trim();
+    const parsedMr = parseInt(trimmedMr, 10);
+    const isValid = trimmedMr && /^\d+$/.test(trimmedMr) && !isNaN(parsedMr) && parsedMr >= 1 && parsedMr <= 2147483647;
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      if (!isValid) {
+        setAvailableTypes(null);
+        setSelectedTypes({ xray: true, ultrasound: true, prescription: true, labReport: true, pft: true });
+        return;
+      }
+
+      setIsCheckingTypes(true);
+      try {
+        const res = await fetch(buildApiUrl(`/api/documents/patient/${parsedMr}/types`), {
+          signal: controller.signal
+        });
+        if (!res.ok) throw new Error('Failed to fetch types');
+        const data = await res.json();
+        const types = data.types || [];
+
+        const typeMapping = {
+          xray: (t) => t.includes('x-ray') || t.includes('xray'),
+          ultrasound: (t) => t.includes('ultrasound') || t.includes('us') || t.includes('ultra'),
+          prescription: (t) => t.includes('prescription') || t.includes('ps') || t.includes('rx'),
+          labReport: (t) => t.includes('lab') || t.includes('report') || t.includes('result'),
+          pft: (t) => t.includes('pft') || t.includes('pulmonary'),
+        };
+
+        const newAvailable = {};
+        const newSelected = {};
+        for (const [key, matcher] of Object.entries(typeMapping)) {
+          const hasType = types.some(t => matcher(t.toLowerCase()));
+          newAvailable[key] = hasType;
+          newSelected[key] = hasType;
+        }
+
+        setAvailableTypes(newAvailable);
+        setSelectedTypes(newSelected);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error checking document types:', err);
+          setAvailableTypes(null);
+        }
+      } finally {
+        setIsCheckingTypes(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [mrNumber]);
 
   const handleCloseToast = (event, reason) => {
     if (reason === 'clickaway') return;
@@ -61,13 +120,23 @@ export default function PatientFiles() {
   };
 
   const handleSelectAll = (shouldSelect) => {
-    setSelectedTypes({
-      xray: shouldSelect,
-      ultrasound: shouldSelect,
-      prescription: shouldSelect,
-      labReport: shouldSelect,
-      pft: shouldSelect,
-    });
+    if (shouldSelect && availableTypes !== null) {
+      setSelectedTypes({
+        xray: !!availableTypes.xray,
+        ultrasound: !!availableTypes.ultrasound,
+        prescription: !!availableTypes.prescription,
+        labReport: !!availableTypes.labReport,
+        pft: !!availableTypes.pft,
+      });
+    } else {
+      setSelectedTypes({
+        xray: shouldSelect,
+        ultrasound: shouldSelect,
+        prescription: shouldSelect,
+        labReport: shouldSelect,
+        pft: shouldSelect,
+      });
+    }
   };
 
   const isAnyTypeSelected = Object.values(selectedTypes).some(Boolean);
@@ -228,8 +297,8 @@ export default function PatientFiles() {
         {/* Checkboxes Section */}
         <div className="input-group" style={{ marginTop: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <label className="input-label" style={{ fontFamily: 'Georgia, serif', fontWeight: 600, margin: 0 }}>
-              Document Categories
+            <label className="input-label" style={{ fontFamily: 'Georgia, serif', fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center' }}>
+              Document Categories {isCheckingTypes && <CircularProgress size={14} sx={{ ml: 1, color: 'hsl(221, 83%, 53%)' }} />}
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
@@ -292,17 +361,17 @@ export default function PatientFiles() {
                   checked={selectedTypes.xray}
                   onChange={handleCheckboxChange}
                   name="xray"
-                  disabled={loading}
+                  disabled={loading || (availableTypes !== null && !availableTypes.xray)}
                   sx={{
-                    color: 'hsl(221, 83%, 53%)',
+                    color: (availableTypes !== null && !availableTypes.xray) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)',
                     '&.Mui-checked': { color: 'hsl(221, 83%, 53%)' },
                   }}
                 />
               }
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <MedicalServices sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
+                  <MedicalServices sx={{ fontSize: 16, color: (availableTypes !== null && !availableTypes.xray) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.xray) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     X-Ray
                   </Typography>
                 </Box>
@@ -316,17 +385,17 @@ export default function PatientFiles() {
                   checked={selectedTypes.ultrasound}
                   onChange={handleCheckboxChange}
                   name="ultrasound"
-                  disabled={loading}
+                  disabled={loading || (availableTypes !== null && !availableTypes.ultrasound)}
                   sx={{
-                    color: 'hsl(221, 83%, 53%)',
+                    color: (availableTypes !== null && !availableTypes.ultrasound) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)',
                     '&.Mui-checked': { color: 'hsl(221, 83%, 53%)' },
                   }}
                 />
               }
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <LocalHospital sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
+                  <LocalHospital sx={{ fontSize: 16, color: (availableTypes !== null && !availableTypes.ultrasound) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.ultrasound) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     Ultrasound
                   </Typography>
                 </Box>
@@ -340,17 +409,17 @@ export default function PatientFiles() {
                   checked={selectedTypes.prescription}
                   onChange={handleCheckboxChange}
                   name="prescription"
-                  disabled={loading}
+                  disabled={loading || (availableTypes !== null && !availableTypes.prescription)}
                   sx={{
-                    color: 'hsl(221, 83%, 53%)',
+                    color: (availableTypes !== null && !availableTypes.prescription) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)',
                     '&.Mui-checked': { color: 'hsl(221, 83%, 53%)' },
                   }}
                 />
               }
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <DescriptionOutlined sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
+                  <DescriptionOutlined sx={{ fontSize: 16, color: (availableTypes !== null && !availableTypes.prescription) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.prescription) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     Prescription
                   </Typography>
                 </Box>
@@ -364,17 +433,17 @@ export default function PatientFiles() {
                   checked={selectedTypes.labReport}
                   onChange={handleCheckboxChange}
                   name="labReport"
-                  disabled={loading}
+                  disabled={loading || (availableTypes !== null && !availableTypes.labReport)}
                   sx={{
-                    color: 'hsl(221, 83%, 53%)',
+                    color: (availableTypes !== null && !availableTypes.labReport) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)',
                     '&.Mui-checked': { color: 'hsl(221, 83%, 53%)' },
                   }}
                 />
               }
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <Science sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
+                  <Science sx={{ fontSize: 16, color: (availableTypes !== null && !availableTypes.labReport) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.labReport) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     Lab Report
                   </Typography>
                 </Box>
@@ -388,17 +457,17 @@ export default function PatientFiles() {
                   checked={selectedTypes.pft}
                   onChange={handleCheckboxChange}
                   name="pft"
-                  disabled={loading}
+                  disabled={loading || (availableTypes !== null && !availableTypes.pft)}
                   sx={{
-                    color: 'hsl(221, 83%, 53%)',
+                    color: (availableTypes !== null && !availableTypes.pft) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)',
                     '&.Mui-checked': { color: 'hsl(221, 83%, 53%)' },
                   }}
                 />
               }
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                  <Air sx={{ fontSize: 16, color: 'hsl(221, 83%, 53%)' }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: 'hsl(222, 47%, 11%)' }}>
+                  <Air sx={{ fontSize: 16, color: (availableTypes !== null && !availableTypes.pft) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.pft) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     PFT
                   </Typography>
                 </Box>

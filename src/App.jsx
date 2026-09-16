@@ -51,6 +51,7 @@ function App() {
   const [pendingAppointmentToast, setPendingAppointmentToast] = useState('')
   const [viewToast, setViewToast] = useState('')
   const [isScanProcessing, setIsScanProcessing] = useState(false)
+  const [filesMrNumber, setFilesMrNumber] = useState(null)
 
   const clearViewToast = useCallback(() => {
     setViewToast('');
@@ -98,9 +99,17 @@ function App() {
     setResetKey(prev => prev + 1);
   }, []);
 
+  const handleViewFiles = useCallback((mrNumber) => {
+    setFilesMrNumber(mrNumber);
+    setCurrentPage('files');
+    setView('dashboard');
+    setResetKey(prev => prev + 1);
+  }, []);
+
   const handleNavigate = useCallback((pageId) => {
     setCurrentPage(pageId);
     setView('dashboard');
+    if (pageId !== 'files') setFilesMrNumber(null);
     setResetKey(prev => prev + 1);
   }, []);
 
@@ -239,7 +248,7 @@ function App() {
           return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
       }
       if (currentPage === 'files' && ['prescription', 'ps123', 'Prescription Department'].includes(username)) {
-          return <PatientFiles key={`files-${resetKey}`} />;
+          return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} />;
       }
       return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
     }
@@ -269,7 +278,7 @@ function App() {
 
     switch (currentPage) {
       case 'files':
-        return <PatientFiles key={`files-${resetKey}`} />;
+        return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} />;
       case 'appointments':
         return <AppointmentRecords 
                   key={`appointments-${resetKey}`} 
@@ -287,6 +296,7 @@ function App() {
             onEdit={handleEdit}
             onAddPatient={handleAddPatient}
             onAddAppointment={handleAddAppointmentForPatient}
+            onViewFiles={handleViewFiles}
             initialToastMessage={viewToast}
             clearPending={clearViewToast}
             refreshKey={resetKey}

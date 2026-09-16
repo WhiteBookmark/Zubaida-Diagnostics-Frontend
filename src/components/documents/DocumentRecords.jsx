@@ -294,7 +294,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
-    pageCount: nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1,
+    pageCount: totalCount > 0 ? Math.ceil(totalCount / pagination.pageSize) : (nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1),
   });
 
   const handleCloseDeleteDialog = () => {
@@ -445,6 +445,10 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
             Page{' '}
             <strong>
               {table.getState().pagination.pageIndex + 1}
+            </strong>
+            {' '}of{' '}
+            <strong>
+              {Math.max(1, Math.ceil(totalCount / table.getState().pagination.pageSize))}
             </strong>
             {' '}({totalCount.toLocaleString()} Records)
           </span>

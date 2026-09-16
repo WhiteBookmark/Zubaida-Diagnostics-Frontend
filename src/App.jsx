@@ -294,7 +294,7 @@ function App() {
         );
       case 'dashboard':
       default:
-        return <Dashboard key={`dashboard-${resetKey}`} />;
+        return <Dashboard key={`dashboard-${resetKey}`} onNavigate={handleNavigate} />;
     }
   };
 

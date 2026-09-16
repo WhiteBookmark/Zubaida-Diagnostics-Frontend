@@ -383,7 +383,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
-    pageCount: nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1,
+    pageCount: totalCount > 0 ? Math.ceil(totalCount / pagination.pageSize) : (nextCursor ? pagination.pageIndex + 2 : pagination.pageIndex + 1),
   });
 
   if (showAddForm) {
@@ -513,6 +513,10 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             Page{' '}
             <strong>
               {table.getState().pagination.pageIndex + 1}
+            </strong>
+            {' '}of{' '}
+            <strong>
+              {Math.max(1, Math.ceil(totalCount / table.getState().pagination.pageSize))}
             </strong>
             {' '}({totalCount.toLocaleString()} Records)
           </span>

@@ -5,7 +5,7 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import FolderIcon from '@mui/icons-material/Folder';
 import { buildApiUrl } from '../../config/api';
 
-export default function Dashboard() {
+export default function Dashboard({ onNavigate }) {
   const [counts, setCounts] = useState({
     patients: 0,
     appointments: 0,
@@ -74,17 +74,20 @@ export default function Dashboard() {
     {
       title: 'Total Patients',
       count: counts.patients,
-      icon: <PeopleIcon sx={{ fontSize: 28, color: 'var(--text)' }} />
+      icon: <PeopleIcon sx={{ fontSize: 28, color: 'var(--text)' }} />,
+      pageId: 'patients'
     },
     {
       title: 'Total Appointments',
       count: counts.appointments,
-      icon: <EventNoteIcon sx={{ fontSize: 28, color: 'var(--text)' }} />
+      icon: <EventNoteIcon sx={{ fontSize: 28, color: 'var(--text)' }} />,
+      pageId: 'appointments'
     },
     {
       title: 'Total Documents',
       count: counts.documents,
-      icon: <FolderIcon sx={{ fontSize: 28, color: 'var(--text)' }} />
+      icon: <FolderIcon sx={{ fontSize: 28, color: 'var(--text)' }} />,
+      pageId: 'documents'
     }
   ];
 
@@ -104,6 +107,7 @@ export default function Dashboard() {
           <Box 
             key={index}
             className="glass"
+            onClick={() => onNavigate && onNavigate(stat.pageId)}
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -112,6 +116,7 @@ export default function Dashboard() {
               padding: '15px',
               borderRadius: '12px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
               transition: 'transform 0.3s ease',
               '&:hover': {
                 transform: 'translateY(-5px)'

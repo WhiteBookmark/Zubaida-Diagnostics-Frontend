@@ -8,10 +8,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png'],
+      devOptions: {
+        enabled: true
+      },
+      includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png', 'pwa-64x64.png', 'pwa-192x192.png', 'pwa-512x512.png', 'maskable-icon-512x512.png'],
       manifest: {
         name: 'Zubaida Diagnostics',
-        short_name: 'Zubaida Diag',
+        short_name: 'ZD',
         description: 'Patient management system for The Clinic and Zubaida Diagnostic',
         theme_color: '#2563eb',
         background_color: '#0f172a',

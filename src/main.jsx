@@ -1,7 +1,11 @@
 import { createRoot } from 'react-dom/client'
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { registerSW } from 'virtual:pwa-register';
 import './styles/index.css'
 import App from './App.jsx'
+
+// Register service worker immediately for PWA installability and updates
+registerSW({ immediate: true });
 
 const theme = createTheme({
   palette: {

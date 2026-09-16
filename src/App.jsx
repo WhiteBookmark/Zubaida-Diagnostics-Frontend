@@ -183,7 +183,7 @@ function App() {
         body: JSON.stringify({
           mrNumber: mrNumber,
           dateTime: dateTime,
-          amountPaid: '500',
+          amountPaid: '0',
         }),
       });
 

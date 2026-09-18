@@ -250,7 +250,7 @@ function App() {
       if (currentPage === 'files' && ['prescription', 'ps123', 'Prescription Department'].includes(username)) {
           return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} />;
       }
-      return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
+      return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
     }
 
     if (view === 'edit') {
@@ -286,9 +286,10 @@ function App() {
                   initialToastMessage={pendingAppointmentToast}
                   clearPending={handleClearPendingAppointment}
                   refreshKey={resetKey}
+                  onViewFiles={handleViewFiles}
                />;
       case 'documents':
-        return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} />;
+        return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
       case 'patients':
         return (
           <PatientRecords

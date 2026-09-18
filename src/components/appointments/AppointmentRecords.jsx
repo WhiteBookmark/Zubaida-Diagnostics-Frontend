@@ -19,7 +19,7 @@ import AddAppointmentRecord from './AddAppointmentRecord';
 import QRCode from 'qrcode';
 import { buildApiUrl } from '../../config/api';
 
-export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey }) {
+export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey, onViewFiles }) {
   const searchInputRef = useRef(null); // Added ref for search input
   const [data, setData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -346,7 +346,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       cell: ({ row }) => {
         const isFinalized = row.original.isFinalized || row.original.isEdited;
         return (
-          <Box sx={{ display: 'flex', gap: '4px' }}>
+          <Box sx={{ display: 'flex', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
             <Tooltip title={isFinalized ? "Record Finalized (Amount Locked)" : "Edit Amount Paid"}>
               <span>
                 <IconButton
@@ -505,7 +505,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
           style={{ maxHeight: '70vh', overflow: 'auto', position: 'relative' }}
         >
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'hsl(222, 47%, 11%)' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg, #f8fafc)' }}>
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => {
@@ -551,7 +551,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
                 const row = rows[virtualRow.index];
                 if (!row) return null;
                 return (
-                  <tr key={row.id}>
+                  <tr key={row.id} onClick={() => onViewFiles && onViewFiles(row.original.patient?.mrNumber)} style={{ cursor: 'pointer' }}>
                     {row.getVisibleCells().map(cell => (
                       <td key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -609,7 +609,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
             </thead>
             <tbody>
               {table.getRowModel().rows.map(row => (
-                <tr key={row.id}>
+                <tr key={row.id} onClick={() => onViewFiles && onViewFiles(row.original.patient?.mrNumber)} style={{ cursor: 'pointer' }}>
                   {row.getVisibleCells().map(cell => (
                     <td key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

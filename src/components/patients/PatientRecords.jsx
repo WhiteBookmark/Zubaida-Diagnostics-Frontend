@@ -223,6 +223,8 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       },
       { accessorKey: 'phone', header: 'Phone' },
       { accessorKey: 'email', header: 'Email' },
+      { accessorKey: 'fixedAllergies', header: 'Fixed Allergies' },
+      { accessorKey: 'coMorbidFactor', header: 'Co Morbid Factor' },
     ],
     [onEdit, onAddAppointment, handleDeleteClick]
   );
@@ -360,7 +362,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
           style={{ maxHeight: '70vh', overflow: 'auto', position: 'relative' }}
         >
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'hsl(222, 47%, 11%)' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg, #f8fafc)' }}>
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map(header => (

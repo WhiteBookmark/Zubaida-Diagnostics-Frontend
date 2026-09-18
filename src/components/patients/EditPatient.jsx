@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
-import { Badge, Person, SupervisorAccount, CalendarToday, Cake, Phone, Email } from '@mui/icons-material';
+import { Badge, Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices } from '@mui/icons-material';
+import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
-export default function EditPatient({ record, onBack, onSave }) {
+export default function EditPatient({ record, onSave }) {
   const [formData, setFormData] = useState(() => {
-    const { id, mrNumber, name, fatherName, motherName, husbandName, dateOfBirth, age, ageMonths, phone, email } = record;
-    return { id, mrNumber, name, fatherName, motherName, husbandName: husbandName || '', dateOfBirth, age, ageMonths: ageMonths ?? 0, phone, email };
+    const { id, mrNumber, name, fatherName, motherName, husbandName, dateOfBirth, age, ageMonths, phone, email, fixedAllergies, coMorbidFactor } = record;
+    return { id, mrNumber, name, fatherName, motherName, husbandName: husbandName || '', dateOfBirth, age, ageMonths: ageMonths ?? 0, phone, email, fixedAllergies: fixedAllergies || '', coMorbidFactor: coMorbidFactor || '' };
   });
 
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
@@ -47,7 +48,7 @@ export default function EditPatient({ record, onBack, onSave }) {
     const parsedAge = parseInt(formData.age, 10);
     const parsedAgeMonths = parseInt(formData.ageMonths, 10);
     try {
-      const response = await fetch(`/api/patients/${formData.id}`, {
+      const response = await fetch(buildApiUrl(`/api/patients/${formData.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,6 +59,8 @@ export default function EditPatient({ record, onBack, onSave }) {
           husbandName: String(formData.husbandName ?? '').trim(),
           phone: String(formData.phone ?? '').trim(),
           email: String(formData.email ?? '').trim(),
+          fixedAllergies: String(formData.fixedAllergies ?? '').trim(),
+          coMorbidFactor: String(formData.coMorbidFactor ?? '').trim(),
           dateOfBirth: formData.dateOfBirth,
           age: isNaN(parsedAge) ? null : parsedAge,
           ageMonths: isNaN(parsedAgeMonths) ? 0 : parsedAgeMonths,
@@ -181,6 +184,38 @@ export default function EditPatient({ record, onBack, onSave }) {
           <div className="input-with-icon">
             <Email className="input-icon" />
             <input id="email" name="email" type="email" value={formData.email || ''} onChange={handleChange} disabled={loading} />
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="fixedAllergies">Fixed Allergies</label>
+          <div className="input-with-icon">
+            <LocalHospital className="input-icon" />
+            <textarea
+              id="fixedAllergies"
+              name="fixedAllergies"
+              value={formData.fixedAllergies || ''}
+              onChange={handleChange}
+              disabled={loading}
+              rows={3}
+              style={{ width: '100%', resize: 'vertical' }}
+            />
+          </div>
+        </div>
+
+        <div className="input-group">
+          <label className="input-label" htmlFor="coMorbidFactor">Co Morbid Factor</label>
+          <div className="input-with-icon">
+            <MedicalServices className="input-icon" />
+            <textarea
+              id="coMorbidFactor"
+              name="coMorbidFactor"
+              value={formData.coMorbidFactor || ''}
+              onChange={handleChange}
+              disabled={loading}
+              rows={3}
+              style={{ width: '100%', resize: 'vertical' }}
+            />
           </div>
         </div>
 

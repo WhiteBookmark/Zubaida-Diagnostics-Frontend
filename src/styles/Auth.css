@@ -29,28 +29,32 @@
 }
 
 .auth-form input:not([type="checkbox"]),
-.auth-form select {
+.auth-form select,
+.auth-form textarea {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: hsla(0, 0%, 100%, 0.4);
+  border: 1px solid hsla(0, 0%, 100%, 0.6);
   border-radius: 8px;
   outline: none;
   font-size: 16px;
-  color: #0f172a;
+  font-family: inherit;
+  color: hsl(222, 47%, 11%);
   transition: all 0.3s;
   box-sizing: border-box;
 }
 
-.auth-form input:not([type="checkbox"])::placeholder {
-  color: #64748b;
+.auth-form input:not([type="checkbox"])::placeholder,
+.auth-form textarea::placeholder {
+  color: hsl(215, 16%, 47%);
 }
 
 .auth-form input:not([type="checkbox"]):focus,
-.auth-form select:focus {
-  background: rgba(255, 255, 255, 0.6);
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+.auth-form select:focus,
+.auth-form textarea:focus {
+  background: hsla(0, 0%, 100%, 0.6);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px hsla(221, 83%, 53%, 0.2);
 }
 
 .auth-form button:not(.MuiButton-root):not(.MuiIconButton-root) {
@@ -112,8 +116,17 @@
 }
 
 .input-with-icon input:not([type="checkbox"]),
-.input-with-icon select {
+.input-with-icon select,
+.input-with-icon textarea {
   padding-left: 40px !important;
+}
+
+.input-with-icon:has(textarea) {
+  align-items: flex-start;
+}
+
+.input-with-icon:has(textarea) .input-icon {
+  top: 14px;
 }
 
 .input-with-icon:focus-within .input-icon {

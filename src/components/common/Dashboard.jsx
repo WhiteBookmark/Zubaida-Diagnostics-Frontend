@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, CircularProgress, Button, Snackbar, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FolderIcon from '@mui/icons-material/Folder';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { buildApiUrl } from '../../config/api';
 
 export default function Dashboard({ onNavigate }) {
@@ -15,9 +16,27 @@ export default function Dashboard({ onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [backupLoading, setBackupLoading] = useState(false);
   const [backupToast, setBackupToast] = useState({ open: false, message: '', severity: 'info' });
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef(null);
+
+  const formatElapsedTime = (totalSeconds) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    if (mins > 0) {
+      return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+    }
+    return `${secs}s`;
+  };
 
   const handleDownloadBackup = async () => {
+    if (timerRef.current) clearInterval(timerRef.current);
     setBackupLoading(true);
+    setElapsedSeconds(0);
+    const startTime = Date.now();
+    timerRef.current = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
     try {
       const response = await fetch(buildApiUrl('/api/backup/download'));
       if (!response.ok) {
@@ -54,6 +73,10 @@ export default function Dashboard({ onNavigate }) {
       console.error('Backup download error:', err);
       setBackupToast({ open: true, message: err.message || 'Failed to download backup.', severity: 'error' });
     } finally {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
       setBackupLoading(false);
     }
   };
@@ -112,6 +135,10 @@ export default function Dashboard({ onNavigate }) {
     return () => {
       isMounted = false;
       controller.abort();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, []);
 
@@ -184,7 +211,7 @@ export default function Dashboard({ onNavigate }) {
       </Box>
 
       {/* Download Backup Button */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
         <Button
           variant="contained"
           onClick={handleDownloadBackup}
@@ -211,6 +238,44 @@ export default function Dashboard({ onNavigate }) {
         >
           {backupLoading ? 'Preparing Backup...' : 'Download Backup'}
         </Button>
+
+        {backupLoading && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mt: 1.5,
+              px: 2,
+              py: 0.75,
+              borderRadius: '8px',
+              background: 'hsla(221, 83%, 53%, 0.08)',
+              border: '1px solid hsla(221, 83%, 53%, 0.2)',
+            }}
+          >
+            <AccessTimeIcon sx={{ fontSize: 18, color: 'hsl(221, 83%, 53%)' }} />
+            <Typography
+              variant="body2"
+              sx={{
+                fontFamily: 'Georgia, serif',
+                fontWeight: 600,
+                color: 'hsl(222, 47%, 11%)',
+                fontSize: '13px',
+              }}
+            >
+              Time Elapsed: {formatElapsedTime(elapsedSeconds)}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'hsl(215, 16%, 47%)',
+                fontSize: '12px',
+              }}
+            >
+              (Packing Database & Patient Files...)
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Backup Toast */}

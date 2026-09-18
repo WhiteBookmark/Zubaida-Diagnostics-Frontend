@@ -3,9 +3,9 @@ import { useEffect, useRef, useCallback } from 'react';
 /**
  * useQrScanner — Captures QR code JSON scans via hardware keyboard emulation or paste.
  *
- * Allows raw scanner text to appear in focused input boxes for real-time visual feedback,
- * while detecting JSON structure ('{...}') without strict keystroke gap timers to prevent
- * dropped scans on slower systems or heavy UI pages.
+ * Silently buffers scanner characters in memory during streaming to prevent hundreds of React re-renders,
+ * cleanly injecting the parsed MR Number once the complete JSON payload is captured without strict
+ * keystroke gap timers to prevent dropped scans on slower systems or heavy UI pages.
  *
  * @param {function} onScan - Callback receiving the parsed JSON object from the QR code.
  * @param {object} options
@@ -96,15 +96,17 @@ export default function useQrScanner(onScan, { enabled = true, idleTimeoutMs = 1
       // Start buffering on '{' or continue if already buffering
       if (e.key === '{' || bufferRef.current.length > 0) {
         if (e.key && e.key.length === 1) {
-          // Allow character to type normally into active input for visual feedback
+          // Stop the character from hitting the input DOM and firing React's onChange
+          // This eliminates ~300 re-renders during a scan, making it instantaneous
+          e.preventDefault();
+          e.stopPropagation();
+
           bufferRef.current += e.key;
 
-          // Auto-trigger if closing '}' completes valid JSON
+          // Auto-trigger if closing '}' completes valid JSON — no setTimeout needed
+          // since characters never entered the DOM
           if (e.key === '}' && bufferRef.current.startsWith('{')) {
-            // Allow event queue to render the character before cleaning and triggering scan
-            setTimeout(() => {
-              processPayload(bufferRef.current, e);
-            }, 0);
+            processPayload(bufferRef.current, e);
           }
 
           // Idle reset if scan is incomplete or abandoned

@@ -38,6 +38,7 @@ export default function PatientFiles({ initialMrNumber }) {
   });
 
   const [availableTypes, setAvailableTypes] = useState(null); // null = not yet checked
+  const [typeCounts, setTypeCounts] = useState({}); // { xray: 3, ultrasound: 1, ... }
   const [isCheckingTypes, setIsCheckingTypes] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -59,6 +60,7 @@ export default function PatientFiles({ initialMrNumber }) {
     const timer = setTimeout(async () => {
       if (!isValid) {
         setAvailableTypes(null);
+        setTypeCounts({});
         setSelectedTypes({ xray: true, ultrasound: true, prescription: true, labReport: true, pft: true });
         return;
       }
@@ -71,6 +73,7 @@ export default function PatientFiles({ initialMrNumber }) {
         if (!res.ok) throw new Error('Failed to fetch types');
         const data = await res.json();
         const types = data.types || [];
+        const rawCounts = data.typeCounts || {};
 
         const typeMapping = {
           xray: (t) => t.includes('x-ray') || t.includes('xray'),
@@ -82,18 +85,31 @@ export default function PatientFiles({ initialMrNumber }) {
 
         const newAvailable = {};
         const newSelected = {};
+        const newCounts = {};
         for (const [key, matcher] of Object.entries(typeMapping)) {
-          const hasType = types.some(t => matcher(t.toLowerCase()));
+          let count = 0;
+          for (const [rawType, rawCount] of Object.entries(rawCounts)) {
+            if (matcher(String(rawType || '').toLowerCase())) {
+              count += (typeof rawCount === 'number' ? rawCount : 0);
+            }
+          }
+          if (count === 0 && types.some(t => matcher(String(t || '').toLowerCase()))) {
+            count = 1;
+          }
+          const hasType = count > 0;
           newAvailable[key] = hasType;
           newSelected[key] = hasType;
+          newCounts[key] = count;
         }
 
         setAvailableTypes(newAvailable);
         setSelectedTypes(newSelected);
+        setTypeCounts(newCounts);
       } catch (err) {
         if (err.name !== 'AbortError') {
           console.error('Error checking document types:', err);
           setAvailableTypes(null);
+          setTypeCounts({});
         }
       } finally {
         setIsCheckingTypes(false);
@@ -374,6 +390,26 @@ export default function PatientFiles({ initialMrNumber }) {
                   <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.xray) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     X-Ray
                   </Typography>
+                  {typeCounts.xray > 0 && (
+                    <Box
+                      sx={{
+                        minWidth: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: 'hsl(221, 83%, 53%)',
+                        color: 'hsl(0, 0%, 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, serif',
+                        ml: 0.5,
+                      }}
+                    >
+                      {typeCounts.xray}
+                    </Box>
+                  )}
                 </Box>
               }
             />
@@ -398,6 +434,26 @@ export default function PatientFiles({ initialMrNumber }) {
                   <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.ultrasound) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     Ultrasound
                   </Typography>
+                  {typeCounts.ultrasound > 0 && (
+                    <Box
+                      sx={{
+                        minWidth: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: 'hsl(221, 83%, 53%)',
+                        color: 'hsl(0, 0%, 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, serif',
+                        ml: 0.5,
+                      }}
+                    >
+                      {typeCounts.ultrasound}
+                    </Box>
+                  )}
                 </Box>
               }
             />
@@ -422,6 +478,26 @@ export default function PatientFiles({ initialMrNumber }) {
                   <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.prescription) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     Prescription
                   </Typography>
+                  {typeCounts.prescription > 0 && (
+                    <Box
+                      sx={{
+                        minWidth: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: 'hsl(221, 83%, 53%)',
+                        color: 'hsl(0, 0%, 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, serif',
+                        ml: 0.5,
+                      }}
+                    >
+                      {typeCounts.prescription}
+                    </Box>
+                  )}
                 </Box>
               }
             />
@@ -446,6 +522,26 @@ export default function PatientFiles({ initialMrNumber }) {
                   <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.labReport) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     Lab Report
                   </Typography>
+                  {typeCounts.labReport > 0 && (
+                    <Box
+                      sx={{
+                        minWidth: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: 'hsl(221, 83%, 53%)',
+                        color: 'hsl(0, 0%, 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, serif',
+                        ml: 0.5,
+                      }}
+                    >
+                      {typeCounts.labReport}
+                    </Box>
+                  )}
                 </Box>
               }
             />
@@ -470,6 +566,26 @@ export default function PatientFiles({ initialMrNumber }) {
                   <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.pft) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
                     PFT
                   </Typography>
+                  {typeCounts.pft > 0 && (
+                    <Box
+                      sx={{
+                        minWidth: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: 'hsl(221, 83%, 53%)',
+                        color: 'hsl(0, 0%, 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, serif',
+                        ml: 0.5,
+                      }}
+                    >
+                      {typeCounts.pft}
+                    </Box>
+                  )}
                 </Box>
               }
             />

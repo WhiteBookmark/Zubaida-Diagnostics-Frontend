@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, Button, Snackbar, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import FolderIcon from '@mui/icons-material/Folder';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { buildApiUrl } from '../../config/api';
 
 export default function Dashboard({ onNavigate }) {
@@ -12,6 +13,50 @@ export default function Dashboard({ onNavigate }) {
     documents: 0
   });
   const [loading, setLoading] = useState(true);
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [backupToast, setBackupToast] = useState({ open: false, message: '', severity: 'info' });
+
+  const handleDownloadBackup = async () => {
+    setBackupLoading(true);
+    try {
+      const response = await fetch(buildApiUrl('/api/backup/download'));
+      if (!response.ok) {
+        let errorMsg = `Server error (${response.status})`;
+        try {
+          const errData = await response.json();
+          if (errData?.error) errorMsg = errData.error;
+        } catch {
+          // Ignore JSON parse errors
+        }
+        throw new Error(errorMsg);
+      }
+
+      const blob = await response.blob();
+      // Extract filename from Content-Disposition header, or use default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let fileName = 'ZubaidaDiagnostics_Backup.zip';
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+        if (match && match[1]) fileName = match[1];
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      setBackupToast({ open: true, message: 'Backup downloaded successfully!', severity: 'success' });
+    } catch (err) {
+      console.error('Backup download error:', err);
+      setBackupToast({ open: true, message: err.message || 'Failed to download backup.', severity: 'error' });
+    } finally {
+      setBackupLoading(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -137,6 +182,62 @@ export default function Dashboard({ onNavigate }) {
           </Box>
         ))}
       </Box>
+
+      {/* Download Backup Button */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Button
+          variant="contained"
+          onClick={handleDownloadBackup}
+          disabled={backupLoading}
+          startIcon={backupLoading ? <CircularProgress size={20} sx={{ color: 'hsl(0, 0%, 100%)' }} /> : <CloudDownloadIcon />}
+          sx={{
+            py: 1.2,
+            px: 4,
+            fontSize: '15px',
+            fontWeight: 700,
+            color: 'hsl(0, 0%, 100%) !important',
+            textTransform: 'none',
+            fontFamily: 'Georgia, serif',
+            background: 'linear-gradient(135deg, hsl(221, 83%, 53%) 0%, hsl(224, 76%, 45%) 100%)',
+            boxShadow: '0 4px 12px hsla(221, 83%, 53%, 0.35)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, hsl(221, 83%, 48%) 0%, hsl(224, 76%, 40%) 100%)',
+              boxShadow: '0 6px 16px hsla(221, 83%, 53%, 0.45)',
+            },
+            '&:disabled': {
+              background: 'hsl(215, 16%, 70%)',
+            }
+          }}
+        >
+          {backupLoading ? 'Preparing Backup...' : 'Download Backup'}
+        </Button>
+      </Box>
+
+      {/* Backup Toast */}
+      <Snackbar
+        open={backupToast.open}
+        autoHideDuration={6000}
+        onClose={() => setBackupToast(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setBackupToast(prev => ({ ...prev, open: false }))}
+          severity={backupToast.severity}
+          variant="filled"
+          sx={{
+            width: '100%',
+            fontWeight: 500,
+            background: backupToast.severity === 'error'
+              ? 'hsl(0, 72%, 40%)'
+              : backupToast.severity === 'success'
+                ? 'hsl(142, 70%, 30%)'
+                : 'hsl(221, 83%, 40%)',
+            color: 'hsl(0, 0%, 100%)'
+          }}
+        >
+          {backupToast.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

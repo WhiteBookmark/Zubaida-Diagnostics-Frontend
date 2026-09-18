@@ -49,7 +49,7 @@ export default defineConfig({
         // Cache API calls with NetworkFirst strategy so the app still shows cached data offline
         runtimeCaching: [
           {
-            urlPattern: /^https?:\/\/.*\/api\/.*/i,
+            urlPattern: /^https?:\/\/.*\/api\/(?!backup).*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

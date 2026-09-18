@@ -132,3 +132,49 @@
 .input-with-icon:focus-within .input-icon {
   color: var(--accent) !important;
 }
+
+.add-patient-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 30px 16px;
+  box-sizing: border-box;
+}
+
+.add-patient-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 820px;
+}
+
+.add-patient-layout .auth-form {
+  flex: 1 1 420px;
+  max-width: 440px;
+}
+
+.add-patient-search-panel {
+  flex: 0 0 280px;
+  width: 280px;
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .add-patient-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+  .add-patient-search-panel {
+    width: 100%;
+    max-width: 440px;
+    position: static;
+    max-height: none;
+  }
+}

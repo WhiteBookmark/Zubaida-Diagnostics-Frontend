@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { mockData } from '../../utils/mockData';
-import { Button, Snackbar, Alert, CircularProgress, Box, Typography, Paper } from '@mui/material';
-import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices, Badge as BadgeIcon } from '@mui/icons-material';
+import { Button, Snackbar, Alert, CircularProgress, Typography, Paper } from '@mui/material';
+import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
@@ -172,9 +172,9 @@ export default function AddPatient({ onAdd }) {
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="auth-container" style={{ maxWidth: '960px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', gap: '24px', width: '100%', alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <form onSubmit={handleSubmit} className="auth-form" style={{ flex: '1 1 400px', minWidth: 0, maxWidth: '480px' }}>
+    <div className="add-patient-wrapper">
+      <div className="add-patient-layout">
+        <form onSubmit={handleSubmit} className="auth-form">
           <h2>Add New Patient Record</h2>
           
           <div className="input-group">
@@ -256,7 +256,7 @@ export default function AddPatient({ onAdd }) {
             <label className="input-label" htmlFor="phone">Phone</label>
             <div className="input-with-icon">
               <Phone className="input-icon" />
-              <input id="phone" name="phone" type="tel" pattern="[0-9+() -]{7,20}" maxLength="20" title="Enter a valid phone number" value={formData.phone} onChange={handleChange} disabled={loading} />
+              <input id="phone" name="phone" type="tel" pattern="[0-9\+\(\)\-\s]{7,20}" maxLength="20" title="Enter a valid phone number" value={formData.phone} onChange={handleChange} disabled={loading} />
             </div>
           </div>
 
@@ -319,19 +319,11 @@ export default function AddPatient({ onAdd }) {
 
         {/* Live Search results panel on the right */}
         {(searchResults.length > 0 || isSearching) && (
-          <div style={{
-            flex: '0 0 300px',
-            maxWidth: '320px',
-            width: '100%',
-            maxHeight: '75vh',
-            overflowY: 'auto',
-            position: 'sticky',
-            top: '20px',
-          }}>
+          <div className="add-patient-search-panel">
             <Typography variant="subtitle2" sx={{
               fontFamily: 'var(--heading), Georgia, serif',
               fontWeight: 700,
-              color: 'var(--text-h)',
+              color: 'var(--text-h, #0f172a)',
               mb: 1.5,
               display: 'flex',
               alignItems: 'center',
@@ -351,37 +343,26 @@ export default function AddPatient({ onAdd }) {
                   mb: 1.25,
                   background: 'var(--glass-bg)',
                   border: '1px solid var(--glass-border)',
-                  borderRadius: '12px',
+                  borderRadius: '10px',
                   backdropFilter: 'var(--glass-blur)',
                   boxShadow: 'var(--shadow)',
-                  transition: 'all 0.2s ease',
+                  color: 'var(--text-h, #0f172a)',
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                  <BadgeIcon sx={{ fontSize: 16, color: 'var(--accent)' }} />
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: 'var(--accent)' }}>
-                    MR# {patient.mrNumber}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'var(--text-h)', fontFamily: 'var(--heading), Georgia, serif' }}>
+                <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'inherit', lineHeight: 1.4 }}>
+                  MR# {patient.mrNumber}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'inherit', marginTop: '2px', lineHeight: 1.4 }}>
+                  {patient.phone || 'N/A'}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'inherit', marginTop: '2px', lineHeight: 1.4 }}>
                   {patient.name || 'N/A'}
-                </Typography>
-                {patient.phone && (
-                  <Typography variant="caption" sx={{ color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                    <Phone sx={{ fontSize: 13 }} /> {patient.phone}
-                  </Typography>
-                )}
-                {(patient.age !== null && patient.age !== undefined) && (
-                  <Typography variant="caption" sx={{ color: 'var(--text)', display: 'block', mt: 0.25 }}>
-                    Age: {patient.age} year{patient.age !== 1 ? 's' : ''}
-                    {patient.ageMonths ? ` ${patient.ageMonths} month${patient.ageMonths !== 1 ? 's' : ''}` : ''}
-                  </Typography>
-                )}
+                </div>
               </Paper>
             ))}
 
             {!isSearching && searchResults.length === 0 && searchSource && (
-              <Typography variant="caption" sx={{ color: 'var(--text)', fontStyle: 'italic', display: 'block', p: 1 }}>
+              <Typography variant="caption" sx={{ color: 'var(--text, #334155)', fontStyle: 'italic', display: 'block', p: 1 }}>
                 No matching patients found.
               </Typography>
             )}

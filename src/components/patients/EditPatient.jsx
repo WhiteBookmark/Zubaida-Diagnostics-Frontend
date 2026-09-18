@@ -175,7 +175,7 @@ export default function EditPatient({ record, onSave }) {
           <label className="input-label" htmlFor="phone">Phone</label>
           <div className="input-with-icon">
             <Phone className="input-icon" />
-            <input id="phone" name="phone" type="tel" pattern="[0-9+() -]{7,20}" maxLength="20" title="Enter a valid phone number" value={formData.phone || ''} onChange={handleChange} disabled={loading} />
+            <input id="phone" name="phone" type="tel" pattern="[0-9\+\(\)\-\s]{7,20}" maxLength="20" title="Enter a valid phone number" value={formData.phone || ''} onChange={handleChange} disabled={loading} />
           </div>
         </div>
 

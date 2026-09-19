@@ -37,7 +37,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
       pageSize: savedSize ? Number(savedSize) : 25,
     };
   });
-  
+
   const [cursorHistory, setCursorHistory] = useState([null]);
   const [nextCursor, setNextCursor] = useState(null);
 
@@ -97,7 +97,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
       }
     }
     const url = buildApiUrl(endpoint);
-    
+
     setIsLoading(true);
     fetch(url)
       .then(res => {
@@ -111,11 +111,11 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
           if (!isShowAll) {
             setNextCursor(result.nextCursor || null);
             if (result.nextCursor) {
-               setCursorHistory(prev => {
-                  const newHistory = [...prev];
-                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
-                  return newHistory;
-               });
+              setCursorHistory(prev => {
+                const newHistory = [...prev];
+                newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                return newHistory;
+              });
             }
           } else {
             setNextCursor(null);
@@ -198,7 +198,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
       cell: info => {
         const fileName = info.getValue();
         if (!fileName) return 'N/A';
-        
+
         const url = `${window.location.origin}/document/${fileName}`;
         const isPdf = /\.pdf$/i.test(fileName);
         const isDoc = /\.(doc|docx)$/i.test(fileName);
@@ -330,7 +330,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
 
   const confirmDelete = useCallback(async () => {
     if (!rowToDelete) return;
-    
+
     try {
       const response = await fetch(buildApiUrl(`/api/documents/${rowToDelete.original.id}`), { method: 'DELETE' });
       if (response.ok) {
@@ -371,7 +371,7 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
 
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '20px 20px 40px 20px' }}>
-      <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+      <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0px' }}>
         <h2>Documents</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
@@ -398,15 +398,15 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
             onChange={(e) => setSearchTerm(e.target.value)}
             size="small"
             sx={{
-               background: 'rgba(255, 255, 255, 0.1)',
-               borderRadius: '8px',
-               boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
-               input: { color: 'var(--text)' },
-               '& .MuiOutlinedInput-root': {
-                 '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                 '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                 '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
-               }
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
+              input: { color: 'var(--text)' },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
+              }
             }}
             InputProps={{
               startAdornment: (
@@ -662,9 +662,9 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         </DialogActions>
       </Dialog>
 
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >

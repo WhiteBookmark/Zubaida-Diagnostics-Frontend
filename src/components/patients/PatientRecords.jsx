@@ -30,10 +30,10 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   const [searchTerm, setSearchTerm] = useState('');
   const [isTodayOnly, setIsTodayOnly] = useState(false);
   const [sorting, setSorting] = useState([]);
-  
+
   const [cursorHistory, setCursorHistory] = useState([null]);
   const [nextCursor, setNextCursor] = useState(null);
-  
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
@@ -100,7 +100,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       }
     }
     const url = buildApiUrl(endpoint);
-    
+
     setIsLoading(true);
     fetch(url)
       .then(res => res.json())
@@ -111,11 +111,11 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
           if (!isShowAll) {
             setNextCursor(result.nextCursor || null);
             if (result.nextCursor) {
-               setCursorHistory(prev => {
-                  const newHistory = [...prev];
-                  newHistory[pagination.pageIndex + 1] = result.nextCursor;
-                  return newHistory;
-               });
+              setCursorHistory(prev => {
+                const newHistory = [...prev];
+                newHistory[pagination.pageIndex + 1] = result.nextCursor;
+                return newHistory;
+              });
             }
           } else {
             setNextCursor(null);
@@ -253,7 +253,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
 
   const confirmDelete = useCallback(async () => {
     if (!rowToDelete) return;
-    
+
     try {
       const response = await fetch(buildApiUrl(`/api/patients/${rowToDelete.original.id}`), {
         method: 'DELETE',
@@ -296,7 +296,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
 
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '0 20px 40px 20px' }}>
-      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
+      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0px', alignItems: 'center' }}>
         <h2>Patient Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
@@ -323,15 +323,15 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
             onChange={(e) => setSearchTerm(e.target.value)}
             size="small"
             sx={{
-               background: 'rgba(255, 255, 255, 0.1)',
-               borderRadius: '8px',
-               boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
-               input: { color: 'var(--text)' },
-               '& .MuiOutlinedInput-root': {
-                 '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
-                 '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
-                 '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
-               }
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.05)',
+              input: { color: 'var(--text)' },
+              '& .MuiOutlinedInput-root': {
+                '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.5)' },
+                '&.Mui-focused fieldset': { borderColor: 'var(--primary)' }
+              }
             }}
             InputProps={{
               startAdornment: (
@@ -546,9 +546,9 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         </DialogActions>
       </Dialog>
 
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >

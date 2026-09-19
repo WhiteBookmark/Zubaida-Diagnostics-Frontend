@@ -439,7 +439,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
 
   return (
     <div className="dashboard glass" style={{ padding: '20px', margin: '20px 20px 40px 20px' }}>
-      <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}>
+      <div className="header" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0px' }}>
         <h2>Appointment Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}

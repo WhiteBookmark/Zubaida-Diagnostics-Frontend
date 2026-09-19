@@ -12,6 +12,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { buildApiUrl } from '../../config/api';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, onViewFiles, initialToastMessage, clearPending, refreshKey }) {
@@ -186,14 +188,6 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       },
       { accessorKey: 'mrNumber', header: 'MR Number' },
       { accessorKey: 'name', header: 'Name' },
-      { accessorKey: 'fatherName', header: "Father's Name" },
-      { accessorKey: 'motherName', header: "Mother's Name" },
-      { accessorKey: 'husbandName', header: "Husband's Name" },
-      {
-        accessorKey: 'dateOfBirth',
-        header: 'Date of Birth',
-        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
-      },
       {
         accessorKey: 'age',
         header: 'Age',
@@ -222,9 +216,17 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         }
       },
       { accessorKey: 'phone', header: 'Phone' },
-      { accessorKey: 'email', header: 'Email' },
       { accessorKey: 'fixedAllergies', header: 'Fixed Allergies' },
       { accessorKey: 'coMorbidFactor', header: 'Co Morbid Factor' },
+      { accessorKey: 'fatherName', header: "Father's Name" },
+      { accessorKey: 'motherName', header: "Mother's Name" },
+      { accessorKey: 'husbandName', header: "Husband's Name" },
+      {
+        accessorKey: 'dateOfBirth',
+        header: 'Date of Birth',
+        cell: info => info.getValue() ? new Date(info.getValue()).toLocaleDateString() : 'N/A'
+      },
+      { accessorKey: 'email', header: 'Email' },
     ],
     [onEdit, onAddAppointment, handleDeleteClick]
   );
@@ -354,6 +356,19 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
             Add New Patient Record
           </Button>
         </Box>
+      </div>
+
+      {/* Record count summary at top */}
+      <div style={{ color: 'var(--text)', fontSize: '14px', marginBottom: '12px' }}>
+        {isShowAll ? (
+          <span>Showing All <strong>{data.length.toLocaleString()}</strong> Records</span>
+        ) : (
+          <span>
+            Page <strong>{table.getState().pagination.pageIndex + 1}</strong> of{' '}
+            <strong>{Math.max(1, Math.ceil(totalCount / table.getState().pagination.pageSize))}</strong>
+            {' '}({totalCount.toLocaleString()} Records)
+          </span>
+        )}
       </div>
 
       {isShowAll ? (
@@ -541,6 +556,55 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
           {toast.message}
         </Alert>
       </Snackbar>
+
+      {/* Scroll to top/bottom floating buttons */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px hsla(0, 0%, 0%, 0.15)',
+          zIndex: 1000,
+        }}
+      >
+        <IconButton
+          onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+          sx={{
+            borderRadius: 0,
+            background: 'var(--glass-bg)',
+            backdropFilter: 'var(--glass-blur)',
+            border: '1px solid var(--glass-border)',
+            borderBottom: 'none',
+            color: 'var(--text)',
+            width: 44,
+            height: 44,
+            '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
+          }}
+          aria-label="Scroll to top"
+        >
+          <ArrowUpwardIcon />
+        </IconButton>
+        <IconButton
+          onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })}
+          sx={{
+            borderRadius: 0,
+            background: 'var(--glass-bg)',
+            backdropFilter: 'var(--glass-blur)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text)',
+            width: 44,
+            height: 44,
+            '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
+          }}
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDownwardIcon />
+        </IconButton>
+      </Box>
     </div>
   );
 }

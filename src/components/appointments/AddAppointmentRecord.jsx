@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
-import { Badge, CalendarToday, Payments } from '@mui/icons-material';
+import { Button, IconButton, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Badge, CalendarToday, Payments, Close as CloseIcon } from '@mui/icons-material';
 import '../../styles/Auth.css';
 
 export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '', initialToastMessage = '' }) {
@@ -27,7 +27,6 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
   }, []);
 
   const isLinux = typeof window !== 'undefined' && /Linux|X11/i.test(navigator.userAgent);
-  const isWindows = typeof window !== 'undefined' && /Win/i.test(navigator.userAgent);
 
   const [printFromServer, setPrintFromServer] = useState(() => {
     if (isLinux) return true;
@@ -141,7 +140,22 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
 
   return (
     <div className="auth-container">
-      <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
+      <form onSubmit={handleSubmit} className="auth-form" autoComplete="off" style={{ position: 'relative' }}>
+        {onBack && (
+          <IconButton
+            onClick={onBack}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'var(--text)',
+              zIndex: 10,
+            }}
+            aria-label="Close"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
         <h2>Add New Appointment Record</h2>
         <div className="input-group">
           <label className="input-label" htmlFor="mrNumber">MR Number</label>

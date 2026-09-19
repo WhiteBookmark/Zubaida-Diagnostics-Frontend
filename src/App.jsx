@@ -62,6 +62,7 @@ function App() {
     localStorage.removeItem('username');
     setUsername('');
     setIsLoggedIn(false);
+    window.history.replaceState({ page: 'dashboard', view: 'dashboard', _idx: 0 }, '');
   }, []);
 
   const handleLogin = useCallback((username, token) => {
@@ -70,9 +71,11 @@ function App() {
     setUsername(username);
     setIsLoggedIn(true);
     const departmentUsers = ['xray', 'ultrasound', 'lab', 'prescription', 'pft', 'X-Ray Department', 'Ultrasound Department', 'Lab Department', 'PFT Department', 'xr123', 'us123', 'lb123', 'ps123', 'pft123'];
+    const initialPage = departmentUsers.includes(username) ? 'documents' : 'dashboard';
     if (departmentUsers.includes(username)) {
       setCurrentPage('documents');
     }
+    window.history.replaceState({ page: initialPage, view: 'dashboard', _idx: 0 }, '');
   }, []);
 
   useEffect(() => {
@@ -82,28 +85,88 @@ function App() {
     };
   }, [handleLogout]);
 
+  // Listen to browser popstate (back/forward button) to restore previous view without exiting the app
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const state = event.state;
+      if (state) {
+        setCurrentPage(state.page || 'dashboard');
+        setView(state.view || 'dashboard');
+        if (state.recordToEdit !== undefined) {
+          setRecordToEdit(state.recordToEdit);
+        }
+        if (state.newMrNumber !== undefined) {
+          setNewMrNumber(state.newMrNumber);
+        }
+        if (state.pendingToast !== undefined) {
+          setPendingToast(state.pendingToast);
+        }
+        if (state.filesMrNumber !== undefined) {
+          setFilesMrNumber(state.filesMrNumber);
+        } else if (state.page !== 'files') {
+          setFilesMrNumber(null);
+        }
+        setResetKey(prev => prev + 1);
+      } else {
+        setCurrentPage('dashboard');
+        setView('dashboard');
+        setFilesMrNumber(null);
+        setResetKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Push initial state on mount so history navigation has an entry point
+    if (!window.history.state) {
+      window.history.replaceState({ page: currentPage, view: view, _idx: 0 }, '');
+    }
+
+    return () => window.removeEventListener('popstate', handlePopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleEdit = useCallback((record) => {
     setRecordToEdit(record);
     setView('edit');
-  }, []);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'edit', recordToEdit: record, _idx: nextIdx }, '');
+  }, [currentPage]);
 
   const handleAddDocument = useCallback(() => {
     setView('addDocument');
-  }, []);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'addDocument', _idx: nextIdx }, '');
+  }, [currentPage]);
 
-  const handleBack = useCallback(() => setView('dashboard'), []);
+  const handleBack = useCallback(() => {
+    if (window.history.state && window.history.state._idx > 0) {
+      window.history.back();
+    } else {
+      setView('dashboard');
+      if (currentPage === 'files') {
+        const isPrescriptionUser = ['prescription', 'ps123', 'Prescription Department'].includes(username);
+        setCurrentPage(isPrescriptionUser ? 'documents' : 'dashboard');
+      }
+      setResetKey(prev => prev + 1);
+    }
+  }, [currentPage, username]);
   
   const handleSaveDocument = useCallback(() => {
     setViewToast('Document uploaded successfully!');
     setView('dashboard');
     setResetKey(prev => prev + 1);
-  }, []);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'dashboard', _idx: nextIdx }, '');
+  }, [currentPage]);
 
   const handleViewFiles = useCallback((mrNumber) => {
     setFilesMrNumber(mrNumber);
     setCurrentPage('files');
     setView('dashboard');
     setResetKey(prev => prev + 1);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: 'files', view: 'dashboard', filesMrNumber: mrNumber, _idx: nextIdx }, '');
   }, []);
 
   const handleNavigate = useCallback((pageId) => {
@@ -111,27 +174,39 @@ function App() {
     setView('dashboard');
     if (pageId !== 'files') setFilesMrNumber(null);
     setResetKey(prev => prev + 1);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: pageId, view: 'dashboard', _idx: nextIdx }, '');
   }, []);
 
   const handleSave = useCallback(() => {
     setViewToast('Patient updated successfully!');
     setView('dashboard');
     setResetKey(prev => prev + 1);
-  }, []);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'dashboard', _idx: nextIdx }, '');
+  }, [currentPage]);
 
-  const handleAddPatient = useCallback(() => setView('addPatient'), []);
+  const handleAddPatient = useCallback(() => {
+    setView('addPatient');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: 'patients', view: 'addPatient', _idx: nextIdx }, '');
+  }, []);
 
   const handlePatientAdded = useCallback((newPatient, toastMessage) => {
     setNewMrNumber(newPatient.mrNumber);
     setPendingToast(toastMessage || '');
     setView('addAppointment');
     setResetKey(prev => prev + 1);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: 'patients', view: 'addAppointment', newMrNumber: newPatient.mrNumber, pendingToast: toastMessage || '', _idx: nextIdx }, '');
   }, []);
 
   const handleAddAppointmentForPatient = useCallback((patient) => {
     setNewMrNumber(patient.mrNumber);
     setPendingToast('');
     setView('addAppointment');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: 'patients', view: 'addAppointment', newMrNumber: patient.mrNumber, _idx: nextIdx }, '');
   }, []);
 
   const handleAppointmentAdded = useCallback((newRecord, message, shouldPrintBrowser = true) => {
@@ -140,6 +215,8 @@ function App() {
     setView('dashboard');
     setCurrentPage('appointments');
     setResetKey(prev => prev + 1);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: 'appointments', view: 'dashboard', _idx: nextIdx }, '');
   }, []);
 
   const isScanProcessingRef = useRef(false);
@@ -227,6 +304,8 @@ function App() {
       setView('dashboard');
       setCurrentPage('appointments');
       setResetKey(prev => prev + 1);
+      const nextIdx = (window.history.state?._idx || 0) + 1;
+      window.history.pushState({ page: 'appointments', view: 'dashboard', _idx: nextIdx }, '');
     } finally {
       isScanProcessingRef.current = false;
       setIsScanProcessing(false);
@@ -248,7 +327,7 @@ function App() {
           return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
       }
       if (currentPage === 'files' && ['prescription', 'ps123', 'Prescription Department'].includes(username)) {
-          return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} />;
+          return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} onBack={handleBack} />;
       }
       return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
     }
@@ -278,7 +357,7 @@ function App() {
 
     switch (currentPage) {
       case 'files':
-        return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} />;
+        return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} onBack={handleBack} />;
       case 'appointments':
         return <AppointmentRecords 
                   key={`appointments-${resetKey}`} 

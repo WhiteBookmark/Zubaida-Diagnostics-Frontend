@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Button, Snackbar, Alert, CircularProgress } from '@mui/material';
-import { Badge, Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices } from '@mui/icons-material';
+import { Button, IconButton, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Badge, Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices, Close as CloseIcon } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
-export default function EditPatient({ record, onSave }) {
+export default function EditPatient({ record, onBack, onSave }) {
   const [formData, setFormData] = useState(() => {
     const { id, mrNumber, name, fatherName, motherName, husbandName, dateOfBirth, age, ageMonths, phone, email, fixedAllergies, coMorbidFactor } = record;
     return { id, mrNumber, name, fatherName, motherName, husbandName: husbandName || '', dateOfBirth, age, ageMonths: ageMonths ?? 0, phone, email, fixedAllergies: fixedAllergies || '', coMorbidFactor: coMorbidFactor || '' };
@@ -85,7 +85,22 @@ export default function EditPatient({ record, onSave }) {
 
   return (
     <div className="auth-container">
-      <form onSubmit={handleSubmit} className="auth-form">
+      <form onSubmit={handleSubmit} className="auth-form" style={{ position: 'relative' }}>
+        {onBack && (
+          <IconButton
+            onClick={onBack}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'var(--text)',
+              zIndex: 10,
+            }}
+            aria-label="Close"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
         <h2>Edit Patient Record</h2>
         
         <div className="input-group">

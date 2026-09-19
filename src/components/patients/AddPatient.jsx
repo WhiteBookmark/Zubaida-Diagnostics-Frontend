@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { mockData } from '../../utils/mockData';
-import { Button, Snackbar, Alert, CircularProgress, Typography, Paper } from '@mui/material';
-import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices } from '@mui/icons-material';
+import { Button, IconButton, Snackbar, Alert, CircularProgress, Typography, Paper } from '@mui/material';
+import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices, Close as CloseIcon } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
-export default function AddPatient({ onAdd }) {
+export default function AddPatient({ onBack, onAdd }) {
   const [formData, setFormData] = useState({
     name: '',
     fatherName: '',
@@ -174,7 +174,22 @@ export default function AddPatient({ onAdd }) {
   return (
     <div className="add-patient-wrapper">
       <div className="add-patient-layout">
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" style={{ position: 'relative' }}>
+          {onBack && (
+            <IconButton
+              onClick={onBack}
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                color: 'var(--text)',
+                zIndex: 10,
+              }}
+              aria-label="Close"
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
           <h2>Add New Patient Record</h2>
           
           <div className="input-group">

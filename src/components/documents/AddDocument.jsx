@@ -307,7 +307,22 @@ export default function AddDocument({ onBack, onSave }) {
 
   return (
     <div className="auth-container">
-      <form onSubmit={handleSubmit} className="auth-form">
+      <form onSubmit={handleSubmit} className="auth-form" style={{ position: 'relative' }}>
+        {onBack && (
+          <IconButton
+            onClick={onBack}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'var(--text)',
+              zIndex: 10,
+            }}
+            aria-label="Close"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
         <h2>Add New Document(s)</h2>
         <div className="input-group">
           <label className="input-label" htmlFor="mrNumber">MR Number</label>

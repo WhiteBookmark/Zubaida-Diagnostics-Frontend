@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Button,
+  IconButton,
   Snackbar,
   Alert,
   CircularProgress,
@@ -20,13 +21,16 @@ import {
   LocalHospital,
   Science,
   MedicalServices,
-  Air
+  Air,
+  Close as CloseIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  ArrowDownward as ArrowDownwardIcon
 } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import { generatePatientDossierPdf } from '../../utils/pdfDossierGenerator';
 import '../../styles/Auth.css';
 
-export default function PatientFiles({ initialMrNumber }) {
+export default function PatientFiles({ initialMrNumber, onBack }) {
   const inputRef = useRef(null);
   const [mrNumber, setMrNumber] = useState(initialMrNumber ? String(initialMrNumber) : '');
   const [selectedTypes, setSelectedTypes] = useState({
@@ -274,7 +278,22 @@ export default function PatientFiles({ initialMrNumber }) {
 
   return (
     <div className="auth-container" style={{ maxWidth: '420px', margin: '30px auto', padding: '0 16px' }}>
-      <form onSubmit={handleOpenFile} className="auth-form" style={{ width: '100%', maxWidth: '400px' }}>
+      <form onSubmit={handleOpenFile} className="auth-form" style={{ width: '100%', maxWidth: '400px', position: 'relative' }}>
+        {onBack && (
+          <IconButton
+            onClick={onBack}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'var(--text)',
+              zIndex: 10,
+            }}
+            aria-label="Close"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '20px' }}>
           <FolderOpen sx={{ fontSize: 32, color: 'hsl(221, 83%, 53%)' }} />
           <h2 style={{ margin: 0, color: 'hsl(222, 47%, 11%)', fontSize: '22px' }}>Patient Files & Dossier</h2>
@@ -687,6 +706,55 @@ export default function PatientFiles({ initialMrNumber }) {
           {toast.message}
         </Alert>
       </Snackbar>
+
+      {/* Scroll to top/bottom floating buttons */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 12px hsla(0, 0%, 0%, 0.15)',
+          zIndex: 1000,
+        }}
+      >
+        <IconButton
+          onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+          sx={{
+            borderRadius: 0,
+            background: 'var(--glass-bg)',
+            backdropFilter: 'var(--glass-blur)',
+            border: '1px solid var(--glass-border)',
+            borderBottom: 'none',
+            color: 'var(--text)',
+            width: 44,
+            height: 44,
+            '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
+          }}
+          aria-label="Scroll to top"
+        >
+          <ArrowUpwardIcon />
+        </IconButton>
+        <IconButton
+          onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })}
+          sx={{
+            borderRadius: 0,
+            background: 'var(--glass-bg)',
+            backdropFilter: 'var(--glass-blur)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text)',
+            width: 44,
+            height: 44,
+            '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
+          }}
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDownwardIcon />
+        </IconButton>
+      </Box>
     </div>
   );
 }

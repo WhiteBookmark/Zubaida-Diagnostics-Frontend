@@ -216,25 +216,7 @@ export default function Dashboard({ onNavigate }) {
           variant="contained"
           onClick={handleDownloadBackup}
           disabled={backupLoading}
-          startIcon={backupLoading ? <CircularProgress size={20} sx={{ color: 'hsl(0, 0%, 100%)' }} /> : <CloudDownloadIcon />}
-          sx={{
-            py: 1.2,
-            px: 4,
-            fontSize: '15px',
-            fontWeight: 700,
-            color: 'hsl(0, 0%, 100%) !important',
-            textTransform: 'none',
-            fontFamily: 'Georgia, serif',
-            background: 'linear-gradient(135deg, hsl(221, 83%, 53%) 0%, hsl(224, 76%, 45%) 100%)',
-            boxShadow: '0 4px 12px hsla(221, 83%, 53%, 0.35)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, hsl(221, 83%, 48%) 0%, hsl(224, 76%, 40%) 100%)',
-              boxShadow: '0 6px 16px hsla(221, 83%, 53%, 0.45)',
-            },
-            '&:disabled': {
-              background: 'hsl(215, 16%, 70%)',
-            }
-          }}
+          startIcon={backupLoading ? <CircularProgress size={20} sx={{ color: 'inherit' }} /> : <CloudDownloadIcon />}
         >
           {backupLoading ? 'Preparing Backup...' : 'Download Backup'}
         </Button>

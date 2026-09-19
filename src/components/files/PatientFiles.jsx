@@ -10,7 +10,8 @@ import {
   Checkbox,
   FormControlLabel,
   LinearProgress,
-  Paper
+  Paper,
+  Portal
 } from '@mui/material';
 import {
   Badge,
@@ -708,53 +709,55 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
       </Snackbar>
 
       {/* Scroll to top/bottom floating buttons */}
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: 24,
-          right: 24,
-          display: 'flex',
-          flexDirection: 'column',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 12px hsla(0, 0%, 0%, 0.15)',
-          zIndex: 1000,
-        }}
-      >
-        <IconButton
-          onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+      <Portal>
+        <Box
           sx={{
-            borderRadius: 0,
-            background: 'var(--glass-bg)',
-            backdropFilter: 'var(--glass-blur)',
-            border: '1px solid var(--glass-border)',
-            borderBottom: 'none',
-            color: 'var(--text)',
-            width: 44,
-            height: 44,
-            '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 12px hsla(0, 0%, 0%, 0.15)',
+            zIndex: 9999,
           }}
-          aria-label="Scroll to top"
         >
-          <ArrowUpwardIcon />
-        </IconButton>
-        <IconButton
-          onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' })}
-          sx={{
-            borderRadius: 0,
-            background: 'var(--glass-bg)',
-            backdropFilter: 'var(--glass-blur)',
-            border: '1px solid var(--glass-border)',
-            color: 'var(--text)',
-            width: 44,
-            height: 44,
-            '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
-          }}
-          aria-label="Scroll to bottom"
-        >
-          <ArrowDownwardIcon />
-        </IconButton>
-      </Box>
+          <IconButton
+            onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+            sx={{
+              borderRadius: 0,
+              background: 'var(--glass-bg)',
+              backdropFilter: 'var(--glass-blur)',
+              border: '1px solid var(--glass-border)',
+              borderBottom: 'none',
+              color: 'var(--text)',
+              width: 44,
+              height: 44,
+              '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
+            }}
+            aria-label="Scroll to top"
+          >
+            <ArrowUpwardIcon />
+          </IconButton>
+          <IconButton
+            onClick={() => window.scrollTo({ top: Math.max(document.body.scrollHeight, document.documentElement.scrollHeight), behavior: 'instant' })}
+            sx={{
+              borderRadius: 0,
+              background: 'var(--glass-bg)',
+              backdropFilter: 'var(--glass-blur)',
+              border: '1px solid var(--glass-border)',
+              color: 'var(--text)',
+              width: 44,
+              height: 44,
+              '&:hover': { background: 'hsla(0, 0%, 100%, 0.5)' },
+            }}
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDownwardIcon />
+          </IconButton>
+        </Box>
+      </Portal>
     </div>
   );
 }

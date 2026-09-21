@@ -201,34 +201,10 @@ export default function AddPatient({ onBack, onAdd }) {
           </div>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="fatherName">Father Name</label>
+            <label className="input-label" htmlFor="phone">Phone</label>
             <div className="input-with-icon">
-              <SupervisorAccount className="input-icon" />
-              <input id="fatherName" name="fatherName" value={formData.fatherName} onChange={handleChange} disabled={loading} />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <label className="input-label" htmlFor="motherName">Mother Name</label>
-            <div className="input-with-icon">
-              <Person className="input-icon" />
-              <input id="motherName" name="motherName" value={formData.motherName} onChange={handleChange} disabled={loading} />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <label className="input-label" htmlFor="husbandName">Husband Name</label>
-            <div className="input-with-icon">
-              <SupervisorAccount className="input-icon" />
-              <input id="husbandName" name="husbandName" value={formData.husbandName} onChange={handleChange} disabled={loading} />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <label className="input-label" htmlFor="dob">Date of Birth</label>
-            <div className="input-with-icon">
-              <CalendarToday className="input-icon" />
-              <input id="dob" name="dob" type="date" max={todayStr} value={formData.dob} onChange={handleChange} disabled={loading} />
+              <Phone className="input-icon" />
+              <input id="phone" name="phone" type="tel" pattern="[0-9\+\(\)\-\s]{7,20}" maxLength="20" title="Enter a valid phone number" value={formData.phone} onChange={handleChange} disabled={loading} />
             </div>
           </div>
 
@@ -268,22 +244,6 @@ export default function AddPatient({ onBack, onAdd }) {
           </div>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="phone">Phone</label>
-            <div className="input-with-icon">
-              <Phone className="input-icon" />
-              <input id="phone" name="phone" type="tel" pattern="[0-9\+\(\)\-\s]{7,20}" maxLength="20" title="Enter a valid phone number" value={formData.phone} onChange={handleChange} disabled={loading} />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <label className="input-label" htmlFor="email">Email</label>
-            <div className="input-with-icon">
-              <Email className="input-icon" />
-              <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={loading} />
-            </div>
-          </div>
-
-          <div className="input-group">
             <label className="input-label" htmlFor="fixedAllergies">Fixed Allergies</label>
             <div className="input-with-icon">
               <LocalHospital className="input-icon" />
@@ -312,6 +272,46 @@ export default function AddPatient({ onBack, onAdd }) {
                 rows={3}
                 style={{ width: '100%', resize: 'vertical' }}
               />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="fatherName">Father Name</label>
+            <div className="input-with-icon">
+              <SupervisorAccount className="input-icon" />
+              <input id="fatherName" name="fatherName" value={formData.fatherName} onChange={handleChange} disabled={loading} />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="motherName">Mother Name</label>
+            <div className="input-with-icon">
+              <Person className="input-icon" />
+              <input id="motherName" name="motherName" value={formData.motherName} onChange={handleChange} disabled={loading} />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="husbandName">Husband Name</label>
+            <div className="input-with-icon">
+              <SupervisorAccount className="input-icon" />
+              <input id="husbandName" name="husbandName" value={formData.husbandName} onChange={handleChange} disabled={loading} />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="dob">Date of Birth</label>
+            <div className="input-with-icon">
+              <CalendarToday className="input-icon" />
+              <input id="dob" name="dob" type="date" max={todayStr} value={formData.dob} onChange={handleChange} disabled={loading} />
+            </div>
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="email">Email</label>
+            <div className="input-with-icon">
+              <Email className="input-icon" />
+              <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} disabled={loading} />
             </div>
           </div>
 

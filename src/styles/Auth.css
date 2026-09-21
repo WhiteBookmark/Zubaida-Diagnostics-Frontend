@@ -178,3 +178,26 @@
     max-height: none;
   }
 }
+
+/* Document Preview Panel Layout */
+.add-document-layout {
+  max-width: 980px;
+}
+
+.document-preview-panel {
+  flex: 1 1 480px;
+  max-width: 520px;
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .document-preview-panel {
+    width: 100%;
+    max-width: 440px;
+    position: static;
+    max-height: none;
+  }
+}

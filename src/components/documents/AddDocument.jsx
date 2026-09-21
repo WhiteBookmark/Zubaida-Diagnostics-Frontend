@@ -306,8 +306,9 @@ export default function AddDocument({ onBack, onSave }) {
   };
 
   return (
-    <div className="auth-container">
-      <form onSubmit={handleSubmit} className="auth-form" style={{ position: 'relative' }}>
+    <div className="add-patient-wrapper">
+      <div className="add-patient-layout add-document-layout">
+        <form onSubmit={handleSubmit} className="auth-form" style={{ position: 'relative' }}>
         {onBack && (
           <IconButton
             onClick={onBack}
@@ -515,6 +516,93 @@ export default function AddDocument({ onBack, onSave }) {
           </Button>
         </div>
       </form>
+
+      {/* Large Document Preview Panel (right side) */}
+      {fileEntries.length > 0 && (
+        <div className="document-preview-panel">
+          <Typography variant="subtitle2" sx={{
+            fontFamily: 'var(--heading), Georgia, serif',
+            fontWeight: 700,
+            color: 'var(--text-h, hsl(222, 47%, 11%))',
+            mb: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}>
+            Document Preview ({fileEntries.length})
+          </Typography>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {fileEntries.map(({ id, file, previewUrl }) => (
+              <Box
+                key={id}
+                sx={{
+                  background: 'var(--glass-bg, hsla(0, 0%, 100%, 0.75))',
+                  border: '1px solid var(--glass-border, hsla(214, 32%, 91%, 0.8))',
+                  borderRadius: '10px',
+                  backdropFilter: 'var(--glass-blur, blur(10px))',
+                  boxShadow: 'var(--shadow, 0 4px 15px hsla(0, 0%, 0%, 0.08))',
+                  overflow: 'hidden',
+                  p: 1.5,
+                }}
+              >
+                <Typography variant="caption" sx={{ 
+                  fontWeight: 600, 
+                  color: 'var(--text-h, hsl(222, 47%, 11%))', 
+                  display: 'block', 
+                  mb: 1,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {file.name} ({(file.size / 1024).toFixed(1)} KB)
+                </Typography>
+
+                {file.type?.startsWith('image/') && previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt={file.name}
+                    style={{
+                      width: '100%',
+                      maxHeight: '60vh',
+                      objectFit: 'contain',
+                      borderRadius: '6px',
+                      border: '1px solid hsl(214, 32%, 91%)',
+                      display: 'block',
+                    }}
+                  />
+                ) : file.type === 'application/pdf' && previewUrl ? (
+                  <iframe
+                    src={previewUrl}
+                    title={file.name}
+                    style={{
+                      width: '100%',
+                      height: '60vh',
+                      borderRadius: '6px',
+                      border: '1px solid hsl(214, 32%, 91%)',
+                    }}
+                  />
+                ) : (
+                  <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 4,
+                    color: 'hsl(215, 16%, 47%)',
+                  }}>
+                    <InsertDriveFileIcon sx={{ fontSize: 48, mb: 1 }} />
+                    <Typography variant="body2" sx={{ fontStyle: 'italic' }}>
+                      Preview not available for this file type
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            ))}
+          </Box>
+        </div>
+      )}
+      </div>
 
       <Snackbar
         open={toast.open}

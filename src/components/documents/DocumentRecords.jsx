@@ -11,19 +11,21 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import EditIcon from '@mui/icons-material/Edit';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import { buildApiUrl } from '../../config/api';
+import TodayToggle from '../common/TodayToggle';
 
-export default function DocumentRecords({ onAddDocument, initialToastMessage, clearPending, refreshKey, onViewFiles }) {
+export default function DocumentRecords({ onAddDocument, onEditDocument, initialToastMessage, clearPending, refreshKey, onViewFiles }) {
   const searchInputRef = useRef(null); // Added ref for search input
   const [data, setData] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isTodayOnly, setIsTodayOnly] = useState(false);
+  const [isTodayOnly, setIsTodayOnly] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
@@ -178,6 +180,11 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
           <Tooltip title="View Document">
             <IconButton color="primary" onClick={() => handleOpenDocument(row)}>
               <OpenInNewIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Edit Document">
+            <IconButton color="primary" onClick={() => onEditDocument && onEditDocument(row.original)}>
+              <EditIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
@@ -375,20 +382,11 @@ export default function DocumentRecords({ onAddDocument, initialToastMessage, cl
         <h2>Documents</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
-          <Button
-            variant={isTodayOnly ? "contained" : "outlined"}
-            onClick={() => setIsTodayOnly(prev => !prev)}
-            sx={{
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-              ...(isTodayOnly ? {
-                backgroundColor: 'hsla(221, 83%, 53%, 0.25)',
-                borderColor: 'var(--primary)',
-              } : {})
-            }}
-          >
-            Today's Documents
-          </Button>
+          <TodayToggle
+            isActive={isTodayOnly}
+            onToggle={() => setIsTodayOnly(prev => !prev)}
+            label="Today's Documents"
+          />
           <TextField
             autoFocus
             inputRef={searchInputRef}

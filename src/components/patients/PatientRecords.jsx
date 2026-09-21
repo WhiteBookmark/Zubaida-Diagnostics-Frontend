@@ -15,6 +15,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { buildApiUrl } from '../../config/api';
+import TodayToggle from '../common/TodayToggle';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, onViewFiles, initialToastMessage, clearPending, refreshKey }) {
   const searchInputRef = useRef(null); // Added ref for search input
@@ -28,7 +29,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isTodayOnly, setIsTodayOnly] = useState(false);
+  const [isTodayOnly, setIsTodayOnly] = useState(true);
   const [sorting, setSorting] = useState([]);
 
   const [cursorHistory, setCursorHistory] = useState([null]);
@@ -300,20 +301,11 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         <h2>Patient Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
-          <Button
-            variant={isTodayOnly ? "contained" : "outlined"}
-            onClick={() => setIsTodayOnly(prev => !prev)}
-            sx={{
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-              ...(isTodayOnly ? {
-                backgroundColor: 'hsla(221, 83%, 53%, 0.25)',
-                borderColor: 'var(--primary)',
-              } : {})
-            }}
-          >
-            Today's Patients
-          </Button>
+          <TodayToggle
+            isActive={isTodayOnly}
+            onToggle={() => setIsTodayOnly(prev => !prev)}
+            label="Today's Patients"
+          />
           <TextField
             autoFocus
             inputRef={searchInputRef}

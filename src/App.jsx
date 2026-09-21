@@ -10,6 +10,7 @@ import Header from './components/common/Header'
 import AppointmentRecords from './components/appointments/AppointmentRecords'
 import DocumentRecords from './components/documents/DocumentRecords'
 import AddDocument from './components/documents/AddDocument'
+import EditDocument from './components/documents/EditDocument'
 import PatientFiles from './components/files/PatientFiles'
 import useQrScanner from './hooks/useQrScanner'
 import './styles/App.css'
@@ -45,6 +46,7 @@ function App() {
   const [view, setView] = useState('dashboard') // 'dashboard', 'edit', 'addDocument', 'addPatient', 'addAppointment'
   const [resetKey, setResetKey] = useState(0)
   const [recordToEdit, setRecordToEdit] = useState(null)
+  const [documentToEdit, setDocumentToEdit] = useState(null)
   const [newMrNumber, setNewMrNumber] = useState('')
   const [pendingToast, setPendingToast] = useState('')
   const [pendingAppointmentPrint, setPendingAppointmentPrint] = useState(null)
@@ -95,6 +97,9 @@ function App() {
         if (state.recordToEdit !== undefined) {
           setRecordToEdit(state.recordToEdit);
         }
+        if (state.documentToEdit !== undefined) {
+          setDocumentToEdit(state.documentToEdit);
+        }
         if (state.newMrNumber !== undefined) {
           setNewMrNumber(state.newMrNumber);
         }
@@ -139,6 +144,13 @@ function App() {
     window.history.pushState({ page: currentPage, view: 'addDocument', _idx: nextIdx }, '');
   }, [currentPage]);
 
+  const handleEditDocument = useCallback((documentRecord) => {
+    setDocumentToEdit(documentRecord);
+    setView('editDocument');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'editDocument', documentToEdit: documentRecord, _idx: nextIdx }, '');
+  }, [currentPage]);
+
   const handleBack = useCallback(() => {
     if (window.history.state && window.history.state._idx > 0) {
       window.history.back();
@@ -154,6 +166,14 @@ function App() {
   
   const handleSaveDocument = useCallback(() => {
     setViewToast('Document uploaded successfully!');
+    setView('dashboard');
+    setResetKey(prev => prev + 1);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'dashboard', _idx: nextIdx }, '');
+  }, [currentPage]);
+
+  const handleSaveEditDocument = useCallback(() => {
+    setViewToast('Document updated successfully!');
     setView('dashboard');
     setResetKey(prev => prev + 1);
     const nextIdx = (window.history.state?._idx || 0) + 1;
@@ -326,10 +346,13 @@ function App() {
       if (view === 'addDocument') {
           return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
       }
+      if (view === 'editDocument') {
+          return <EditDocument key={`editDoc-${resetKey}`} record={documentToEdit} onBack={handleBack} onSave={handleSaveEditDocument} />
+      }
       if (currentPage === 'files' && ['prescription', 'ps123', 'Prescription Department'].includes(username)) {
           return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} onBack={handleBack} />;
       }
-      return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
+      return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} onEditDocument={handleEditDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
     }
 
     if (view === 'edit') {
@@ -345,6 +368,10 @@ function App() {
     
     if (view === 'addDocument') {
         return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
+    }
+
+    if (view === 'editDocument') {
+        return <EditDocument key={`editDoc-${resetKey}`} record={documentToEdit} onBack={handleBack} onSave={handleSaveEditDocument} />
     }
 
     if (view === 'addPatient') {
@@ -368,7 +395,7 @@ function App() {
                   onViewFiles={handleViewFiles}
                />;
       case 'documents':
-        return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
+        return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} onEditDocument={handleEditDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
       case 'patients':
         return (
           <PatientRecords

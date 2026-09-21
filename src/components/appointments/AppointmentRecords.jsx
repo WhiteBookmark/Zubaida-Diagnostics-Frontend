@@ -18,6 +18,7 @@ import { Snackbar, Alert } from '@mui/material';
 import AddAppointmentRecord from './AddAppointmentRecord';
 import QRCode from 'qrcode';
 import { buildApiUrl } from '../../config/api';
+import TodayToggle from '../common/TodayToggle';
 
 export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey, onViewFiles }) {
   const searchInputRef = useRef(null); // Added ref for search input
@@ -27,7 +28,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
   const [showAddForm, setShowAddForm] = useState(false);
   const [sorting, setSorting] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isTodayOnly, setIsTodayOnly] = useState(false);
+  const [isTodayOnly, setIsTodayOnly] = useState(true);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
   // Added state for editing appointment records
@@ -443,20 +444,11 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         <h2>Appointment Records</h2>
         <Box sx={{ display: 'flex', gap: '16px', marginLeft: 'auto', alignItems: 'center' }}>
           {isLoading && <CircularProgress size={24} sx={{ color: 'var(--text)' }} />}
-          <Button
-            variant={isTodayOnly ? "contained" : "outlined"}
-            onClick={() => setIsTodayOnly(prev => !prev)}
-            sx={{
-              whiteSpace: 'nowrap',
-              fontWeight: 600,
-              ...(isTodayOnly ? {
-                backgroundColor: 'hsla(221, 83%, 53%, 0.25)',
-                borderColor: 'var(--primary)',
-              } : {})
-            }}
-          >
-            Today's Appointments
-          </Button>
+          <TodayToggle
+            isActive={isTodayOnly}
+            onToggle={() => setIsTodayOnly(prev => !prev)}
+            label="Today's Appointments"
+          />
           <TextField
             autoFocus
             inputRef={searchInputRef}

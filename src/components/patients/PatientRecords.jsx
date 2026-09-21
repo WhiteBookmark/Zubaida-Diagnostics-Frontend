@@ -29,7 +29,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isTodayOnly, setIsTodayOnly] = useState(true);
+  const [isTodayOnly, setIsTodayOnly] = useState(false);
   const [sorting, setSorting] = useState([]);
 
   const [cursorHistory, setCursorHistory] = useState([null]);

@@ -15,6 +15,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import { buildApiUrl } from '../../config/api';
 import TodayToggle from '../common/TodayToggle';
 
@@ -316,7 +318,7 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
       },
       cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
     },
-  ], [handleDeleteClick, handleOpenDocument]);
+  ], [handleDeleteClick, handleOpenDocument, onEditDocument]);
 
   const table = useReactTable({
     columns,
@@ -364,8 +366,181 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
 
   const rows = table.getRowModel().rows;
 
+  const [expandedMrNumbers, setExpandedMrNumbers] = useState(new Set());
+
+  // Reset expanded groups when data changes
+  useEffect(() => {
+    setExpandedMrNumbers(new Set());
+  }, [data]);
+
+  const toggleMrGroup = useCallback((mrNumber) => {
+    setExpandedMrNumbers(prev => {
+      const next = new Set(prev);
+      if (next.has(mrNumber)) {
+        next.delete(mrNumber);
+      } else {
+        next.add(mrNumber);
+      }
+      return next;
+    });
+  }, []);
+
+  const groupedData = useMemo(() => {
+    const groups = new Map();
+
+    for (const row of rows) {
+      const mrNumber = row.original?.patient?.mrNumber || 'UNKNOWN';
+      if (!groups.has(mrNumber)) {
+        groups.set(mrNumber, { mrNumber, rows: [], firstRow: row });
+      }
+      groups.get(mrNumber).rows.push(row);
+    }
+
+    const result = [];
+    for (const [mrNumber, group] of groups) {
+      const isExpanded = expandedMrNumbers.has(mrNumber);
+      const isSingleRecord = group.rows.length === 1;
+
+      if (isSingleRecord) {
+        result.push({ type: 'single', row: group.rows[0], mrNumber });
+      } else {
+        result.push({
+          type: 'group-header',
+          mrNumber,
+          recordCount: group.rows.length,
+          firstRow: group.firstRow,
+          isExpanded,
+        });
+        if (isExpanded) {
+          for (const row of group.rows) {
+            result.push({ type: 'child', row, mrNumber });
+          }
+        }
+      }
+    }
+    return result;
+  }, [rows, expandedMrNumbers]);
+
+  const hasGroups = useMemo(() => {
+    return groupedData.some(item => item.type === 'group-header');
+  }, [groupedData]);
+
+  const allGroupMrNumbers = useMemo(() => {
+    const set = new Set();
+    for (const item of groupedData) {
+      if (item.type === 'group-header') {
+        set.add(item.mrNumber);
+      }
+    }
+    return set;
+  }, [groupedData]);
+
+  const isAllExpanded = allGroupMrNumbers.size > 0 && expandedMrNumbers.size >= allGroupMrNumbers.size;
+
+  const handleToggleAll = useCallback(() => {
+    if (isAllExpanded) {
+      setExpandedMrNumbers(new Set());
+    } else {
+      setExpandedMrNumbers(new Set(allGroupMrNumbers));
+    }
+  }, [isAllExpanded, allGroupMrNumbers]);
+
+  const renderRowItem = (item) => {
+    if (!item) return null;
+
+    if (item.type === 'single') {
+      const row = item.row;
+      return (
+        <tr key={row.id} onClick={() => onViewFiles && onViewFiles(row.original?.patient?.mrNumber)} style={{ cursor: 'pointer' }}>
+          {row.getVisibleCells().map(cell => (
+            <td key={cell.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          ))}
+        </tr>
+      );
+    }
+
+    if (item.type === 'group-header') {
+      return (
+        <tr
+          key={`group-${item.mrNumber}`}
+          onClick={() => toggleMrGroup(item.mrNumber)}
+          style={{
+            cursor: 'pointer',
+            backgroundColor: 'hsla(217, 91%, 60%, 0.08)',
+          }}
+        >
+          <td>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMrGroup(item.mrNumber);
+                }}
+                sx={{ color: 'hsl(217, 91%, 50%)' }}
+                aria-label={item.isExpanded ? "Collapse group" : "Expand group"}
+              >
+                {item.isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+              </IconButton>
+            </Box>
+          </td>
+          <td>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <span style={{ fontWeight: 600 }}>{item.mrNumber}</span>
+              <Box
+                component="span"
+                sx={{
+                  backgroundColor: 'hsl(217, 91%, 35%)',
+                  color: 'hsl(0, 0%, 100%)',
+                  borderRadius: '10px',
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1.2,
+                }}
+              >
+                {item.recordCount} Records
+              </Box>
+            </Box>
+          </td>
+          <td>{item.firstRow.original?.patient?.name || 'N/A'}</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+        </tr>
+      );
+    }
+
+    if (item.type === 'child') {
+      const row = item.row;
+      return (
+        <tr
+          key={row.id}
+          onClick={() => onViewFiles && onViewFiles(row.original?.patient?.mrNumber)}
+          style={{
+            cursor: 'pointer',
+            backgroundColor: 'hsla(217, 91%, 60%, 0.04)',
+          }}
+        >
+          {row.getVisibleCells().map(cell => (
+            <td key={cell.id} style={{ borderBottom: '1px solid hsla(217, 91%, 60%, 0.08)' }}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          ))}
+        </tr>
+      );
+    }
+
+    return null;
+  };
+
   const virtualizer = useVirtualizer({
-    count: rows.length,
+    count: groupedData.length,
     getScrollElement: () => tableContainerRef.current,
     estimateSize: () => 52,
     overscan: 15,
@@ -387,6 +562,27 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
             onToggle={() => setIsTodayOnly(prev => !prev)}
             label="Today's Documents"
           />
+          {hasGroups && (
+            <Tooltip title={isAllExpanded ? "Collapse All Groups" : "Expand All Groups"}>
+              <IconButton
+                onClick={handleToggleAll}
+                size="small"
+                sx={{
+                  backgroundColor: 'hsla(217, 91%, 60%, 0.1)',
+                  color: 'var(--text)',
+                  borderRadius: '50%',
+                  width: 36,
+                  height: 36,
+                  '&:hover': {
+                    backgroundColor: 'hsla(217, 91%, 60%, 0.2)',
+                  }
+                }}
+                aria-label={isAllExpanded ? "Collapse all groups" : "Expand all groups"}
+              >
+                {isAllExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+              </IconButton>
+            </Tooltip>
+          )}
           <TextField
             autoFocus
             inputRef={searchInputRef}
@@ -490,19 +686,7 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
                   <td style={{ height: `${paddingTop}px`, padding: 0, border: 'none' }} colSpan={columns.length} />
                 </tr>
               )}
-              {virtualRows.map(virtualRow => {
-                const row = rows[virtualRow.index];
-                if (!row) return null;
-                return (
-                  <tr key={row.id} onClick={() => onViewFiles && onViewFiles(row.original.patient?.mrNumber)} style={{ cursor: 'pointer' }}>
-                    {row.getVisibleCells().map(cell => (
-                      <td key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
+              {virtualRows.map(virtualRow => renderRowItem(groupedData[virtualRow.index]))}
               {paddingBottom > 0 && (
                 <tr>
                   <td style={{ height: `${paddingBottom}px`, padding: 0, border: 'none' }} colSpan={columns.length} />
@@ -551,15 +735,7 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
               ))}
             </thead>
             <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} onClick={() => onViewFiles && onViewFiles(row.original.patient?.mrNumber)} style={{ cursor: 'pointer' }}>
-                  {row.getVisibleCells().map(cell => (
-                    <td key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {groupedData.map(item => renderRowItem(item))}
             </tbody>
           </table>
         </div>

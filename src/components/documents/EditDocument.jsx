@@ -324,6 +324,7 @@ export default function EditDocument({ record, onBack, onSave }) {
                 <option value="Lab Result">Lab Result</option>
                 <option value="Prescription">Prescription</option>
                 <option value="PFT">PFT</option>
+                <option value="ECG">ECG</option>
                 <option value="other">Other</option>
               </select>
             </div>

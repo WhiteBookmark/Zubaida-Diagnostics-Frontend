@@ -111,6 +111,7 @@ export default function AddDocument({ onBack, onSave }) {
     else if (storedUsername === 'lb123' || storedUsername === 'lab' || storedUsername === 'Lab Department') defaultType = 'Lab Result';
     else if (storedUsername === 'ps123' || storedUsername === 'prescription') defaultType = 'Prescription';
     else if (storedUsername === 'pft123' || storedUsername === 'pft' || storedUsername === 'PFT Department') defaultType = 'PFT';
+    else if (storedUsername === 'ecg123' || storedUsername === 'ecg' || storedUsername === 'ECG Department') defaultType = 'ECG';
 
     return {
       mrNumber: '',
@@ -367,6 +368,7 @@ export default function AddDocument({ onBack, onSave }) {
               <option value="Lab Result">Lab Result</option>
               <option value="Prescription">Prescription</option>
               <option value="PFT">PFT</option>
+              <option value="ECG">ECG</option>
             </select>
           </div>
         </div>

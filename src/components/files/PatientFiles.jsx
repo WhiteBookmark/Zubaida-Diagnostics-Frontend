@@ -23,6 +23,7 @@ import {
   Science,
   MedicalServices,
   Air,
+  MonitorHeart,
   Close as CloseIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon
@@ -43,6 +44,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
     prescription: true,
     labReport: true,
     pft: true,
+    ecg: true,
   });
 
   const [availableTypes, setAvailableTypes] = useState(null); // null = not yet checked
@@ -69,7 +71,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
       if (!isValid) {
         setAvailableTypes(null);
         setTypeCounts({});
-        setSelectedTypes({ xray: true, ultrasound: true, prescription: true, labReport: true, pft: true });
+        setSelectedTypes({ xray: true, ultrasound: true, prescription: true, labReport: true, pft: true, ecg: true });
         return;
       }
 
@@ -89,6 +91,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
           prescription: (t) => t.includes('prescription') || t.includes('ps') || t.includes('rx'),
           labReport: (t) => t.includes('lab') || t.includes('report') || t.includes('result'),
           pft: (t) => t.includes('pft') || t.includes('pulmonary'),
+          ecg: (t) => t.includes('ecg') || t.includes('electrocardiogram'),
         };
 
         const newAvailable = {};
@@ -151,6 +154,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
         prescription: !!availableTypes.prescription,
         labReport: !!availableTypes.labReport,
         pft: !!availableTypes.pft,
+        ecg: !!availableTypes.ecg,
       });
     } else {
       setSelectedTypes({
@@ -159,6 +163,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
         prescription: shouldSelect,
         labReport: shouldSelect,
         pft: shouldSelect,
+        ecg: shouldSelect,
       });
     }
   };
@@ -235,6 +240,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
         if (selectedTypes.prescription && (docType.includes('prescription') || docType.includes('ps') || docType.includes('rx'))) return true;
         if (selectedTypes.labReport && (docType.includes('lab') || docType.includes('report') || docType.includes('result'))) return true;
         if (selectedTypes.pft && (docType.includes('pft') || docType.includes('pulmonary'))) return true;
+        if (selectedTypes.ecg && (docType.includes('ecg') || docType.includes('electrocardiogram'))) return true;
         return false;
       });
 
@@ -613,6 +619,50 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
                       }}
                     >
                       {typeCounts.pft}
+                    </Box>
+                  )}
+                </Box>
+              }
+            />
+
+            {/* ECG Checkbox */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={selectedTypes.ecg}
+                  onChange={handleCheckboxChange}
+                  name="ecg"
+                  disabled={loading || (availableTypes !== null && !availableTypes.ecg)}
+                  sx={{
+                    color: (availableTypes !== null && !availableTypes.ecg) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)',
+                    '&.Mui-checked': { color: 'hsl(221, 83%, 53%)' },
+                  }}
+                />
+              }
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  <MonitorHeart sx={{ fontSize: 16, color: (availableTypes !== null && !availableTypes.ecg) ? 'hsl(215, 16%, 70%)' : 'hsl(221, 83%, 53%)' }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 600, fontSize: '13px', color: (availableTypes !== null && !availableTypes.ecg) ? 'hsl(215, 16%, 70%)' : 'hsl(222, 47%, 11%)' }}>
+                    ECG
+                  </Typography>
+                  {typeCounts.ecg > 0 && (
+                    <Box
+                      sx={{
+                        minWidth: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        background: 'hsl(221, 83%, 53%)',
+                        color: 'hsl(0, 0%, 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, serif',
+                        ml: 0.5,
+                      }}
+                    >
+                      {typeCounts.ecg}
                     </Box>
                   )}
                 </Box>

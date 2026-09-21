@@ -29,11 +29,14 @@ import {
 } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import { generatePatientDossierPdf } from '../../utils/pdfDossierGenerator';
+import usePatientLookup from '../../hooks/usePatientLookup';
+import PatientNameField from '../common/PatientNameField';
 import '../../styles/Auth.css';
 
 export default function PatientFiles({ initialMrNumber, onBack }) {
   const inputRef = useRef(null);
   const [mrNumber, setMrNumber] = useState(initialMrNumber ? String(initialMrNumber) : '');
+  const { patientName, lookupStatus: patientLookupStatus } = usePatientLookup(mrNumber);
   const [selectedTypes, setSelectedTypes] = useState({
     xray: true,
     ultrasound: true,
@@ -329,6 +332,12 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
             />
           </div>
         </div>
+
+        {/* Patient Name (Read-Only, Derived from MR Number) */}
+        <PatientNameField
+          patientName={patientName}
+          lookupStatus={patientLookupStatus}
+        />
 
         {/* Checkboxes Section */}
         <div className="input-group" style={{ marginTop: '10px' }}>

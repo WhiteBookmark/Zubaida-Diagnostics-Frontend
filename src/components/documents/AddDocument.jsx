@@ -5,6 +5,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
+import usePatientLookup from '../../hooks/usePatientLookup';
+import PatientNameField from '../common/PatientNameField';
 import '../../styles/Auth.css';
 
 /**
@@ -115,6 +117,8 @@ export default function AddDocument({ onBack, onSave }) {
       type: defaultType,
     };
   });
+
+  const { patientName, lookupStatus: patientLookupStatus } = usePatientLookup(formData.mrNumber);
 
   // Array of { id: string, file: File, previewUrl: string | null }
   const [fileEntries, setFileEntries] = useState([]);
@@ -345,6 +349,12 @@ export default function AddDocument({ onBack, onSave }) {
             />
           </div>
         </div>
+
+        {/* Patient Name (Read-Only, Derived from MR Number) */}
+        <PatientNameField
+          patientName={patientName}
+          lookupStatus={patientLookupStatus}
+        />
 
         <div className="input-group">
           <label className="input-label" htmlFor="type">Document Type</label>

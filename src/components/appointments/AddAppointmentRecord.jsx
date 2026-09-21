@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button, IconButton, Snackbar, Alert, CircularProgress } from '@mui/material';
 import { Badge, CalendarToday, Payments, Close as CloseIcon } from '@mui/icons-material';
+import usePatientLookup from '../../hooks/usePatientLookup';
+import PatientNameField from '../common/PatientNameField';
 import '../../styles/Auth.css';
 
 export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = '', initialToastMessage = '' }) {
@@ -17,6 +19,8 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
       amountPaid: '0',
     };
   });
+
+  const { patientName, lookupStatus: patientLookupStatus } = usePatientLookup(formData.mrNumber);
 
   const amountPaidRef = useRef(null);
 
@@ -183,6 +187,12 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
             </span>
           )}
         </div>
+
+        {/* Patient Name (Read-Only, Derived from MR Number) */}
+        <PatientNameField
+          patientName={patientName}
+          lookupStatus={patientLookupStatus}
+        />
 
         <div className="input-group">
           <label className="input-label" htmlFor="dateTime">Date & Time</label>

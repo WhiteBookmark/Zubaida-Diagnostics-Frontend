@@ -266,8 +266,14 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
   };
 
   return (
-    <div className="auth-container" style={{ maxWidth: '420px', margin: '30px auto', padding: '0 16px' }}>
-      <form onSubmit={handleOpenFile} className="auth-form" style={{ width: '100%', maxWidth: '400px', position: 'relative' }}>
+    <div className="add-patient-wrapper">
+      <div
+        className="patient-files-layout"
+        style={{
+          maxWidth: (loading || patientSummary) ? '980px' : '510px',
+        }}
+      >
+        <form onSubmit={handleOpenFile} className="auth-form" style={{ position: 'relative' }}>
         {onBack && (
           <IconButton
             onClick={onBack}
@@ -290,7 +296,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
         {/* MR Number Input Box (Copied from AddDocument with same attributes & styling) */}
         <div className="input-group">
-          <label className="input-label" htmlFor="mrNumber" style={{ fontFamily: 'Georgia, serif', fontWeight: 600 }}>
+          <label className="input-label" htmlFor="mrNumber" style={{ fontFamily: 'Georgia, serif', fontWeight: 400 }}>
             MR Number
           </label>
           <div className="input-with-icon">
@@ -333,8 +339,8 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
               position: 'relative',
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: '8px',
-              padding: '12px 16px',
+              gap: '10px 16px',
+              padding: '14px 18px',
               background: 'hsl(215, 30%, 97%)',
               border: '1px solid hsl(215, 25%, 85%)',
               borderRadius: '12px',
@@ -356,6 +362,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
             )}
             {/* X-Ray Checkbox */}
             <FormControlLabel
+              sx={{ m: 0 }}
               control={
                 <Checkbox
                   checked={selectedTypes.xray}
@@ -400,6 +407,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
             {/* Ultrasound Checkbox */}
             <FormControlLabel
+              sx={{ m: 0 }}
               control={
                 <Checkbox
                   checked={selectedTypes.ultrasound}
@@ -444,6 +452,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
             {/* Prescription Checkbox */}
             <FormControlLabel
+              sx={{ m: 0 }}
               control={
                 <Checkbox
                   checked={selectedTypes.prescription}
@@ -488,6 +497,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
             {/* Lab Report Checkbox */}
             <FormControlLabel
+              sx={{ m: 0 }}
               control={
                 <Checkbox
                   checked={selectedTypes.labReport}
@@ -532,6 +542,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
             {/* PFT Checkbox */}
             <FormControlLabel
+              sx={{ m: 0 }}
               control={
                 <Checkbox
                   checked={selectedTypes.pft}
@@ -576,6 +587,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
             {/* ECG Checkbox */}
             <FormControlLabel
+              sx={{ m: 0 }}
               control={
                 <Checkbox
                   checked={selectedTypes.ecg}
@@ -620,36 +632,6 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
           </Paper>
         </div>
 
-        {/* Live Progress Feedback */}
-        {loading && (
-          <Box sx={{ width: '100%', mt: 2, p: 2, background: 'hsl(215, 30%, 97%)', borderRadius: 2, border: '1px solid hsl(215, 25%, 85%)' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)', fontSize: '13px' }}>
-                {progressStatus || 'Processing documents...'}
-              </Typography>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: 'hsl(221, 83%, 53%)' }}>
-                {progressPercent}%
-              </Typography>
-            </Box>
-            <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 8, borderRadius: 4 }} />
-          </Box>
-        )}
-
-        {/* Patient Summary Card if previously fetched */}
-        {patientSummary && !loading && (
-          <Box sx={{ width: '100%', mt: 2, p: 2, background: 'hsl(142, 76%, 96%)', borderRadius: 2, border: '1px solid hsl(142, 70%, 75%)' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'hsl(142, 76%, 25%)' }}>
-              <CheckCircleOutline fontSize="small" />
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                {patientSummary.patient.name || 'Patient'} (MR #{patientSummary.patient.mrNumber})
-              </Typography>
-            </Box>
-            <Typography variant="caption" sx={{ color: 'hsl(142, 50%, 30%)', display: 'block', mt: 0.5 }}>
-              Compiled {patientSummary.selectedCount} of {patientSummary.totalFound} available document(s) into PDF dossier.
-            </Typography>
-          </Box>
-        )}
-
         {/* Submit Button */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '20px', width: '100%' }}>
           <Button
@@ -687,6 +669,65 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
           </Button>
         </div>
       </form>
+
+      {/* Separate Card on the right side for progress and completion banner */}
+      {(loading || patientSummary) && (
+        <div className="auth-form patient-files-status-panel">
+          {loading && (
+            <Box sx={{ width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+                <CircularProgress size={22} sx={{ color: 'hsl(221, 83%, 53%)' }} />
+                <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '17px', color: 'hsl(222, 47%, 11%)' }}>
+                  Compiling Dossier
+                </Typography>
+              </Box>
+
+              <Box sx={{ p: 2, background: 'hsl(215, 30%, 97%)', borderRadius: 2, border: '1px solid hsl(215, 25%, 85%)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)', fontSize: '13px' }}>
+                    {progressStatus || 'Processing documents...'}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: 'hsl(221, 83%, 53%)' }}>
+                    {progressPercent}%
+                  </Typography>
+                </Box>
+                <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 8, borderRadius: 4 }} />
+              </Box>
+            </Box>
+          )}
+
+          {patientSummary && !loading && (
+            <Box sx={{ width: '100%' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, width: '100%' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircleOutline sx={{ color: 'hsl(142, 76%, 36%)', fontSize: 24 }} />
+                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '17px', color: 'hsl(142, 76%, 25%)' }}>
+                    Dossier Ready
+                  </Typography>
+                </Box>
+                <IconButton
+                  size="small"
+                  onClick={() => setPatientSummary(null)}
+                  sx={{ color: 'hsl(215, 16%, 47%)', '&:hover': { color: 'hsl(0, 72%, 51%)' } }}
+                  aria-label="Close summary card"
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+
+              <Box sx={{ p: 2, background: 'hsl(142, 76%, 96%)', borderRadius: 2, border: '1px solid hsl(142, 70%, 75%)', width: '100%', boxSizing: 'border-box' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'hsl(142, 76%, 25%)', fontSize: '15px' }}>
+                  {patientSummary.patient.name || 'Patient'} (MR #{patientSummary.patient.mrNumber})
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'hsl(142, 50%, 30%)', mt: 0.5, fontSize: '13px' }}>
+                  Compiled {patientSummary.selectedCount} of {patientSummary.totalFound} available document(s) into PDF dossier.
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </div>
+      )}
+      </div>
 
       {/* Snackbar Alert Notification */}
       <Snackbar

@@ -200,4 +200,48 @@
     position: static;
     max-height: none;
   }
+}
+
+/* Patient Files Side-by-Side Status Card Layout */
+.patient-files-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: max-width 0.3s ease;
+}
+
+.patient-files-layout .auth-form {
+  box-sizing: border-box;
+  flex: 0 0 490px;
+  width: 490px;
+  max-width: 490px;
+  padding: 3rem 2.25rem;
+}
+
+.patient-files-status-panel {
+  box-sizing: border-box;
+  flex: 0 0 380px;
+  width: 380px;
+  max-width: 380px;
+  padding: 24px !important;
+  position: relative;
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+
+@media (max-width: 940px) {
+  .patient-files-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+  .patient-files-layout .auth-form,
+  .patient-files-status-panel {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 490px;
+  }
 }

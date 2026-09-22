@@ -146,27 +146,6 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
     }));
   };
 
-  const handleSelectAll = (shouldSelect) => {
-    if (shouldSelect && availableTypes !== null) {
-      setSelectedTypes({
-        xray: !!availableTypes.xray,
-        ultrasound: !!availableTypes.ultrasound,
-        prescription: !!availableTypes.prescription,
-        labReport: !!availableTypes.labReport,
-        pft: !!availableTypes.pft,
-        ecg: !!availableTypes.ecg,
-      });
-    } else {
-      setSelectedTypes({
-        xray: shouldSelect,
-        ultrasound: shouldSelect,
-        prescription: shouldSelect,
-        labReport: shouldSelect,
-        pft: shouldSelect,
-        ecg: shouldSelect,
-      });
-    }
-  };
 
   const isAnyTypeSelected = Object.values(selectedTypes).some(Boolean);
 
@@ -343,56 +322,15 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
         <PatientNameField
           patientName={patientName}
           lookupStatus={patientLookupStatus}
+          showLabel={false}
         />
 
         {/* Checkboxes Section */}
         <div className="input-group" style={{ marginTop: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <label className="input-label" style={{ fontFamily: 'Georgia, serif', fontWeight: 600, margin: 0, display: 'inline-flex', alignItems: 'center' }}>
-              Document Categories {isCheckingTypes && <CircularProgress size={14} sx={{ ml: 1, color: 'hsl(221, 83%, 53%)' }} />}
-            </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => handleSelectAll(true)}
-                disabled={loading}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'hsl(221, 83%, 53%)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: '2px 6px',
-                  textDecoration: 'underline'
-                }}
-              >
-                Select All
-              </button>
-              <span style={{ color: 'hsl(215, 16%, 60%)', fontSize: '12px' }}>|</span>
-              <button
-                type="button"
-                onClick={() => handleSelectAll(false)}
-                disabled={loading}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'hsl(215, 16%, 47%)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: '2px 6px',
-                  textDecoration: 'underline'
-                }}
-              >
-                Clear All
-              </button>
-            </div>
-          </div>
-
           <Paper
             elevation={0}
             sx={{
+              position: 'relative',
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gap: '8px',
@@ -405,6 +343,17 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
               margin: '0 auto'
             }}
           >
+            {isCheckingTypes && (
+              <CircularProgress
+                size={14}
+                sx={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 12,
+                  color: 'hsl(221, 83%, 53%)'
+                }}
+              />
+            )}
             {/* X-Ray Checkbox */}
             <FormControlLabel
               control={

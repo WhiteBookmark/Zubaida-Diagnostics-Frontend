@@ -292,7 +292,7 @@ export default function AddPatient({ onBack, onAdd }) {
           </div>
 
           <div className="input-group">
-            <label className="input-label" htmlFor="husbandName">Husband Name</label>
+            <label className="input-label" htmlFor="husbandName">Husband/Wife Name</label>
             <div className="input-with-icon">
               <SupervisorAccount className="input-icon" />
               <input id="husbandName" name="husbandName" value={formData.husbandName} onChange={handleChange} disabled={loading} />

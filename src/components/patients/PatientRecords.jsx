@@ -221,7 +221,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       { accessorKey: 'coMorbidFactor', header: 'Co Morbid Factor' },
       { accessorKey: 'fatherName', header: "Father's Name" },
       { accessorKey: 'motherName', header: "Mother's Name" },
-      { accessorKey: 'husbandName', header: "Husband's Name" },
+      { accessorKey: 'husbandName', header: "Husband/Wife Name" },
       {
         accessorKey: 'dateOfBirth',
         header: 'Date of Birth',

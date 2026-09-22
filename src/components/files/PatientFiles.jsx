@@ -698,21 +698,11 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
           {patientSummary && !loading && (
             <Box sx={{ width: '100%' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, width: '100%' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircleOutline sx={{ color: 'hsl(142, 76%, 36%)', fontSize: 24 }} />
-                  <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '17px', color: 'hsl(142, 76%, 25%)' }}>
-                    Dossier Ready
-                  </Typography>
-                </Box>
-                <IconButton
-                  size="small"
-                  onClick={() => setPatientSummary(null)}
-                  sx={{ color: 'hsl(215, 16%, 47%)', '&:hover': { color: 'hsl(0, 72%, 51%)' } }}
-                  aria-label="Close summary card"
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                <CheckCircleOutline sx={{ color: 'hsl(142, 76%, 36%)', fontSize: 24 }} />
+                <Typography sx={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: '17px', color: 'hsl(142, 76%, 25%)' }}>
+                  Dossier Ready
+                </Typography>
               </Box>
 
               <Box sx={{ p: 2, background: 'hsl(142, 76%, 96%)', borderRadius: 2, border: '1px solid hsl(142, 70%, 75%)', width: '100%', boxSizing: 'border-box' }}>

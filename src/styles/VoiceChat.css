@@ -1,0 +1,592 @@
+/* Voice Chat Glassmorphism Design System & Elevation System */
+:root {
+  /* Primary 10 shades (Blue) - 10 is darkest original, 1 is lightest */
+  --vc-primary-10: hsl(217, 91%, 20%);
+  --vc-primary-9: hsl(217, 91%, 26%);
+  --vc-primary-8: hsl(217, 91%, 32%);
+  --vc-primary-7: hsl(217, 91%, 38%);
+  --vc-primary-6: hsl(217, 91%, 45%);
+  --vc-primary-5: hsl(217, 91%, 54%);
+  --vc-primary-4: hsl(217, 91%, 65%);
+  --vc-primary-3: hsl(217, 91%, 76%);
+  --vc-primary-2: hsl(217, 91%, 88%);
+  --vc-primary-1: hsl(217, 91%, 96%);
+
+  /* Secondary 10 shades (Cyan/Sky) */
+  --vc-secondary-10: hsl(199, 89%, 18%);
+  --vc-secondary-9: hsl(199, 89%, 24%);
+  --vc-secondary-8: hsl(199, 89%, 30%);
+  --vc-secondary-7: hsl(199, 89%, 38%);
+  --vc-secondary-6: hsl(199, 89%, 46%);
+  --vc-secondary-5: hsl(199, 89%, 56%);
+  --vc-secondary-4: hsl(199, 89%, 68%);
+  --vc-secondary-3: hsl(199, 89%, 80%);
+  --vc-secondary-2: hsl(199, 89%, 90%);
+  --vc-secondary-1: hsl(199, 89%, 97%);
+
+  /* Accent 10 shades (Indigo/Violet) */
+  --vc-accent-10: hsl(245, 82%, 22%);
+  --vc-accent-9: hsl(245, 82%, 28%);
+  --vc-accent-8: hsl(245, 82%, 35%);
+  --vc-accent-7: hsl(245, 82%, 42%);
+  --vc-accent-6: hsl(245, 82%, 52%);
+  --vc-accent-5: hsl(245, 82%, 62%);
+  --vc-accent-4: hsl(245, 82%, 72%);
+  --vc-accent-3: hsl(245, 82%, 82%);
+  --vc-accent-2: hsl(245, 82%, 91%);
+  --vc-accent-1: hsl(245, 82%, 97%);
+
+  /* Grey 10 shades (Slate) */
+  --vc-grey-10: hsl(215, 28%, 12%);
+  --vc-grey-9: hsl(215, 28%, 18%);
+  --vc-grey-8: hsl(215, 28%, 25%);
+  --vc-grey-7: hsl(215, 28%, 35%);
+  --vc-grey-6: hsl(215, 28%, 46%);
+  --vc-grey-5: hsl(215, 28%, 58%);
+  --vc-grey-4: hsl(215, 28%, 70%);
+  --vc-grey-3: hsl(215, 28%, 82%);
+  --vc-grey-2: hsl(215, 28%, 91%);
+  --vc-grey-1: hsl(215, 28%, 97%);
+
+  /* Semantic Red 10 shades */
+  --vc-red-10: hsl(0, 84%, 25%);
+  --vc-red-9: hsl(0, 84%, 32%);
+  --vc-red-8: hsl(0, 84%, 40%);
+  --vc-red-7: hsl(0, 84%, 48%);
+  --vc-red-6: hsl(0, 84%, 56%);
+  --vc-red-5: hsl(0, 84%, 66%);
+  --vc-red-4: hsl(0, 84%, 76%);
+  --vc-red-3: hsl(0, 84%, 85%);
+  --vc-red-2: hsl(0, 84%, 92%);
+  --vc-red-1: hsl(0, 84%, 97%);
+
+  /* Semantic Yellow 10 shades */
+  --vc-yellow-10: hsl(45, 93%, 22%);
+  --vc-yellow-9: hsl(45, 93%, 28%);
+  --vc-yellow-8: hsl(45, 93%, 35%);
+  --vc-yellow-7: hsl(45, 93%, 44%);
+  --vc-yellow-6: hsl(45, 93%, 52%);
+  --vc-yellow-5: hsl(45, 93%, 62%);
+  --vc-yellow-4: hsl(45, 93%, 72%);
+  --vc-yellow-3: hsl(45, 93%, 82%);
+  --vc-yellow-2: hsl(45, 93%, 91%);
+  --vc-yellow-1: hsl(45, 93%, 96%);
+
+  /* Semantic Green 10 shades */
+  --vc-green-10: hsl(142, 76%, 20%);
+  --vc-green-9: hsl(142, 76%, 26%);
+  --vc-green-8: hsl(142, 76%, 33%);
+  --vc-green-7: hsl(142, 76%, 40%);
+  --vc-green-6: hsl(142, 76%, 48%);
+  --vc-green-5: hsl(142, 76%, 58%);
+  --vc-green-4: hsl(142, 76%, 68%);
+  --vc-green-3: hsl(142, 76%, 79%);
+  --vc-green-2: hsl(142, 76%, 89%);
+  --vc-green-1: hsl(142, 76%, 96%);
+
+  /* 5 Pre-determined Elevation Levels */
+  --vc-elevation-5: 0 20px 25px -5px hsla(215, 28%, 15%, 0.28), 0 10px 10px -5px hsla(215, 28%, 15%, 0.22);
+  --vc-elevation-4: 0 14px 20px -4px hsla(215, 28%, 15%, 0.22), 0 8px 8px -4px hsla(215, 28%, 15%, 0.16);
+  --vc-elevation-3: 0 10px 15px -3px hsla(215, 28%, 15%, 0.18), 0 4px 6px -2px hsla(215, 28%, 15%, 0.12);
+  --vc-elevation-2: 0 4px 6px -1px hsla(215, 28%, 15%, 0.14), 0 2px 4px -1px hsla(215, 28%, 15%, 0.09);
+  --vc-elevation-1: 0 1px 3px 0 hsla(215, 28%, 15%, 0.1), 0 1px 2px 0 hsla(215, 28%, 15%, 0.06);
+
+  /* Typography Reference */
+  --vc-font-heading: Georgia, serif;
+  --vc-font-body: 'Calibri', system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Floating Sticky Container on Bottom Left */
+.vc-floating-container {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 9999;
+  font-family: var(--vc-font-body);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.vc-floating-container * {
+  pointer-events: auto;
+}
+
+/* Circular FAB Button */
+.vc-fab-button {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: hsla(0, 0%, 100%, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid hsla(0, 0%, 100%, 0.7);
+  box-shadow: var(--vc-elevation-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease;
+  padding: 0;
+  outline: none;
+}
+
+.vc-fab-button:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--vc-elevation-5);
+  background: hsla(0, 0%, 100%, 0.65);
+}
+
+.vc-fab-button:active {
+  transform: scale(0.96);
+}
+
+/* Inner Circular Container for Icon */
+.vc-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--vc-primary-6);
+  color: hsl(0, 0%, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease;
+}
+
+.vc-fab-button--in-call .vc-icon-circle {
+  background: var(--vc-green-7);
+}
+
+.vc-fab-button--connecting .vc-icon-circle {
+  background: var(--vc-yellow-7);
+}
+
+/* Pulse animation for active call */
+.vc-fab-button--in-call::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--vc-green-6);
+  animation: vc-pulse-wave 2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes vc-pulse-wave {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* Badge for Online Users Count with Darker Background & Lighter Text */
+.vc-counter-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--vc-primary-10);
+  color: hsl(0, 0%, 100%);
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  border: 2px solid hsla(0, 0%, 100%, 0.85);
+  box-shadow: var(--vc-elevation-2);
+}
+
+.vc-counter-badge--active {
+  background: var(--vc-green-10);
+}
+
+/* Expanded Card Panel */
+.vc-card-panel {
+  width: 340px;
+  max-width: calc(100vw - 48px);
+  max-height: 520px;
+  border-radius: 18px;
+  background: hsla(0, 0%, 100%, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid hsla(0, 0%, 100%, 0.7);
+  box-shadow: var(--vc-elevation-5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 12px;
+  animation: vc-slide-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes vc-slide-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header with Capitalized Heading */
+.vc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid hsla(0, 0%, 100%, 0.5);
+  background: hsla(0, 0%, 100%, 0.25);
+}
+
+.vc-header-title {
+  font-family: var(--vc-font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--vc-grey-10);
+  margin: 0;
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vc-status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: var(--vc-green-10);
+  color: hsl(0, 0%, 100%);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vc-status-pill--offline {
+  background: var(--vc-grey-8);
+}
+
+.vc-close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--vc-grey-7);
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.vc-close-button:hover {
+  background: hsla(0, 0%, 100%, 0.5);
+  color: var(--vc-grey-10);
+}
+
+/* Alert Notification Banner */
+.vc-alert-banner {
+  padding: 8px 14px;
+  background: var(--vc-red-10);
+  color: hsl(0, 0%, 100%);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-radius: 6px;
+  margin: 10px 14px 0;
+}
+
+/* Scrollable User List */
+.vc-user-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+}
+
+.vc-empty-message {
+  font-size: 13px;
+  color: var(--vc-grey-7);
+  font-style: italic;
+  padding: 18px 0;
+  text-align: center;
+}
+
+/* User Row */
+.vc-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: hsla(0, 0%, 100%, 0.35);
+  border: 1px solid hsla(0, 0%, 100%, 0.5);
+  border-radius: 10px;
+  box-shadow: var(--vc-elevation-1);
+  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.vc-user-row:hover {
+  background: hsla(0, 0%, 100%, 0.6);
+  border-color: hsla(0, 0%, 100%, 0.8);
+  transform: translateX(2px);
+}
+
+.vc-user-row--active-call {
+  background: hsla(142, 76%, 40%, 0.18);
+  border-color: var(--vc-green-6);
+}
+
+.vc-user-row--self {
+  background: hsla(217, 91%, 45%, 0.12);
+  border-color: var(--vc-primary-4);
+}
+
+.vc-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vc-online-indicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--vc-grey-5);
+}
+
+.vc-online-indicator--online {
+  background: var(--vc-green-6);
+  box-shadow: 0 0 6px var(--vc-green-6);
+}
+
+.vc-username-label {
+  font-family: var(--vc-font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vc-grey-10);
+  text-transform: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vc-self-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: var(--vc-primary-10);
+  color: hsl(0, 0%, 100%);
+  text-transform: uppercase;
+}
+
+.vc-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Call Button - Circular Background */
+.vc-action-btn-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  color: hsl(0, 0%, 100%);
+  box-shadow: var(--vc-elevation-2);
+}
+
+.vc-action-btn-circle:hover {
+  transform: scale(1.08);
+  box-shadow: var(--vc-elevation-3);
+}
+
+.vc-action-btn-circle:active {
+  transform: scale(0.94);
+}
+
+.vc-action-btn-circle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.vc-action-btn-circle--call {
+  background: var(--vc-green-7);
+}
+
+.vc-action-btn-circle--call:hover {
+  background: var(--vc-green-6);
+}
+
+.vc-action-btn-circle--end {
+  background: var(--vc-red-7);
+}
+
+.vc-action-btn-circle--end:hover {
+  background: var(--vc-red-6);
+}
+
+.vc-action-btn-circle--mute {
+  background: var(--vc-grey-8);
+}
+
+.vc-action-btn-circle--mute:hover {
+  background: var(--vc-grey-9);
+}
+
+.vc-action-btn-circle--unmute {
+  background: var(--vc-red-8);
+}
+
+/* Active Call Status Bar in Panel */
+.vc-active-call-bar {
+  padding: 10px 14px;
+  background: hsla(142, 76%, 35%, 0.15);
+  border-top: 1px solid var(--vc-green-4);
+  border-bottom: 1px solid var(--vc-green-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vc-active-call-text {
+  font-family: var(--vc-font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vc-green-9);
+}
+
+.vc-active-call-text strong {
+  text-transform: none;
+}
+
+/* Bottom Controls Section */
+.vc-controls-footer {
+  padding: 12px 16px;
+  background: hsla(0, 0%, 100%, 0.3);
+  border-top: 1px solid hsla(0, 0%, 100%, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.vc-control-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vc-control-label {
+  font-family: var(--vc-font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vc-grey-9);
+  text-transform: capitalize;
+}
+
+.vc-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid hsla(0, 0%, 100%, 0.6);
+  background: hsla(0, 0%, 100%, 0.4);
+  color: var(--vc-grey-10);
+  font-family: var(--vc-font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--vc-elevation-1);
+}
+
+.vc-toggle-btn:hover {
+  background: hsla(0, 0%, 100%, 0.7);
+  box-shadow: var(--vc-elevation-2);
+}
+
+.vc-toggle-btn--muted {
+  background: var(--vc-red-10);
+  color: hsl(0, 0%, 100%);
+  border-color: var(--vc-red-8);
+}
+
+.vc-toggle-btn--muted:hover {
+  background: var(--vc-red-9);
+}
+
+/* Animated links styling */
+.vc-animated-link {
+  position: relative;
+  text-decoration: none;
+  color: var(--vc-primary-6);
+  font-weight: 600;
+  display: inline-block;
+}
+
+.vc-animated-link::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--vc-primary-6);
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+
+.vc-animated-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Tablet & Mobile Responsiveness */
+@media (max-width: 768px) {
+  .vc-floating-container {
+    bottom: 16px;
+    left: 16px;
+  }
+
+  .vc-card-panel {
+    width: calc(100vw - 32px);
+    max-height: 480px;
+    border-radius: 14px;
+  }
+
+  .vc-fab-button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .vc-icon-circle {
+    width: 34px;
+    height: 34px;
+  }
+}

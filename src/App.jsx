@@ -13,6 +13,7 @@ import AddDocument from './components/documents/AddDocument'
 import EditDocument from './components/documents/EditDocument'
 import PatientFiles from './components/files/PatientFiles'
 import useQrScanner from './hooks/useQrScanner'
+import VoiceChatPanel from './components/common/VoiceChatPanel'
 import './styles/App.css'
 import './styles/Auth.css'
 
@@ -419,6 +420,7 @@ function App() {
     <>
       <Header currentPage={currentPage} setCurrentPage={handleNavigate} onLogout={handleLogout} username={username} />
       {renderContent()}
+      <VoiceChatPanel username={username} />
       {isScanProcessing && (
         <Snackbar open anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
           <Alert severity="info" variant="filled" icon={<CircularProgress size={20} color="inherit" />}>

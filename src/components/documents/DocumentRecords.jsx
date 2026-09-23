@@ -199,7 +199,28 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
     },
     { accessorKey: 'patient.mrNumber', header: 'MR Number', enableSorting: false },
     { accessorKey: 'patient.name', header: 'Patient Name', enableSorting: false },
-    { accessorKey: 'type', header: 'Document Type', enableSorting: false },
+    {
+      accessorKey: 'type',
+      header: 'Document Type',
+      enableSorting: false,
+      cell: (info) => {
+        const row = info.row.original;
+        if (!row) return 'N/A';
+        if (row.type === 'X-Ray' && row.xrayDetail) {
+          const parts = ['X-Ray'];
+          if (row.xrayDetail.xrayType) parts.push(row.xrayDetail.xrayType);
+          if (row.xrayDetail.side && row.xrayDetail.side !== 'N/A') parts.push(row.xrayDetail.side);
+          if (row.xrayDetail.view && row.xrayDetail.view !== 'N/A') parts.push(row.xrayDetail.view);
+          return parts.join(' — ');
+        }
+        if (row.type === 'Ultrasound' && row.ultrasoundDetail) {
+          const parts = ['Ultrasound'];
+          if (row.ultrasoundDetail.ultrasoundType) parts.push(row.ultrasoundDetail.ultrasoundType);
+          return parts.join(' — ');
+        }
+        return row.type || 'N/A';
+      },
+    },
     {
       accessorKey: 'fileName',
       header: 'File Path',

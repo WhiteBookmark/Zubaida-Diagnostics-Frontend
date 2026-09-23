@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Snackbar, Alert, IconButton, CircularProgress, Box, Typography, LinearProgress } from '@mui/material';
-import { Badge, Description } from '@mui/icons-material';
+import { Badge, Description, LocalHospital, SwapHoriz, Visibility, Biotech } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
+import { buildApiUrl } from '../../config/api';
+import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES, getDefaultCharges } from '../../constants/documentTypes';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
 import '../../styles/Auth.css';
@@ -116,6 +118,10 @@ export default function AddDocument({ onBack, onSave }) {
     return {
       mrNumber: '',
       type: defaultType,
+      xrayType: '',
+      side: 'N/A',
+      view: 'N/A',
+      ultrasoundType: '',
     };
   });
 
@@ -223,7 +229,17 @@ export default function AddDocument({ onBack, onSave }) {
   };
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'type') {
+        updated.xrayType = '';
+        updated.side = 'N/A';
+        updated.view = 'N/A';
+        updated.ultrasoundType = '';
+      }
+      return updated;
+    });
   };
 
   const handleFileChange = (e) => {
@@ -264,15 +280,35 @@ export default function AddDocument({ onBack, onSave }) {
       return;
     }
 
+    if (formData.type === 'X-Ray' && !formData.xrayType.trim()) {
+      setToast({ open: true, message: 'Please select an X-Ray Type.', severity: 'error' });
+      return;
+    }
+
+    if (formData.type === 'Ultrasound' && !formData.ultrasoundType.trim()) {
+      setToast({ open: true, message: 'Please select an Ultrasound Type.', severity: 'error' });
+      return;
+    }
+
     const data = new FormData();
     fileEntries.forEach(entry => {
       data.append('files', entry.file);
     });
     data.append('type', formData.type);
 
+    if (formData.type === 'X-Ray') {
+      data.append('xrayType', formData.xrayType);
+      data.append('side', formData.side || 'N/A');
+      data.append('view', formData.view || 'N/A');
+      data.append('charges', String(getDefaultCharges('X-Ray', formData.xrayType)));
+    } else if (formData.type === 'Ultrasound') {
+      data.append('ultrasoundType', formData.ultrasoundType);
+      data.append('charges', String(getDefaultCharges('Ultrasound', formData.ultrasoundType)));
+    }
+
     setLoading(true);
     try {
-      const response = await fetch(`/api/documents/${trimmedMrNumber}`, {
+      const response = await fetch(buildApiUrl(`/api/documents/${trimmedMrNumber}`), {
         method: 'POST',
         body: data,
       });
@@ -372,6 +408,88 @@ export default function AddDocument({ onBack, onSave }) {
             </select>
           </div>
         </div>
+
+        {formData.type === 'X-Ray' && (
+          <>
+            <div className="input-group">
+              <label className="input-label" htmlFor="xrayType">X-Ray Type</label>
+              <div className="input-with-icon">
+                <LocalHospital className="input-icon" />
+                <select
+                  id="xrayType"
+                  name="xrayType"
+                  value={formData.xrayType}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                >
+                  <option value="" disabled>Select X-Ray Type</option>
+                  {XRAY_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label" htmlFor="side">Side</label>
+              <div className="input-with-icon">
+                <SwapHoriz className="input-icon" />
+                <select
+                  id="side"
+                  name="side"
+                  value={formData.side}
+                  onChange={handleChange}
+                  disabled={loading}
+                >
+                  {XRAY_SIDES.map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="input-group">
+              <label className="input-label" htmlFor="view">View</label>
+              <div className="input-with-icon">
+                <Visibility className="input-icon" />
+                <select
+                  id="view"
+                  name="view"
+                  value={formData.view}
+                  onChange={handleChange}
+                  disabled={loading}
+                >
+                  {XRAY_VIEWS.map(v => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </>
+        )}
+
+        {formData.type === 'Ultrasound' && (
+          <div className="input-group">
+            <label className="input-label" htmlFor="ultrasoundType">Ultrasound Type</label>
+            <div className="input-with-icon">
+              <Biotech className="input-icon" />
+              <select
+                id="ultrasoundType"
+                name="ultrasoundType"
+                value={formData.ultrasoundType}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              >
+                <option value="" disabled>Select Ultrasound Type</option>
+                {ULTRASOUND_TYPES.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
 
         <div className="input-group">
           <label className="input-label" htmlFor="file-upload">Files</label>

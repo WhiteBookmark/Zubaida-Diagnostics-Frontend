@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button, Snackbar, Alert, IconButton, CircularProgress, Box, Typography, Tooltip } from '@mui/material';
-import { Badge, Description } from '@mui/icons-material';
+import { Badge, Description, LocalHospital, SwapHoriz, Visibility, Biotech } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
@@ -8,6 +8,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { buildApiUrl } from '../../config/api';
+import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES, getDefaultCharges } from '../../constants/documentTypes';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
 import '../../styles/Auth.css';
@@ -107,6 +108,10 @@ export default function EditDocument({ record, onBack, onSave }) {
   const [formData, setFormData] = useState({
     mrNumber: record?.patient?.mrNumber ? String(record.patient.mrNumber) : '',
     type: record?.type || '',
+    xrayType: record?.xrayDetail?.xrayType || '',
+    side: record?.xrayDetail?.side || 'N/A',
+    view: record?.xrayDetail?.view || 'N/A',
+    ultrasoundType: record?.ultrasoundDetail?.ultrasoundType || '',
   });
 
   const { patientName, lookupStatus: patientLookupStatus } = usePatientLookup(
@@ -135,10 +140,16 @@ export default function EditDocument({ record, onBack, onSave }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'type') {
+        updated.xrayType = '';
+        updated.side = 'N/A';
+        updated.view = 'N/A';
+        updated.ultrasoundType = '';
+      }
+      return updated;
+    });
   };
 
   const handleFileChange = async (e) => {
@@ -198,8 +209,13 @@ export default function EditDocument({ record, onBack, onSave }) {
       return;
     }
 
-    if (!formData.type.trim()) {
-      setToast({ open: true, message: 'Please select a Document Type.', severity: 'error' });
+    if (formData.type.trim() === 'X-Ray' && !formData.xrayType.trim()) {
+      setToast({ open: true, message: 'Please select an X-Ray Type.', severity: 'error' });
+      return;
+    }
+
+    if (formData.type.trim() === 'Ultrasound' && !formData.ultrasoundType.trim()) {
+      setToast({ open: true, message: 'Please select an Ultrasound Type.', severity: 'error' });
       return;
     }
 
@@ -208,6 +224,16 @@ export default function EditDocument({ record, onBack, onSave }) {
       const payload = new FormData();
       payload.append('mrNumber', String(mrNum));
       payload.append('type', formData.type.trim());
+
+      if (formData.type.trim() === 'X-Ray') {
+        payload.append('xrayType', formData.xrayType);
+        payload.append('side', formData.side || 'N/A');
+        payload.append('view', formData.view || 'N/A');
+        payload.append('charges', String(getDefaultCharges('X-Ray', formData.xrayType)));
+      } else if (formData.type.trim() === 'Ultrasound') {
+        payload.append('ultrasoundType', formData.ultrasoundType);
+        payload.append('charges', String(getDefaultCharges('Ultrasound', formData.ultrasoundType)));
+      }
 
       if (replacementFile) {
         payload.append('file', replacementFile);
@@ -329,6 +355,88 @@ export default function EditDocument({ record, onBack, onSave }) {
               </select>
             </div>
           </div>
+
+          {formData.type === 'X-Ray' && (
+            <>
+              <div className="input-group">
+                <label className="input-label" htmlFor="xrayType">X-Ray Type</label>
+                <div className="input-with-icon">
+                  <LocalHospital className="input-icon" />
+                  <select
+                    id="xrayType"
+                    name="xrayType"
+                    value={formData.xrayType}
+                    onChange={handleChange}
+                    required
+                    disabled={loading}
+                  >
+                    <option value="" disabled>Select X-Ray Type</option>
+                    {XRAY_TYPES.map(t => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label" htmlFor="side">Side</label>
+                <div className="input-with-icon">
+                  <SwapHoriz className="input-icon" />
+                  <select
+                    id="side"
+                    name="side"
+                    value={formData.side}
+                    onChange={handleChange}
+                    disabled={loading}
+                  >
+                    {XRAY_SIDES.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label" htmlFor="view">View</label>
+                <div className="input-with-icon">
+                  <Visibility className="input-icon" />
+                  <select
+                    id="view"
+                    name="view"
+                    value={formData.view}
+                    onChange={handleChange}
+                    disabled={loading}
+                  >
+                    {XRAY_VIEWS.map(v => (
+                      <option key={v} value={v}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {formData.type === 'Ultrasound' && (
+            <div className="input-group">
+              <label className="input-label" htmlFor="ultrasoundType">Ultrasound Type</label>
+              <div className="input-with-icon">
+                <Biotech className="input-icon" />
+                <select
+                  id="ultrasoundType"
+                  name="ultrasoundType"
+                  value={formData.ultrasoundType}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                >
+                  <option value="" disabled>Select Ultrasound Type</option>
+                  {ULTRASOUND_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Current & Replacement File Section */}
           <div className="input-group">

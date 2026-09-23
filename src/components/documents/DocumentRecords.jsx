@@ -205,20 +205,67 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
       enableSorting: false,
       cell: (info) => {
         const row = info.row.original;
-        if (!row) return 'N/A';
-        if (row.type === 'X-Ray' && row.xrayDetail) {
+        if (!row) return '—';
+
+        if (row.type === 'X-Ray') {
           const parts = ['X-Ray'];
-          if (row.xrayDetail.xrayType) parts.push(row.xrayDetail.xrayType);
-          if (row.xrayDetail.side && row.xrayDetail.side !== 'N/A') parts.push(row.xrayDetail.side);
-          if (row.xrayDetail.view && row.xrayDetail.view !== 'N/A') parts.push(row.xrayDetail.view);
-          return parts.join(' — ');
+          if (row.xrayDetail) {
+            const { xrayType, side, view } = row.xrayDetail;
+            if (xrayType && xrayType !== 'N/A' && xrayType.trim() !== '') {
+              parts.push(xrayType.trim());
+            }
+            if (side && side !== 'N/A' && side.trim() !== '') {
+              parts.push(side.trim());
+            }
+            if (view && view !== 'N/A' && view.trim() !== '') {
+              parts.push(view.trim());
+            }
+          }
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', lineHeight: 1.35, textAlign: 'left' }}>
+              {parts.map((part, idx) => (
+                <Box
+                  component="span"
+                  key={idx}
+                  sx={{
+                    fontWeight: idx === 0 ? 600 : 400,
+                    color: 'var(--text)',
+                  }}
+                >
+                  {part}
+                </Box>
+              ))}
+            </Box>
+          );
         }
-        if (row.type === 'Ultrasound' && row.ultrasoundDetail) {
+
+        if (row.type === 'Ultrasound') {
           const parts = ['Ultrasound'];
-          if (row.ultrasoundDetail.ultrasoundType) parts.push(row.ultrasoundDetail.ultrasoundType);
-          return parts.join(' — ');
+          if (row.ultrasoundDetail) {
+            const { ultrasoundType } = row.ultrasoundDetail;
+            if (ultrasoundType && ultrasoundType !== 'N/A' && ultrasoundType.trim() !== '') {
+              parts.push(ultrasoundType.trim());
+            }
+          }
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '2px', lineHeight: 1.35, textAlign: 'left' }}>
+              {parts.map((part, idx) => (
+                <Box
+                  component="span"
+                  key={idx}
+                  sx={{
+                    fontWeight: idx === 0 ? 600 : 400,
+                    color: 'var(--text)',
+                  }}
+                >
+                  {part}
+                </Box>
+              ))}
+            </Box>
+          );
         }
-        return row.type || 'N/A';
+
+        return row.type && row.type !== 'N/A' ? row.type : '—';
       },
     },
     {

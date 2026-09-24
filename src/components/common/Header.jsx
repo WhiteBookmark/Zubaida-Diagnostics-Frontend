@@ -11,6 +11,7 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
     { name: 'Patient Records', id: 'patients' },
     { name: 'Appointment Records', id: 'appointments' },
     { name: 'Documents', id: 'documents' },
+    { name: 'Diagnostics', id: 'diagnostics' },
     { name: 'Files', id: 'files' },
   ].filter(link => {
     if (isOtherDepartment) {

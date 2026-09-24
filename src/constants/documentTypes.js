@@ -46,7 +46,7 @@ export const XRAY_TYPES = [
 
 export const XRAY_SIDES = ['N/A', 'Right', 'Left', 'Both'];
 
-export const XRAY_VIEWS = ['N/A', 'AP', 'PA', 'Lateral', 'Oblique'];
+export const XRAY_VIEWS = ['N/A', 'AP Lateral', 'PA Lateral', 'Oblique'];
 
 export const ULTRASOUND_TYPES = [
   { label: 'Appendix', value: 'Appendix', defaultCharges: 800 },

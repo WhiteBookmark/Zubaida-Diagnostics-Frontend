@@ -6,7 +6,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
 import { buildApiUrl } from '../../config/api';
-import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES, getDefaultCharges } from '../../constants/documentTypes';
+import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES } from '../../constants/documentTypes';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
 import '../../styles/Auth.css';
@@ -126,6 +126,41 @@ export default function AddDocument({ onBack, onSave }) {
   });
 
   const { patientName, lookupStatus: patientLookupStatus } = usePatientLookup(formData.mrNumber);
+
+  // Dynamic types fetched from DiagnosticCharge table with static fallbacks
+  const [dynamicXrayTypes, setDynamicXrayTypes] = useState(XRAY_TYPES);
+  const [dynamicUltrasoundTypes, setDynamicUltrasoundTypes] = useState(ULTRASOUND_TYPES);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchTypes = async () => {
+      try {
+        const [xrayRes, usRes] = await Promise.all([
+          fetch(buildApiUrl('/api/charges/types/X-Ray')),
+          fetch(buildApiUrl('/api/charges/types/Ultrasound')),
+        ]);
+        if (xrayRes.ok && isMounted) {
+          const xrayData = await xrayRes.json();
+          if (Array.isArray(xrayData) && xrayData.length > 0) {
+            setDynamicXrayTypes(xrayData);
+          }
+        }
+        if (usRes.ok && isMounted) {
+          const usData = await usRes.json();
+          if (Array.isArray(usData) && usData.length > 0) {
+            setDynamicUltrasoundTypes(usData);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch dynamic diagnostic types, falling back to static constants:', err);
+      }
+    };
+
+    fetchTypes();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Array of { id: string, file: File, previewUrl: string | null }
   const [fileEntries, setFileEntries] = useState([]);
@@ -300,10 +335,8 @@ export default function AddDocument({ onBack, onSave }) {
       data.append('xrayType', formData.xrayType);
       data.append('side', formData.side || 'N/A');
       data.append('view', formData.view || 'N/A');
-      data.append('charges', String(getDefaultCharges('X-Ray', formData.xrayType)));
     } else if (formData.type === 'Ultrasound') {
       data.append('ultrasoundType', formData.ultrasoundType);
-      data.append('charges', String(getDefaultCharges('Ultrasound', formData.ultrasoundType)));
     }
 
     setLoading(true);
@@ -424,7 +457,7 @@ export default function AddDocument({ onBack, onSave }) {
                   disabled={loading}
                 >
                   <option value="" disabled>Select X-Ray Type</option>
-                  {XRAY_TYPES.map(t => (
+                  {dynamicXrayTypes.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
@@ -483,7 +516,7 @@ export default function AddDocument({ onBack, onSave }) {
                 disabled={loading}
               >
                 <option value="" disabled>Select Ultrasound Type</option>
-                {ULTRASOUND_TYPES.map(t => (
+                {dynamicUltrasoundTypes.map(t => (
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>

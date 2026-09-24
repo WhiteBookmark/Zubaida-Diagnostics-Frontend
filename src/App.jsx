@@ -12,6 +12,7 @@ import DocumentRecords from './components/documents/DocumentRecords'
 import AddDocument from './components/documents/AddDocument'
 import EditDocument from './components/documents/EditDocument'
 import PatientFiles from './components/files/PatientFiles'
+import DiagnosticsPage from './components/diagnostics/DiagnosticsPage'
 import useQrScanner from './hooks/useQrScanner'
 import VoiceChatPanel from './components/common/VoiceChatPanel'
 import './styles/App.css'
@@ -384,6 +385,8 @@ function App() {
     }
 
     switch (currentPage) {
+      case 'diagnostics':
+        return <DiagnosticsPage key={`diagnostics-${resetKey}`} />;
       case 'files':
         return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} onBack={handleBack} />;
       case 'appointments':

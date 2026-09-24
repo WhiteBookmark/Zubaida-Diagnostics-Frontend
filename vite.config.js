@@ -46,23 +46,9 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Cache API calls with NetworkFirst strategy so the app still shows cached data offline
-        runtimeCaching: [
-          {
-            urlPattern: /^https?:\/\/.*\/api\/(?!backup).*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 // 1 day
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
+        // Prevent the service worker from intercepting API/document/socket routes
+        // with the navigation fallback (which would serve index.html instead)
+        navigateFallbackDenylist: [/^\/api\//, /^\/document\//, /^\/socket\.io\//]
       }
     })
   ],

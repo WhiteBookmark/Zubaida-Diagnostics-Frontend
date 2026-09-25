@@ -346,7 +346,7 @@ export default function DiagnosticOrderRecords({
       },
       {
         id: 'patientName',
-        header: 'Patient Name',
+        header: 'Patient',
         accessorFn: (row) => row.patient?.name || '',
         size: 180,
         cell: ({ row }) => (
@@ -388,14 +388,14 @@ export default function DiagnosticOrderRecords({
       },
       {
         id: 'type',
-        header: 'Diagnostic Test Name',
+        header: 'Test',
         accessorKey: 'type',
         size: 200,
         cell: ({ getValue }) => <span style={{ fontWeight: 500 }}>{getValue()}</span>,
       },
       {
         id: 'charges',
-        header: 'Charges (PKR)',
+        header: 'Charges',
         accessorKey: 'charges',
         size: 130,
         cell: ({ getValue }) => (
@@ -428,7 +428,7 @@ export default function DiagnosticOrderRecords({
       },
       {
         id: 'createdAt',
-        header: 'Date & Time',
+        header: 'Date',
         accessorKey: 'createdAt',
         size: 180,
         cell: ({ getValue }) => {
@@ -559,7 +559,7 @@ export default function DiagnosticOrderRecords({
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search by MR number, patient name, category, or test..."
+              placeholder=""
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{

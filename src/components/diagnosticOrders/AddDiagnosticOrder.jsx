@@ -134,11 +134,11 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
           prev.map((o) =>
             o.id === orderId
               ? {
-                  ...o,
-                  category,
-                  type: firstType.value,
-                  charges: String(firstType.charges !== undefined ? firstType.charges : 600),
-                }
+                ...o,
+                category,
+                type: firstType.value,
+                charges: String(firstType.charges !== undefined ? firstType.charges : 600),
+              }
               : o
           )
         );
@@ -175,11 +175,11 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
           prev.map((o) =>
             o.id === initialId
               ? {
-                  ...o,
-                  category: initialCategory,
-                  type: firstType.value,
-                  charges: String(firstType.charges !== undefined ? firstType.charges : 600),
-                }
+                ...o,
+                category: initialCategory,
+                type: firstType.value,
+                charges: String(firstType.charges !== undefined ? firstType.charges : 600),
+              }
               : o
           )
         );
@@ -236,11 +236,11 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
       prev.map((o) =>
         o.id === orderId
           ? {
-              ...o,
-              category: newCategory,
-              side: 'N/A',
-              view: 'N/A',
-            }
+            ...o,
+            category: newCategory,
+            side: 'N/A',
+            view: 'N/A',
+          }
           : o
       )
     );
@@ -257,10 +257,10 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
       prev.map((o) =>
         o.id === orderId
           ? {
-              ...o,
-              type: selectedVal,
-              charges: match && match.charges !== undefined ? String(match.charges) : o.charges,
-            }
+            ...o,
+            type: selectedVal,
+            charges: match && match.charges !== undefined ? String(match.charges) : o.charges,
+          }
           : o
       )
     );
@@ -817,8 +817,6 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
             padding: '16px 0',
             display: 'flex',
             justifyContent: 'center',
-            background: 'linear-gradient(to top, hsla(210, 40%, 98%, 0.95) 70%, hsla(210, 40%, 98%, 0))',
-            backdropFilter: 'blur(4px)',
             WebkitBackdropFilter: 'blur(4px)',
           }}
         >
@@ -829,16 +827,16 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
             sx={{
               minWidth: '280px',
               gap: 1,
-              background: 'hsl(217, 91%, 60%)',
+              background: 'hsl(222, 65%, 32%)',
               color: 'hsl(0, 0%, 100%)',
               fontWeight: 600,
               fontSize: '16px',
               textTransform: 'none',
               padding: '12px 28px',
               borderRadius: '10px',
-              boxShadow: '0 6px 16px hsla(217, 91%, 60%, 0.35)',
+              boxShadow: '0 6px 16px hsla(222, 65%, 32%, 0.35)',
               '&:hover': {
-                background: 'hsl(217, 91%, 50%)',
+                background: 'hsl(222, 65%, 25%)',
               },
             }}
           >

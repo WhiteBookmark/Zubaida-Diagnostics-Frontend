@@ -457,7 +457,7 @@ export default function DiagnosticOrderRecords({
   const { rows } = table.getRowModel();
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px' }}>
+    <div style={{ margin: '0 20px 40px 20px', width: 'calc(100% - 40px)', boxSizing: 'border-box', minWidth: 0 }}>
       {/* Top Banner & Header */}
       <div
         className="glass"
@@ -469,6 +469,9 @@ export default function DiagnosticOrderRecords({
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '16px',
+          width: '100%',
+          boxSizing: 'border-box',
+          minWidth: 0,
         }}
       >
         <div>
@@ -520,6 +523,9 @@ export default function DiagnosticOrderRecords({
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '16px',
+          width: '100%',
+          boxSizing: 'border-box',
+          minWidth: 0,
         }}
       >
         {/* Search Input */}
@@ -652,8 +658,8 @@ export default function DiagnosticOrderRecords({
       </div>
 
       {/* Records Table */}
-      <div className="glass" style={{ overflow: 'hidden', padding: 0 }}>
-        <div ref={tableContainerRef} style={{ overflowX: 'auto', maxHeight: '650px', width: '100%' }}>
+      <div className="glass" style={{ overflow: 'hidden', padding: 0, width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
+        <div ref={tableContainerRef} style={{ overflowX: 'auto', maxHeight: '650px', width: '100%', minWidth: 0 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'hsla(215, 30%, 94%, 0.95)' }}>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -785,6 +791,8 @@ export default function DiagnosticOrderRecords({
       <Dialog
         open={deleteDialogOpen}
         onClose={handleCloseDelete}
+        transitionDuration={0}
+        TransitionProps={{ timeout: 0 }}
         PaperProps={{
           className: 'glass',
           style: {
@@ -792,6 +800,7 @@ export default function DiagnosticOrderRecords({
             borderRadius: '16px',
             background: 'var(--glass-bg)',
             backdropFilter: 'var(--glass-blur)',
+            transition: 'none',
           },
         }}
       >
@@ -849,6 +858,8 @@ export default function DiagnosticOrderRecords({
       <Snackbar
         open={toast.open}
         autoHideDuration={4000}
+        transitionDuration={0}
+        TransitionProps={{ timeout: 0 }}
         onClose={handleCloseToast}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >

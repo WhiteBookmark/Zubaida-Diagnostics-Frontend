@@ -4,7 +4,6 @@ import {
   Badge,
   LocalHospital,
   Label,
-  Payments,
   MedicalServices,
   Visibility,
   Close as CloseIcon,
@@ -58,47 +57,53 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
     async function fetchCategoryTypes() {
       setLoadingTypes(true);
       try {
-        const response = await fetch(buildApiUrl(`/api/charges/types/${encodeURIComponent(formData.category)}`));
-        if (response.ok) {
-          const list = await response.json();
-          if (!isCancelled && Array.isArray(list) && list.length > 0) {
-            setAvailableTypes(list);
-            const firstType = list[0];
+        let loaded = false;
+        try {
+          const response = await fetch(buildApiUrl(`/api/charges/types/${encodeURIComponent(formData.category)}`));
+          if (response.ok) {
+            const list = await response.json();
+            if (!isCancelled && Array.isArray(list) && list.length > 0) {
+              setAvailableTypes(list);
+              const firstType = list[0];
+              setFormData((prev) => ({
+                ...prev,
+                type: firstType.value || firstType.name,
+                charges: String(firstType.charges !== undefined ? firstType.charges : 600),
+              }));
+              loaded = true;
+            }
+          }
+        } catch (apiErr) {
+          console.warn('Could not fetch types from API, using fallback constants:', apiErr);
+        }
+
+        // Fallback constants if API did not load
+        if (!loaded && !isCancelled) {
+          let fallbackList = [];
+          if (formData.category === 'X-Ray') {
+            fallbackList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+          } else if (formData.category === 'Ultrasound') {
+            fallbackList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+          } else if (formData.category === 'PFT') {
+            fallbackList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000 }];
+          } else if (formData.category === 'ECG') {
+            fallbackList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500 }];
+          }
+
+          setAvailableTypes(fallbackList);
+          if (fallbackList.length > 0) {
             setFormData((prev) => ({
               ...prev,
-              type: firstType.value || firstType.name,
-              charges: String(firstType.charges !== undefined ? firstType.charges : 600),
+              type: fallbackList[0].value,
+              charges: String(fallbackList[0].charges),
             }));
-            return;
           }
         }
-      } catch (err) {
-        console.warn('Could not fetch types from API, using fallback constants:', err);
-      }
-
-      // Fallback constants
-      if (!isCancelled) {
-        let fallbackList = [];
-        if (formData.category === 'X-Ray') {
-          fallbackList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
-        } else if (formData.category === 'Ultrasound') {
-          fallbackList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
-        } else if (formData.category === 'PFT') {
-          fallbackList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000 }];
-        } else if (formData.category === 'ECG') {
-          fallbackList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500 }];
-        }
-
-        setAvailableTypes(fallbackList);
-        if (fallbackList.length > 0) {
-          setFormData((prev) => ({
-            ...prev,
-            type: fallbackList[0].value,
-            charges: String(fallbackList[0].charges),
-          }));
+      } finally {
+        if (!isCancelled) {
+          setLoadingTypes(false);
         }
       }
-      setLoadingTypes(false);
     }
 
     fetchCategoryTypes();
@@ -267,13 +272,13 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
               id="order-mrNumber"
               name="mrNumber"
               type="text"
+              autoFocus
               inputMode="numeric"
               pattern="[0-9]+"
               min="1"
               max="2147483647"
               value={formData.mrNumber}
               onChange={handleChange}
-              placeholder="e.g. 97, 2097"
               required
               disabled={loading}
               autoComplete="off"
@@ -436,42 +441,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
           </div>
         )}
 
-        {/* Charges Input */}
-        <div className="input-group">
-          <label className="input-label" htmlFor="order-charges" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
-            Charges In PKR
-          </label>
-          <div className="input-with-icon">
-            <Payments className="input-icon" />
-            <input
-              id="order-charges"
-              name="charges"
-              type="number"
-              min="0"
-              max="999999"
-              step="1"
-              placeholder="e.g. 600, 1200"
-              value={formData.charges}
-              onChange={handleChange}
-              required
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '12px 14px 12px 42px',
-                borderRadius: '8px',
-                border: errors.charges ? '1px solid hsl(0, 75%, 50%)' : '1px solid hsla(215, 25%, 80%, 0.6)',
-                background: 'hsla(0, 0%, 100%, 0.85)',
-                fontSize: '15px',
-                color: 'hsl(222, 47%, 11%)',
-              }}
-            />
-          </div>
-          {errors.charges && (
-            <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-              {errors.charges}
-            </span>
-          )}
-        </div>
+
 
         {/* Print from Server Checkbox */}
         <div style={{ marginTop: '8px', marginBottom: '16px' }}>

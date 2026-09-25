@@ -46,33 +46,39 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
     async function fetchCategoryTypes() {
       setLoadingTypes(true);
       try {
-        const response = await fetch(buildApiUrl(`/api/charges/types/${encodeURIComponent(formData.category)}`));
-        if (response.ok) {
-          const list = await response.json();
-          if (!isCancelled && Array.isArray(list) && list.length > 0) {
-            setAvailableTypes(list);
-            return;
+        let loaded = false;
+        try {
+          const response = await fetch(buildApiUrl(`/api/charges/types/${encodeURIComponent(formData.category)}`));
+          if (response.ok) {
+            const list = await response.json();
+            if (!isCancelled && Array.isArray(list) && list.length > 0) {
+              setAvailableTypes(list);
+              loaded = true;
+            }
           }
+        } catch (err) {
+          console.warn('Could not fetch types from API, using fallback constants:', err);
         }
-      } catch (err) {
-        console.warn('Could not fetch types from API, using fallback constants:', err);
-      }
 
-      // Fallback constants
-      if (!isCancelled) {
-        let fallbackList = [];
-        if (formData.category === 'X-Ray') {
-          fallbackList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
-        } else if (formData.category === 'Ultrasound') {
-          fallbackList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
-        } else if (formData.category === 'PFT') {
-          fallbackList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000 }];
-        } else if (formData.category === 'ECG') {
-          fallbackList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500 }];
+        // Fallback constants
+        if (!loaded && !isCancelled) {
+          let fallbackList = [];
+          if (formData.category === 'X-Ray') {
+            fallbackList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+          } else if (formData.category === 'Ultrasound') {
+            fallbackList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+          } else if (formData.category === 'PFT') {
+            fallbackList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000 }];
+          } else if (formData.category === 'ECG') {
+            fallbackList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500 }];
+          }
+          setAvailableTypes(fallbackList);
         }
-        setAvailableTypes(fallbackList);
+      } finally {
+        if (!isCancelled) {
+          setLoadingTypes(false);
+        }
       }
-      setLoadingTypes(false);
     }
 
     fetchCategoryTypes();

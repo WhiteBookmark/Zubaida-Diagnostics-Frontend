@@ -20,6 +20,7 @@ import AddDiagnosticOrder from './components/diagnosticOrders/AddDiagnosticOrder
 import EditDiagnosticOrder from './components/diagnosticOrders/EditDiagnosticOrder'
 import useQrScanner from './hooks/useQrScanner'
 import VoiceChatPanel from './components/common/VoiceChatPanel'
+import ScrollToTopBottom from './components/common/ScrollToTopBottom'
 import './styles/App.css'
 import './styles/Auth.css'
 
@@ -505,6 +506,7 @@ function App() {
       <Header currentPage={currentPage} setCurrentPage={handleNavigate} onLogout={handleLogout} username={username} />
       {renderContent()}
       <VoiceChatPanel username={username} />
+      <ScrollToTopBottom />
       {isScanProcessing && (
         <Snackbar open anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
           <Alert severity="info" variant="filled" icon={<CircularProgress size={20} color="inherit" />}>

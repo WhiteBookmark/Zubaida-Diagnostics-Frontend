@@ -48,6 +48,10 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
   // Auto-focus search input on page load
   useEffect(() => {
     searchInputRef.current?.focus();
+    const timer = setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(timer);
   }, []);
 
   const triggerReload = useCallback(() => {
@@ -164,7 +168,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
   };
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px 40px' }}>
+    <div style={{ margin: '0 20px 40px 20px', width: 'calc(100% - 40px)', boxSizing: 'border-box', minWidth: 0 }}>
       {/* Top Banner & Header */}
       <div
         className="glass"
@@ -176,6 +180,9 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '16px',
+          width: '100%',
+          boxSizing: 'border-box',
+          minWidth: 0,
         }}
       >
         <div>
@@ -216,6 +223,9 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
           display: 'flex',
           flexDirection: 'column',
           gap: '16px',
+          width: '100%',
+          boxSizing: 'border-box',
+          minWidth: 0,
         }}
       >
         {/* Category Tabs */}
@@ -321,6 +331,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
 
           <input
             ref={searchInputRef}
+            autoFocus
             type="text"
             placeholder="Search test name, category, or amount..."
             value={searchTerm}
@@ -365,8 +376,8 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
       </div>
 
       {/* Main Table Content */}
-      <div className="glass" style={{ overflow: 'hidden', padding: 0 }}>
-        <div style={{ overflowX: 'auto', width: '100%' }}>
+      <div className="glass" style={{ overflow: 'hidden', padding: 0, width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
+        <div style={{ overflowX: 'auto', width: '100%', minWidth: 0 }}>
           <table
             style={{
               width: '100%',
@@ -663,6 +674,8 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
       <Dialog
         open={deleteDialogOpen}
         onClose={handleCloseDeleteDialog}
+        transitionDuration={0}
+        TransitionProps={{ timeout: 0 }}
         PaperProps={{
           className: 'glass',
           style: {
@@ -670,6 +683,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
             borderRadius: '16px',
             background: 'var(--glass-bg)',
             backdropFilter: 'var(--glass-blur)',
+            transition: 'none',
           },
         }}
       >
@@ -724,6 +738,8 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
       <Snackbar
         open={toast.open}
         autoHideDuration={5000}
+        transitionDuration={0}
+        TransitionProps={{ timeout: 0 }}
         onClose={() => setToast((prev) => ({ ...prev, open: false }))}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >

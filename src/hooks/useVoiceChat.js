@@ -374,7 +374,7 @@ export default function useVoiceChat(currentUsername) {
       if (data && Array.isArray(data.onlineUsers)) {
         setOnlineUsers(data.onlineUsers.map(String));
       } else if (data && data.username) {
-        setOnlineUsers((prev) => Array.from(new Set([...prev, String(data.username)])));
+        setOnlineUsers((prev) => [...prev, String(data.username)]);
       }
     });
 
@@ -383,7 +383,15 @@ export default function useVoiceChat(currentUsername) {
       if (data && Array.isArray(data.onlineUsers)) {
         setOnlineUsers(data.onlineUsers.map(String));
       } else if (data && data.username) {
-        setOnlineUsers((prev) => prev.filter((u) => u !== String(data.username)));
+        setOnlineUsers((prev) => {
+          const idx = prev.indexOf(String(data.username));
+          if (idx !== -1) {
+            const next = [...prev];
+            next.splice(idx, 1);
+            return next;
+          }
+          return prev;
+        });
       }
     });
 

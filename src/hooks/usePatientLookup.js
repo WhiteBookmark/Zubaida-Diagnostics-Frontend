@@ -59,14 +59,18 @@ export default function usePatientLookup(mrNumber, initialPatient = null) {
 
       setLookupStatus('loading');
       try {
-        const response = await fetch(buildApiUrl(`api/patients?search=${encodeURIComponent(trimmedMr)}`));
-        if (!response.ok) throw new Error('Failed to fetch patient');
-        const result = await response.json();
-        const patientList = Array.isArray(result) ? result : result.data || [];
-        const match = patientList.find(p => Number(p.mrNumber) === parsedInt);
-
+        const response = await fetch(buildApiUrl(`/api/patients/lookup/${encodeURIComponent(trimmedMr)}`));
+        if (!response.ok) {
+          if (!isCancelled) {
+            setPatientName('');
+            setLookupStatus('notFound');
+            setPatient(null);
+          }
+          return;
+        }
+        const match = await response.json();
         if (!isCancelled) {
-          if (match) {
+          if (match && match.name) {
             setPatientName(match.name || '');
             setLookupStatus('found');
             setPatient(match);

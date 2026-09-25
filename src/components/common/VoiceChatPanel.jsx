@@ -40,26 +40,31 @@ export default function VoiceChatPanel({ username }) {
     clearError,
   } = useVoiceChat(username);
 
-  // Display ONLY users who are actually online (self first, then other online users)
+  // Display all online user sessions (self first, then other online users)
   const displayedOnlineUsers = useMemo(() => {
-    const rawSet = new Set(onlineUsers || []);
-    if (username) {
-      rawSet.add(username);
+    const users = [...(onlineUsers || [])].filter(Boolean);
+
+    // Ensure self is present at least once if connected
+    if (username && !users.includes(username)) {
+      users.unshift(username);
     }
 
-    const users = Array.from(rawSet).filter(Boolean);
-
-    // Current user first, then online peers sorted alphabetically
+    // Current user sessions first, then online peers sorted alphabetically
     return users.sort((a, b) => {
-      if (a === username) return -1;
-      if (b === username) return 1;
+      if (a === username && b !== username) return -1;
+      if (b === username && a !== username) return 1;
       return a.localeCompare(b);
     });
   }, [username, onlineUsers]);
 
-  // Online count excluding self
+  // Online count excluding self's primary session
   const onlineOtherCount = useMemo(() => {
-    return onlineUsers.filter((u) => u !== username).length;
+    const list = onlineUsers || [];
+    const selfFirstIndex = list.indexOf(username);
+    if (selfFirstIndex === -1) {
+      return list.length;
+    }
+    return list.filter((_, idx) => idx !== selfFirstIndex).length;
   }, [onlineUsers, username]);
 
   return (
@@ -134,14 +139,15 @@ export default function VoiceChatPanel({ username }) {
           {/* Scrollable User Directory */}
           {/* Scrollable Online User Directory */}
           <div className="vc-user-list">
-            {displayedOnlineUsers.map((user) => {
-              const isSelf = user === username;
+            {displayedOnlineUsers.map((user, index) => {
+              const isSelf = user === username && index === 0;
+              const isOtherSelf = user === username && index > 0;
               const isOnline = isSelf ? isConnectedToServer : onlineUsers.includes(user);
               const isInCallWithUser = activeCall === user;
 
               return (
                 <div
-                  key={user}
+                  key={`${user}-${index}`}
                   className={`vc-user-row ${
                     isInCallWithUser ? 'vc-user-row--active-call' : ''
                   } ${isSelf ? 'vc-user-row--self' : ''}`}
@@ -156,6 +162,7 @@ export default function VoiceChatPanel({ username }) {
                     <span className="vc-username-label">
                       {user}
                       {isSelf && <span className="vc-self-tag">You</span>}
+                      {isOtherSelf && <span className="vc-self-tag" style={{ background: 'hsla(217, 91%, 60%, 0.15)', color: 'hsl(217, 91%, 45%)' }}>Other PC</span>}
                     </span>
                   </div>
 

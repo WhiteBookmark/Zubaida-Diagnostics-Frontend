@@ -12,7 +12,12 @@ import DocumentRecords from './components/documents/DocumentRecords'
 import AddDocument from './components/documents/AddDocument'
 import EditDocument from './components/documents/EditDocument'
 import PatientFiles from './components/files/PatientFiles'
-import DiagnosticsPage from './components/diagnostics/DiagnosticsPage'
+import ChargesPage from './components/diagnostics/ChargesPage'
+import AddCharge from './components/diagnostics/AddCharge'
+import EditCharge from './components/diagnostics/EditCharge'
+import DiagnosticOrderRecords from './components/diagnosticOrders/DiagnosticOrderRecords'
+import AddDiagnosticOrder from './components/diagnosticOrders/AddDiagnosticOrder'
+import EditDiagnosticOrder from './components/diagnosticOrders/EditDiagnosticOrder'
 import useQrScanner from './hooks/useQrScanner'
 import VoiceChatPanel from './components/common/VoiceChatPanel'
 import './styles/App.css'
@@ -56,6 +61,8 @@ function App() {
   const [viewToast, setViewToast] = useState('')
   const [isScanProcessing, setIsScanProcessing] = useState(false)
   const [filesMrNumber, setFilesMrNumber] = useState(null)
+  const [chargeToEdit, setChargeToEdit] = useState(null)
+  const [diagnosticOrderToEdit, setDiagnosticOrderToEdit] = useState(null)
 
   const clearViewToast = useCallback(() => {
     setViewToast('');
@@ -112,6 +119,12 @@ function App() {
           setFilesMrNumber(state.filesMrNumber);
         } else if (state.page !== 'files') {
           setFilesMrNumber(null);
+        }
+        if (state.chargeToEdit !== undefined) {
+          setChargeToEdit(state.chargeToEdit);
+        }
+        if (state.diagnosticOrderToEdit !== undefined) {
+          setDiagnosticOrderToEdit(state.diagnosticOrderToEdit);
         }
         setResetKey(prev => prev + 1);
       } else {
@@ -240,6 +253,48 @@ function App() {
     const nextIdx = (window.history.state?._idx || 0) + 1;
     window.history.pushState({ page: 'appointments', view: 'dashboard', _idx: nextIdx }, '');
   }, []);
+
+  const handleAddCharge = useCallback(() => {
+    setView('addCharge');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'addCharge', _idx: nextIdx }, '');
+  }, [currentPage]);
+
+  const handleEditCharge = useCallback((record) => {
+    setChargeToEdit(record);
+    setView('editCharge');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'editCharge', chargeToEdit: record, _idx: nextIdx }, '');
+  }, [currentPage]);
+
+  const handleSaveCharge = useCallback(() => {
+    setViewToast('Diagnostic charge saved successfully!');
+    setView('dashboard');
+    setResetKey(prev => prev + 1);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'dashboard', _idx: nextIdx }, '');
+  }, [currentPage]);
+
+  const handleAddDiagnosticOrder = useCallback(() => {
+    setView('addDiagnosticOrder');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'addDiagnosticOrder', _idx: nextIdx }, '');
+  }, [currentPage]);
+
+  const handleEditDiagnosticOrder = useCallback((record) => {
+    setDiagnosticOrderToEdit(record);
+    setView('editDiagnosticOrder');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'editDiagnosticOrder', diagnosticOrderToEdit: record, _idx: nextIdx }, '');
+  }, [currentPage]);
+
+  const handleSaveDiagnosticOrder = useCallback((savedOrder, toastMsg) => {
+    setViewToast(toastMsg || 'Diagnostic order saved successfully!');
+    setView('dashboard');
+    setResetKey(prev => prev + 1);
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: currentPage, view: 'dashboard', _idx: nextIdx }, '');
+  }, [currentPage]);
 
   const isScanProcessingRef = useRef(false);
 
@@ -384,9 +439,35 @@ function App() {
       return <AddAppointmentRecord onBack={handleBack} onAdd={handleAppointmentAdded} initialMrNumber={newMrNumber} initialToastMessage={pendingToast} />
     }
 
+    if (view === 'addCharge') {
+      return <AddCharge key={`addCharge-${resetKey}`} onBack={handleBack} onAdd={handleSaveCharge} />;
+    }
+
+    if (view === 'editCharge') {
+      return <EditCharge key={`editCharge-${resetKey}`} record={chargeToEdit} onBack={handleBack} onSave={handleSaveCharge} />;
+    }
+
+    if (view === 'addDiagnosticOrder') {
+      return <AddDiagnosticOrder key={`addDiagOrder-${resetKey}`} onBack={handleBack} onAdd={handleSaveDiagnosticOrder} />;
+    }
+
+    if (view === 'editDiagnosticOrder') {
+      return <EditDiagnosticOrder key={`editDiagOrder-${resetKey}`} record={diagnosticOrderToEdit} onBack={handleBack} onSave={handleSaveDiagnosticOrder} />;
+    }
+
     switch (currentPage) {
+      case 'charges':
       case 'diagnostics':
-        return <DiagnosticsPage key={`diagnostics-${resetKey}`} />;
+        return <ChargesPage key={`charges-${resetKey}`} onAddCharge={handleAddCharge} onEditCharge={handleEditCharge} />;
+      case 'diagnosticOrders':
+        return <DiagnosticOrderRecords 
+                  key={`diagnosticOrders-${resetKey}`} 
+                  onAddOrder={handleAddDiagnosticOrder}
+                  onEditOrder={handleEditDiagnosticOrder}
+                  initialToastMessage={viewToast}
+                  clearPending={clearViewToast}
+                  refreshKey={resetKey}
+               />;
       case 'files':
         return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} onBack={handleBack} />;
       case 'appointments':

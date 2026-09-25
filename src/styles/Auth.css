@@ -244,4 +244,18 @@
     width: 100%;
     max-width: 490px;
   }
-}
+}
+
+/* Dynamic Form Repeater 2-Column Responsive Layout */
+.two-column-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .two-column-row {
+    flex-direction: column;
+  }
+}
+

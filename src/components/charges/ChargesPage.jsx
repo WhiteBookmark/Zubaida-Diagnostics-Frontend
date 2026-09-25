@@ -18,7 +18,6 @@ import {
   Edit,
   Delete,
   LocalHospital,
-  FilterList,
 } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
@@ -208,7 +207,6 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
                 borderRadius: '8px',
                 background: 'hsl(217, 91%, 60%)',
                 color: '#ffffff',
-                fontFamily: 'var(--heading), Georgia, serif',
                 fontWeight: 600,
                 textTransform: 'none',
                 boxShadow: '0 4px 14px hsla(217, 91%, 60%, 0.35)',
@@ -225,10 +223,10 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
         {/* Section 2: Controls (Category Tabs & Search Bar) */}
         <div
           style={{
-            padding: '16px 24px',
+            padding: '24px 24px 28px 24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '14px',
+            gap: '18px',
             borderBottom: '1px solid var(--glass-border)',
             background: 'hsla(0, 0%, 100%, 0.15)',
           }}
@@ -240,26 +238,9 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
               alignItems: 'center',
               gap: '8px',
               flexWrap: 'wrap',
+              marginTop: '4px',
             }}
           >
-            <span
-              style={{
-                fontSize: '13px',
-                fontWeight: 600,
-                color: 'var(--text-muted, hsl(215, 16%, 47%))',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginRight: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontFamily: 'var(--heading), Georgia, serif',
-              }}
-            >
-              <FilterList style={{ fontSize: '16px' }} />
-              Category:
-            </span>
-
             {CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat;
               const count = categoryCounts[cat] || 0;
@@ -289,7 +270,6 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
                     boxShadow: isSelected
                       ? '0 2px 8px hsla(217, 91%, 60%, 0.3)'
                       : 'none',
-                    fontFamily: 'var(--heading), Georgia, serif',
                   }}
                 >
                   <span>{cat}</span>
@@ -381,7 +361,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
         </div>
 
         {/* Section 3: Main Table Content */}
-        <div style={{ overflowX: 'auto', width: '100%', minWidth: 0 }}>
+        <div style={{ overflowX: 'auto', width: '100%', minWidth: 0, paddingTop: '16px' }}>
           <table
             style={{
               width: '100%',
@@ -718,7 +698,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
           <Button
             onClick={handleCloseDeleteDialog}
             disabled={isDeleting}
-            sx={{ color: 'var(--text-h)', textTransform: 'none', fontFamily: 'var(--heading), Georgia, serif' }}
+            sx={{ color: 'var(--text-h)', textTransform: 'none' }}
           >
             Cancel
           </Button>
@@ -734,7 +714,6 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
               textTransform: 'none',
               borderRadius: '8px',
               padding: '6px 18px',
-              fontFamily: 'var(--heading), Georgia, serif',
               '&:hover': { background: 'hsl(0, 75%, 40%)' },
             }}
           >

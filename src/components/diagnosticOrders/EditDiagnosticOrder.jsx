@@ -478,7 +478,6 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
             disabled={isReprinting || loading}
             startIcon={isReprinting ? <CircularProgress size={16} /> : <Print />}
             sx={{
-              fontFamily: 'var(--heading), Georgia, serif',
               textTransform: 'none',
               color: 'hsl(217, 91%, 60%)',
               borderColor: 'hsl(217, 91%, 60%)',
@@ -505,7 +504,6 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
               gap: 1,
               background: 'hsl(217, 91%, 60%)',
               color: '#ffffff',
-              fontFamily: 'var(--heading), Georgia, serif',
               fontWeight: 600,
               textTransform: 'none',
               padding: '10px 20px',

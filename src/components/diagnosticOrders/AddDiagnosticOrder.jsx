@@ -487,7 +487,6 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
               gap: 1,
               background: 'hsl(217, 91%, 60%)',
               color: '#ffffff',
-              fontFamily: 'var(--heading), Georgia, serif',
               fontWeight: 600,
               textTransform: 'none',
               padding: '10px 20px',

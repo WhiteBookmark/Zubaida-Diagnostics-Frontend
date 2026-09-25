@@ -485,9 +485,17 @@ export default function DiagnosticOrderRecords({
             <h2 style={{ fontFamily: 'var(--heading), Georgia, serif', color: 'hsl(222, 47%, 11%)' }}>
               Diagnostic Orders
             </h2>
-            <span style={{ fontSize: '14px', color: 'hsl(215, 16%, 47%)' }}>
-              Total Orders In Database: <strong>{totalCount}</strong>
-            </span>
+            <div style={{ fontSize: '14px', color: 'hsl(215, 16%, 47%)', marginTop: '4px' }}>
+              {isShowAll ? (
+                <span>Showing All <strong>{data.length.toLocaleString()}</strong> Records</span>
+              ) : (
+                <span>
+                  Page <strong>{pagination.pageIndex + 1}</strong> of{' '}
+                  <strong>{Math.max(1, Math.ceil(totalCount / pagination.pageSize))}</strong>
+                  {' '}({totalCount.toLocaleString()} Records)
+                </span>
+              )}
+            </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -505,7 +513,6 @@ export default function DiagnosticOrderRecords({
                 borderRadius: '8px',
                 background: 'hsl(217, 91%, 60%)',
                 color: '#ffffff',
-                fontFamily: 'var(--heading), Georgia, serif',
                 fontWeight: 600,
                 textTransform: 'none',
                 boxShadow: '0 4px 14px hsla(217, 91%, 60%, 0.35)',
@@ -592,34 +599,47 @@ export default function DiagnosticOrderRecords({
           </div>
 
           {/* Pagination controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: 'hsl(215, 19%, 35%)', fontFamily: 'var(--heading), Georgia, serif' }}>
-              Rows Per Page:
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '13px', color: 'hsl(215, 19%, 35%)' }}>
+              {isShowAll ? (
+                <span>Showing All <strong>{data.length.toLocaleString()}</strong> Records</span>
+              ) : (
+                <span>
+                  Page <strong>{pagination.pageIndex + 1}</strong> of{' '}
+                  <strong>{Math.max(1, Math.ceil(totalCount / pagination.pageSize))}</strong>
+                  {' '}({totalCount.toLocaleString()} Records)
+                </span>
+              )}
             </span>
-            <Select
-              size="small"
-              value={isShowAll ? 'all' : pagination.pageSize}
-              onChange={(e) => {
-                if (e.target.value === 'all') {
-                  setIsShowAll(true);
-                } else {
-                  setIsShowAll(false);
-                  setPagination((prev) => ({ ...prev, pageSize: Number(e.target.value), pageIndex: 0 }));
-                }
-              }}
-              sx={{
-                height: '36px',
-                borderRadius: '8px',
-                fontFamily: 'var(--heading), Georgia, serif',
-                fontSize: '13px',
-                background: 'hsla(0, 0%, 100%, 0.8)',
-              }}
-            >
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={25}>25</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-              <MenuItem value="all">Show All</MenuItem>
-            </Select>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px', color: 'hsl(215, 19%, 35%)' }}>
+                Rows Per Page:
+              </span>
+              <Select
+                size="small"
+                value={isShowAll ? 'all' : pagination.pageSize}
+                onChange={(e) => {
+                  if (e.target.value === 'all') {
+                    setIsShowAll(true);
+                  } else {
+                    setIsShowAll(false);
+                    setPagination((prev) => ({ ...prev, pageSize: Number(e.target.value), pageIndex: 0 }));
+                  }
+                }}
+                sx={{
+                  height: '36px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  background: 'hsla(0, 0%, 100%, 0.8)',
+                }}
+              >
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+                <MenuItem value="all">Show All</MenuItem>
+              </Select>
+            </div>
 
             {!isShowAll && (
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -630,7 +650,6 @@ export default function DiagnosticOrderRecords({
                   onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }))}
                   sx={{
                     textTransform: 'none',
-                    fontFamily: 'var(--heading), Georgia, serif',
                     borderRadius: '8px',
                   }}
                 >
@@ -650,7 +669,6 @@ export default function DiagnosticOrderRecords({
                   }}
                   sx={{
                     textTransform: 'none',
-                    fontFamily: 'var(--heading), Georgia, serif',
                     borderRadius: '8px',
                   }}
                 >
@@ -780,7 +798,15 @@ export default function DiagnosticOrderRecords({
           }}
         >
           <span>
-            Displaying <strong>{rows.length}</strong> Record(s) On Current View
+            {isShowAll ? (
+              <span>Showing All <strong>{data.length.toLocaleString()}</strong> Records</span>
+            ) : (
+              <span>
+                Page <strong>{pagination.pageIndex + 1}</strong> of{' '}
+                <strong>{Math.max(1, Math.ceil(totalCount / pagination.pageSize))}</strong>
+                {' '}({totalCount.toLocaleString()} Records)
+              </span>
+            )}
           </span>
           {isTodayOnly && (
             <span>
@@ -832,7 +858,6 @@ export default function DiagnosticOrderRecords({
             sx={{
               color: 'hsl(215, 19%, 35%)',
               textTransform: 'none',
-              fontFamily: 'var(--heading), Georgia, serif',
             }}
           >
             Cancel
@@ -848,7 +873,6 @@ export default function DiagnosticOrderRecords({
               textTransform: 'none',
               borderRadius: '8px',
               padding: '6px 18px',
-              fontFamily: 'var(--heading), Georgia, serif',
               '&:hover': { background: 'hsl(0, 75%, 40%)' },
             }}
           >

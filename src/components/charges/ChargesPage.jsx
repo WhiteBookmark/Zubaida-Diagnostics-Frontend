@@ -168,215 +168,219 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
   };
 
   return (
-    <div style={{ margin: '0 20px 40px 20px', width: 'calc(100% - 40px)', boxSizing: 'border-box', minWidth: 0 }}>
-      {/* Top Banner & Header */}
+    <div style={{ maxWidth: '800px', margin: '0 auto 40px auto', padding: '0 16px', boxSizing: 'border-box', minWidth: 0 }}>
+      {/* Unified Single Card */}
       <div
         className="glass"
         style={{
-          padding: '24px 32px',
-          marginBottom: '24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
+          overflow: 'hidden',
+          padding: 0,
           width: '100%',
           boxSizing: 'border-box',
           minWidth: 0,
         }}
       >
-        <div>
-          <h2 style={{ fontFamily: 'var(--heading), Georgia, serif', color: 'hsl(222, 47%, 11%)' }}>
-            Diagnostic Charges
-          </h2>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Button
-            variant="contained"
-            onClick={onAddCharge}
-            startIcon={<Add />}
-            sx={{
-              borderRadius: '8px',
-              background: 'hsl(217, 91%, 60%)',
-              color: '#ffffff',
-              fontFamily: 'var(--heading), Georgia, serif',
-              fontWeight: 600,
-              textTransform: 'none',
-              boxShadow: '0 4px 14px hsla(217, 91%, 60%, 0.35)',
-              '&:hover': {
-                background: 'hsl(217, 91%, 50%)',
-              },
-            }}
-          >
-            Add New Charge
-          </Button>
-        </div>
-      </div>
-
-      {/* Controls: Category Tabs & Search Bar */}
-      <div
-        className="glass"
-        style={{
-          padding: '20px 24px',
-          marginBottom: '24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '16px',
-          width: '100%',
-          boxSizing: 'border-box',
-          minWidth: 0,
-        }}
-      >
-        {/* Category Tabs */}
+        {/* Section 1: Top Banner & Header */}
         <div
           style={{
+            padding: '20px 24px',
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '8px',
             flexWrap: 'wrap',
+            gap: '12px',
+            borderBottom: '1px solid var(--glass-border)',
           }}
         >
-          <span
+          <div>
+            <h2 style={{ fontFamily: 'var(--heading), Georgia, serif', color: 'hsl(222, 47%, 11%)', margin: 0, fontSize: '20px' }}>
+              Diagnostic Charges
+            </h2>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Button
+              variant="contained"
+              onClick={onAddCharge}
+              startIcon={<Add />}
+              size="small"
+              sx={{
+                borderRadius: '8px',
+                background: 'hsl(217, 91%, 60%)',
+                color: '#ffffff',
+                fontFamily: 'var(--heading), Georgia, serif',
+                fontWeight: 600,
+                textTransform: 'none',
+                boxShadow: '0 4px 14px hsla(217, 91%, 60%, 0.35)',
+                '&:hover': {
+                  background: 'hsl(217, 91%, 50%)',
+                },
+              }}
+            >
+              Add New Charge
+            </Button>
+          </div>
+        </div>
+
+        {/* Section 2: Controls (Category Tabs & Search Bar) */}
+        <div
+          style={{
+            padding: '16px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+            borderBottom: '1px solid var(--glass-border)',
+            background: 'hsla(0, 0%, 100%, 0.15)',
+          }}
+        >
+          {/* Category Tabs */}
+          <div
             style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'var(--text-muted, hsl(215, 16%, 47%))',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginRight: '8px',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              fontFamily: 'var(--heading), Georgia, serif',
+              gap: '8px',
+              flexWrap: 'wrap',
             }}
           >
-            <FilterList style={{ fontSize: '16px' }} />
-            Category:
-          </span>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--text-muted, hsl(215, 16%, 47%))',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginRight: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontFamily: 'var(--heading), Georgia, serif',
+              }}
+            >
+              <FilterList style={{ fontSize: '16px' }} />
+              Category:
+            </span>
 
-          {CATEGORIES.map((cat) => {
-            const isSelected = selectedCategory === cat;
-            const count = categoryCounts[cat] || 0;
+            {CATEGORIES.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              const count = categoryCounts[cat] || 0;
 
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  borderRadius: '20px',
-                  border: isSelected
-                    ? '1.5px solid hsl(217, 91%, 60%)'
-                    : '1px solid hsla(215, 25%, 80%, 0.5)',
-                  background: isSelected
-                    ? 'hsl(217, 91%, 60%)'
-                    : 'hsla(0, 0%, 100%, 0.7)',
-                  color: isSelected ? '#ffffff' : 'var(--text-h)',
-                  fontWeight: isSelected ? 600 : 500,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  boxShadow: isSelected
-                    ? '0 2px 8px hsla(217, 91%, 60%, 0.3)'
-                    : 'none',
-                  fontFamily: 'var(--heading), Georgia, serif',
-                }}
-              >
-                <span>{cat}</span>
-                <span
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '20px',
-                    height: '20px',
-                    padding: '0 6px',
-                    borderRadius: '10px',
-                    fontSize: '12px',
-                    fontWeight: 700,
+                    gap: '8px',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: isSelected
+                      ? '1.5px solid hsl(217, 91%, 60%)'
+                      : '1px solid hsla(215, 25%, 80%, 0.5)',
                     background: isSelected
-                      ? 'hsla(0, 0%, 100%, 0.25)'
-                      : 'hsla(215, 20%, 65%, 0.2)',
-                    color: isSelected ? '#ffffff' : 'var(--text-muted, hsl(215, 16%, 47%))',
+                      ? 'hsl(217, 91%, 60%)'
+                      : 'hsla(0, 0%, 100%, 0.7)',
+                    color: isSelected ? '#ffffff' : 'var(--text-h)',
+                    fontWeight: isSelected ? 600 : 500,
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: isSelected
+                      ? '0 2px 8px hsla(217, 91%, 60%, 0.3)'
+                      : 'none',
+                    fontFamily: 'var(--heading), Georgia, serif',
                   }}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search Bar */}
-        <div style={{ position: 'relative', width: '100%', maxWidth: '480px' }}>
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '14px',
-              transform: 'translateY(-50%)',
-              color: 'var(--text-muted, hsl(215, 16%, 47%))',
-              display: 'flex',
-              alignItems: 'center',
-              pointerEvents: 'none',
-            }}
-          >
-            <Search style={{ fontSize: '20px' }} />
+                  <span>{cat}</span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minWidth: '18px',
+                      height: '18px',
+                      padding: '0 5px',
+                      borderRadius: '9px',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      background: isSelected
+                        ? 'hsla(0, 0%, 100%, 0.25)'
+                        : 'hsla(215, 20%, 65%, 0.2)',
+                      color: isSelected ? '#ffffff' : 'var(--text-muted, hsl(215, 16%, 47%))',
+                    }}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          <input
-            ref={searchInputRef}
-            autoFocus
-            type="text"
-            placeholder="Search test name, category, or amount..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '11px 40px 11px 44px',
-              borderRadius: '10px',
-              border: '1px solid hsla(215, 25%, 80%, 0.6)',
-              background: 'hsla(0, 0%, 100%, 0.85)',
-              fontSize: '14px',
-              color: 'var(--text-h)',
-              outline: 'none',
-              boxSizing: 'border-box',
-              fontFamily: 'var(--sans)',
-            }}
-          />
-
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm('')}
+          {/* Search Bar */}
+          <div style={{ position: 'relative', width: '100%' }}>
+            <div
               style={{
                 position: 'absolute',
                 top: '50%',
-                right: '12px',
+                left: '14px',
                 transform: 'translateY(-50%)',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
                 color: 'var(--text-muted, hsl(215, 16%, 47%))',
                 display: 'flex',
                 alignItems: 'center',
-                padding: '2px',
+                pointerEvents: 'none',
               }}
-              aria-label="Clear search"
             >
-              <Clear style={{ fontSize: '18px' }} />
-            </button>
-          )}
-        </div>
-      </div>
+              <Search style={{ fontSize: '20px' }} />
+            </div>
 
-      {/* Main Table Content */}
-      <div className="glass" style={{ overflow: 'hidden', padding: 0, width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
+            <input
+              ref={searchInputRef}
+              autoFocus
+              type="text"
+              placeholder="Search test name, category, or amount..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '11px 40px 11px 44px',
+                borderRadius: '10px',
+                border: '1px solid hsla(215, 25%, 80%, 0.6)',
+                background: 'hsla(0, 0%, 100%, 0.85)',
+                fontSize: '14px',
+                color: 'var(--text-h)',
+                outline: 'none',
+                boxSizing: 'border-box',
+                fontFamily: 'var(--sans)',
+              }}
+            />
+
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: '12px',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted, hsl(215, 16%, 47%))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '2px',
+                }}
+                aria-label="Clear search"
+              >
+                <Clear style={{ fontSize: '18px' }} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Section 3: Main Table Content */}
         <div style={{ overflowX: 'auto', width: '100%', minWidth: 0 }}>
           <table
             style={{
@@ -384,66 +388,71 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
               borderCollapse: 'collapse',
               textAlign: 'left',
               fontFamily: 'var(--sans)',
+              marginTop: 0,
             }}
           >
             <thead>
               <tr
                 style={{
-                  background: 'hsla(215, 30%, 94%, 0.8)',
+                  background: 'var(--bg, #f8fafc)',
                   borderBottom: '2px solid var(--glass-border)',
                 }}
               >
                 <th
                   style={{
-                    padding: '14px 20px',
+                    padding: '12px 18px',
                     fontSize: '13px',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.6px',
-                    color: 'var(--text-muted, hsl(215, 16%, 47%))',
+                    color: 'var(--text-h, #0f172a)',
                     fontFamily: 'var(--heading), Georgia, serif',
+                    backgroundColor: 'transparent',
                   }}
                 >
                   Category
                 </th>
                 <th
                   style={{
-                    padding: '14px 20px',
+                    padding: '12px 18px',
                     fontSize: '13px',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.6px',
-                    color: 'var(--text-muted, hsl(215, 16%, 47%))',
+                    color: 'var(--text-h, #0f172a)',
                     fontFamily: 'var(--heading), Georgia, serif',
+                    backgroundColor: 'transparent',
                   }}
                 >
                   Diagnostic Test Name
                 </th>
                 <th
                   style={{
-                    padding: '14px 20px',
+                    padding: '12px 18px',
                     fontSize: '13px',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.6px',
-                    color: 'var(--text-muted, hsl(215, 16%, 47%))',
+                    color: 'var(--text-h, #0f172a)',
                     fontFamily: 'var(--heading), Georgia, serif',
                     textAlign: 'right',
+                    backgroundColor: 'transparent',
                   }}
                 >
-                  Charges (PKR)
+                  Charges
                 </th>
                 <th
                   style={{
-                    padding: '14px 20px',
+                    padding: '12px 18px',
                     fontSize: '13px',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.6px',
-                    color: 'var(--text-muted, hsl(215, 16%, 47%))',
+                    color: 'var(--text-h, #0f172a)',
                     fontFamily: 'var(--heading), Georgia, serif',
                     textAlign: 'center',
-                    width: '120px',
+                    width: '100px',
+                    backgroundColor: 'transparent',
                   }}
                 >
                   Actions
@@ -499,15 +508,15 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
                   const isEven = index % 2 === 0;
 
                   const badgeColors = {
-                    'X-Ray': { bg: 'hsla(217, 91%, 60%, 0.15)', text: 'hsl(217, 91%, 45%)' },
-                    Ultrasound: { bg: 'hsla(142, 71%, 45%, 0.15)', text: 'hsl(142, 71%, 35%)' },
-                    PFT: { bg: 'hsla(280, 67%, 55%, 0.15)', text: 'hsl(280, 67%, 45%)' },
-                    ECG: { bg: 'hsla(25, 95%, 53%, 0.15)', text: 'hsl(25, 95%, 45%)' },
+                    'X-Ray': { bg: 'hsl(217, 85%, 45%)', text: 'hsl(0, 0%, 100%)' },
+                    Ultrasound: { bg: 'hsl(142, 70%, 35%)', text: 'hsl(0, 0%, 100%)' },
+                    PFT: { bg: 'hsl(280, 65%, 42%)', text: 'hsl(0, 0%, 100%)' },
+                    ECG: { bg: 'hsl(25, 90%, 42%)', text: 'hsl(0, 0%, 100%)' },
                   };
 
                   const badge = badgeColors[item.category] || {
-                    bg: 'hsla(215, 20%, 65%, 0.15)',
-                    text: 'hsl(215, 19%, 35%)',
+                    bg: 'hsl(215, 25%, 40%)',
+                    text: 'hsl(0, 0%, 100%)',
                   };
 
                   return (

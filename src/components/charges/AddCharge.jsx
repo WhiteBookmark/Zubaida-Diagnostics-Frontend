@@ -239,25 +239,6 @@ export default function AddCharge({ onBack, onAdd, initialCategory = 'X-Ray' }) 
               'Save Charge'
             )}
           </Button>
-          {onBack && (
-            <Button
-              variant="outlined"
-              onClick={onBack}
-              disabled={loading}
-              sx={{
-                fontFamily: 'var(--heading), Georgia, serif',
-                textTransform: 'none',
-                color: 'hsl(215, 19%, 35%)',
-                borderColor: 'hsla(215, 25%, 80%, 0.8)',
-                borderRadius: '8px',
-                '&:hover': {
-                  borderColor: 'hsl(215, 19%, 35%)',
-                },
-              }}
-            >
-              Cancel
-            </Button>
-          )}
         </div>
       </form>
 

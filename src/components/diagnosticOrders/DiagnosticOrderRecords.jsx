@@ -363,12 +363,12 @@ export default function DiagnosticOrderRecords({
         cell: ({ getValue }) => {
           const cat = getValue();
           const badgeStyles = {
-            'X-Ray': { bg: 'hsla(217, 91%, 60%, 0.15)', text: 'hsl(217, 91%, 45%)' },
-            Ultrasound: { bg: 'hsla(142, 71%, 45%, 0.15)', text: 'hsl(142, 71%, 35%)' },
-            PFT: { bg: 'hsla(280, 67%, 55%, 0.15)', text: 'hsl(280, 67%, 45%)' },
-            ECG: { bg: 'hsla(25, 95%, 53%, 0.15)', text: 'hsl(25, 95%, 45%)' },
+            'X-Ray': { bg: 'hsl(217, 85%, 45%)', text: 'hsl(0, 0%, 100%)' },
+            Ultrasound: { bg: 'hsl(142, 70%, 35%)', text: 'hsl(0, 0%, 100%)' },
+            PFT: { bg: 'hsl(280, 65%, 42%)', text: 'hsl(0, 0%, 100%)' },
+            ECG: { bg: 'hsl(25, 90%, 42%)', text: 'hsl(0, 0%, 100%)' },
           };
-          const style = badgeStyles[cat] || { bg: 'hsla(215, 20%, 65%, 0.15)', text: 'hsl(215, 19%, 35%)' };
+          const style = badgeStyles[cat] || { bg: 'hsl(215, 25%, 40%)', text: 'hsl(0, 0%, 100%)' };
           return (
             <span
               style={{
@@ -458,210 +458,213 @@ export default function DiagnosticOrderRecords({
 
   return (
     <div style={{ margin: '0 20px 40px 20px', width: 'calc(100% - 40px)', boxSizing: 'border-box', minWidth: 0 }}>
-      {/* Top Banner & Header */}
+      {/* Unified Single Card */}
       <div
         className="glass"
         style={{
-          padding: '24px 32px',
-          marginBottom: '24px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
+          overflow: 'hidden',
+          padding: 0,
           width: '100%',
           boxSizing: 'border-box',
           minWidth: 0,
         }}
       >
-        <div>
-          <h2 style={{ fontFamily: 'var(--heading), Georgia, serif', color: 'hsl(222, 47%, 11%)' }}>
-            Diagnostic Orders
-          </h2>
-          <span style={{ fontSize: '14px', color: 'hsl(215, 16%, 47%)' }}>
-            Total Orders In Database: <strong>{totalCount}</strong>
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <TodayToggle
-            isActive={isTodayOnly}
-            onToggle={() => setIsTodayOnly(!isTodayOnly)}
-            label="Today's Orders Only"
-          />
-
-          <Button
-            variant="contained"
-            onClick={onAddOrder}
-            startIcon={<AddIcon />}
-            sx={{
-              borderRadius: '8px',
-              background: 'hsl(217, 91%, 60%)',
-              color: '#ffffff',
-              fontFamily: 'var(--heading), Georgia, serif',
-              fontWeight: 600,
-              textTransform: 'none',
-              boxShadow: '0 4px 14px hsla(217, 91%, 60%, 0.35)',
-              '&:hover': {
-                background: 'hsl(217, 91%, 50%)',
-              },
-            }}
-          >
-            Add New Diagnostic Order
-          </Button>
-        </div>
-      </div>
-
-      {/* Controls & Search */}
-      <div
-        className="glass"
-        style={{
-          padding: '16px 24px',
-          marginBottom: '20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-          width: '100%',
-          boxSizing: 'border-box',
-          minWidth: 0,
-        }}
-      >
-        {/* Search Input */}
-        <div style={{ position: 'relative', width: '100%', maxWidth: '450px' }}>
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '14px',
-              transform: 'translateY(-50%)',
-              color: 'hsl(215, 16%, 47%)',
-              display: 'flex',
-              alignItems: 'center',
-              pointerEvents: 'none',
-            }}
-          >
-            <SearchIcon style={{ fontSize: '20px' }} />
+        {/* Section 1: Top Banner & Header */}
+        <div
+          style={{
+            padding: '24px 32px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+            borderBottom: '1px solid var(--glass-border)',
+          }}
+        >
+          <div>
+            <h2 style={{ fontFamily: 'var(--heading), Georgia, serif', color: 'hsl(222, 47%, 11%)' }}>
+              Diagnostic Orders
+            </h2>
+            <span style={{ fontSize: '14px', color: 'hsl(215, 16%, 47%)' }}>
+              Total Orders In Database: <strong>{totalCount}</strong>
+            </span>
           </div>
 
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search by MR number, patient name, category, or test..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '11px 40px 11px 44px',
-              borderRadius: '10px',
-              border: '1px solid hsla(215, 25%, 80%, 0.6)',
-              background: 'hsla(0, 0%, 100%, 0.85)',
-              fontSize: '14px',
-              color: 'hsl(222, 47%, 11%)',
-              outline: 'none',
-              boxSizing: 'border-box',
-            }}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <TodayToggle
+              isActive={isTodayOnly}
+              onToggle={() => setIsTodayOnly(!isTodayOnly)}
+              label="Today's Orders Only"
+            />
 
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={() => setSearchTerm('')}
+            <Button
+              variant="contained"
+              onClick={onAddOrder}
+              startIcon={<AddIcon />}
+              sx={{
+                borderRadius: '8px',
+                background: 'hsl(217, 91%, 60%)',
+                color: '#ffffff',
+                fontFamily: 'var(--heading), Georgia, serif',
+                fontWeight: 600,
+                textTransform: 'none',
+                boxShadow: '0 4px 14px hsla(217, 91%, 60%, 0.35)',
+                '&:hover': {
+                  background: 'hsl(217, 91%, 50%)',
+                },
+              }}
+            >
+              Add New Diagnostic Order
+            </Button>
+          </div>
+        </div>
+
+        {/* Section 2: Controls & Search */}
+        <div
+          style={{
+            padding: '16px 24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '16px',
+            background: 'hsla(0, 0%, 100%, 0.15)',
+            borderBottom: '1px solid var(--glass-border)',
+          }}
+        >
+          {/* Search Input */}
+          <div style={{ position: 'relative', width: '100%', maxWidth: '450px' }}>
+            <div
               style={{
                 position: 'absolute',
                 top: '50%',
-                right: '12px',
+                left: '14px',
                 transform: 'translateY(-50%)',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
                 color: 'hsl(215, 16%, 47%)',
                 display: 'flex',
                 alignItems: 'center',
+                pointerEvents: 'none',
               }}
-              aria-label="Clear search"
             >
-              <ClearIcon style={{ fontSize: '18px' }} />
-            </button>
-          )}
-        </div>
-
-        {/* Pagination controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '13px', color: 'hsl(215, 19%, 35%)', fontFamily: 'var(--heading), Georgia, serif' }}>
-            Rows Per Page:
-          </span>
-          <Select
-            size="small"
-            value={isShowAll ? 'all' : pagination.pageSize}
-            onChange={(e) => {
-              if (e.target.value === 'all') {
-                setIsShowAll(true);
-              } else {
-                setIsShowAll(false);
-                setPagination((prev) => ({ ...prev, pageSize: Number(e.target.value), pageIndex: 0 }));
-              }
-            }}
-            sx={{
-              height: '36px',
-              borderRadius: '8px',
-              fontFamily: 'var(--heading), Georgia, serif',
-              fontSize: '13px',
-              background: 'hsla(0, 0%, 100%, 0.8)',
-            }}
-          >
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={25}>25</MenuItem>
-            <MenuItem value={50}>50</MenuItem>
-            <MenuItem value="all">Show All</MenuItem>
-          </Select>
-
-          {!isShowAll && (
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <Button
-                variant="outlined"
-                size="small"
-                disabled={pagination.pageIndex === 0 || isLoading}
-                onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }))}
-                sx={{
-                  textTransform: 'none',
-                  fontFamily: 'var(--heading), Georgia, serif',
-                  borderRadius: '8px',
-                }}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                disabled={!nextCursor || isLoading}
-                onClick={() => {
-                  setCursorHistory((prev) => {
-                    const next = [...prev];
-                    next[pagination.pageIndex + 1] = nextCursor;
-                    return next;
-                  });
-                  setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
-                }}
-                sx={{
-                  textTransform: 'none',
-                  fontFamily: 'var(--heading), Georgia, serif',
-                  borderRadius: '8px',
-                }}
-              >
-                Next
-              </Button>
+              <SearchIcon style={{ fontSize: '20px' }} />
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Records Table */}
-      <div className="glass" style={{ overflow: 'hidden', padding: 0, width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search by MR number, patient name, category, or test..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '11px 40px 11px 44px',
+                borderRadius: '10px',
+                border: '1px solid hsla(215, 25%, 80%, 0.6)',
+                background: 'hsla(0, 0%, 100%, 0.85)',
+                fontSize: '14px',
+                color: 'hsl(222, 47%, 11%)',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: '12px',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'hsl(215, 16%, 47%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+                aria-label="Clear search"
+              >
+                <ClearIcon style={{ fontSize: '18px' }} />
+              </button>
+            )}
+          </div>
+
+          {/* Pagination controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13px', color: 'hsl(215, 19%, 35%)', fontFamily: 'var(--heading), Georgia, serif' }}>
+              Rows Per Page:
+            </span>
+            <Select
+              size="small"
+              value={isShowAll ? 'all' : pagination.pageSize}
+              onChange={(e) => {
+                if (e.target.value === 'all') {
+                  setIsShowAll(true);
+                } else {
+                  setIsShowAll(false);
+                  setPagination((prev) => ({ ...prev, pageSize: Number(e.target.value), pageIndex: 0 }));
+                }
+              }}
+              sx={{
+                height: '36px',
+                borderRadius: '8px',
+                fontFamily: 'var(--heading), Georgia, serif',
+                fontSize: '13px',
+                background: 'hsla(0, 0%, 100%, 0.8)',
+              }}
+            >
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={25}>25</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+              <MenuItem value="all">Show All</MenuItem>
+            </Select>
+
+            {!isShowAll && (
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={pagination.pageIndex === 0 || isLoading}
+                  onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }))}
+                  sx={{
+                    textTransform: 'none',
+                    fontFamily: 'var(--heading), Georgia, serif',
+                    borderRadius: '8px',
+                  }}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={!nextCursor || isLoading}
+                  onClick={() => {
+                    setCursorHistory((prev) => {
+                      const next = [...prev];
+                      next[pagination.pageIndex + 1] = nextCursor;
+                      return next;
+                    });
+                    setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
+                  }}
+                  sx={{
+                    textTransform: 'none',
+                    fontFamily: 'var(--heading), Georgia, serif',
+                    borderRadius: '8px',
+                  }}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Section 3: Records Table */}
         <div ref={tableContainerRef} style={{ overflowX: 'auto', maxHeight: '650px', width: '100%', minWidth: 0 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'hsla(215, 30%, 94%, 0.95)' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg, #f8fafc)' }}>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} style={{ borderBottom: '2px solid var(--glass-border)' }}>
                   {headerGroup.headers.map((header) => (
@@ -673,7 +676,7 @@ export default function DiagnosticOrderRecords({
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
-                        color: 'hsl(215, 16%, 47%)',
+                        color: 'var(--text-h, #0f172a)',
                         fontFamily: 'var(--heading), Georgia, serif',
                         cursor: header.column.getCanSort() ? 'pointer' : 'default',
                         userSelect: 'none',

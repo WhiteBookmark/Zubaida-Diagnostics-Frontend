@@ -12,9 +12,9 @@ import DocumentRecords from './components/documents/DocumentRecords'
 import AddDocument from './components/documents/AddDocument'
 import EditDocument from './components/documents/EditDocument'
 import PatientFiles from './components/files/PatientFiles'
-import ChargesPage from './components/diagnostics/ChargesPage'
-import AddCharge from './components/diagnostics/AddCharge'
-import EditCharge from './components/diagnostics/EditCharge'
+import ChargesPage from './components/charges/ChargesPage'
+import AddCharge from './components/charges/AddCharge'
+import EditCharge from './components/charges/EditCharge'
 import DiagnosticOrderRecords from './components/diagnosticOrders/DiagnosticOrderRecords'
 import AddDiagnosticOrder from './components/diagnosticOrders/AddDiagnosticOrder'
 import EditDiagnosticOrder from './components/diagnosticOrders/EditDiagnosticOrder'
@@ -398,20 +398,6 @@ function App() {
   }
 
   const renderContent = () => {
-    const isDepartmentUser = ['xray', 'ultrasound', 'lab', 'prescription', 'pft', 'ecg', 'X-Ray Department', 'Ultrasound Department', 'Lab Department', 'PFT Department', 'ECG Department', 'xr123', 'us123', 'lb123', 'ps123', 'pft123', 'ecg123'].includes(username);
-
-    if (isDepartmentUser) {
-      if (view === 'addDocument') {
-          return <AddDocument key={`addDoc-${resetKey}`} onBack={handleBack} onSave={handleSaveDocument} />
-      }
-      if (view === 'editDocument') {
-          return <EditDocument key={`editDoc-${resetKey}`} record={documentToEdit} onBack={handleBack} onSave={handleSaveEditDocument} />
-      }
-      if (currentPage === 'files' && ['prescription', 'ps123', 'Prescription Department'].includes(username)) {
-          return <PatientFiles key={`files-${resetKey}`} initialMrNumber={filesMrNumber} onBack={handleBack} />;
-      }
-      return <DocumentRecords key={`documents-${resetKey}`} onAddDocument={handleAddDocument} onEditDocument={handleEditDocument} initialToastMessage={viewToast} clearPending={clearViewToast} refreshKey={resetKey} onViewFiles={handleViewFiles} />;
-    }
 
     if (view === 'edit') {
       return (

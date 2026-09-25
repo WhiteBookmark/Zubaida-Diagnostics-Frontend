@@ -1,12 +1,6 @@
 import logo from '../../assets/Logo.png';
 
 export default function Header({ currentPage, setCurrentPage, onLogout, username }) {
-  const departmentUsers = ['xray', 'ultrasound', 'lab', 'prescription', 'pft', 'ecg', 'X-Ray Department', 'Ultrasound Department', 'Lab Department', 'PFT Department', 'ECG Department', 'xr123', 'us123', 'lb123', 'ps123', 'pft123', 'ecg123'];
-  const prescriptionUsers = ['prescription', 'ps123', 'Prescription Department'];
-
-  const isPrescription = prescriptionUsers.includes(username);
-  const isOtherDepartment = departmentUsers.includes(username) && !isPrescription;
-
   const links = [
     { name: 'Patient Records', id: 'patients' },
     { name: 'Appointment Records', id: 'appointments' },
@@ -14,20 +8,12 @@ export default function Header({ currentPage, setCurrentPage, onLogout, username
     { name: 'Charges', id: 'charges' },
     { name: 'Diagnostics', id: 'diagnosticOrders' },
     { name: 'Files', id: 'files' },
-  ].filter(link => {
-    if (isOtherDepartment) {
-      return link.id === 'documents';
-    }
-    if (isPrescription) {
-      return link.id === 'documents' || link.id === 'files';
-    }
-    return true;
-  });
+  ];
 
   return (
     <header className="glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 40px', margin: '20px', marginBottom: '30px', width: 'calc(100% - 40px)', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '40px', cursor: 'pointer' }} onClick={() => setCurrentPage(departmentUsers.includes(username) ? 'documents' : 'dashboard')} />
+        <img src={logo} alt="Zubaida Diagnostics Logo" style={{ height: '40px', cursor: 'pointer' }} onClick={() => setCurrentPage('dashboard')} />
         <nav>
           <ul style={{ display: 'flex', listStyle: 'none', gap: '20px', margin: 0, padding: 0 }}>
             {links.map(link => (

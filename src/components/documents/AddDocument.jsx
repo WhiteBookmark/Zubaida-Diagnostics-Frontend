@@ -165,6 +165,7 @@ export default function AddDocument({ onBack, onSave }) {
   // Array of { id: string, file: File, previewUrl: string | null }
   const [fileEntries, setFileEntries] = useState([]);
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(false);
 
@@ -222,6 +223,42 @@ export default function AddDocument({ onBack, onSave }) {
       setIsProcessingFiles(false);
     }
   }, []);
+
+  /**
+   * Drag and drop handlers for uploading multiple files
+   */
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading && !isProcessingFiles) {
+      setIsDragOver(true);
+    }
+  }, [loading, isProcessingFiles]);
+
+  const handleDragEnter = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading && !isProcessingFiles) {
+      setIsDragOver(true);
+    }
+  }, [loading, isProcessingFiles]);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    if (loading || isProcessingFiles) return;
+    const droppedFiles = Array.from(e.dataTransfer.files || []);
+    if (droppedFiles.length > 0) {
+      processIncomingFiles(droppedFiles);
+    }
+  }, [loading, isProcessingFiles, processIncomingFiles]);
 
   /**
    * Clipboard Paste Listener: Handles scanner clipboard pastes even if an input field is active.
@@ -527,19 +564,50 @@ export default function AddDocument({ onBack, onSave }) {
 
         <div className="input-group">
           <label className="input-label" htmlFor="file-upload">Files</label>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            background: 'hsl(215, 30%, 96%)',
-            backdropFilter: 'blur(8px)',
-            border: '1px dashed hsl(215, 25%, 75%)',
-            borderRadius: '8px',
-            padding: '16px',
-            position: 'relative',
-            width: '100%',
-            boxSizing: 'border-box'
-          }}>
+          <div
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              background: isDragOver ? 'hsl(217, 91%, 95%)' : 'hsl(215, 30%, 96%)',
+              backdropFilter: 'blur(8px)',
+              border: isDragOver
+                ? '2px dashed hsl(217, 91%, 60%)'
+                : '1px dashed hsl(215, 25%, 75%)',
+              borderRadius: '8px',
+              padding: '16px',
+              position: 'relative',
+              width: '100%',
+              boxSizing: 'border-box',
+              transition: 'background 0.2s ease, border 0.2s ease',
+              cursor: isDragOver ? 'copy' : 'default',
+            }}
+          >
+            {isDragOver && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'hsla(217, 91%, 60%, 0.08)',
+                borderRadius: '8px',
+                zIndex: 5,
+                pointerEvents: 'none',
+              }}>
+                <Typography variant="body2" sx={{
+                  fontWeight: 700,
+                  color: 'hsl(217, 91%, 50%)',
+                  fontSize: '15px',
+                }}>
+                  Drop files here to upload
+                </Typography>
+              </div>
+            )}
             <div style={{ fontSize: '14px', color: 'hsl(222, 47%, 11%)', textAlign: 'center' }}>
               {isProcessingFiles ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
@@ -556,7 +624,7 @@ export default function AddDocument({ onBack, onSave }) {
                 <>
                   <div style={{ fontWeight: 500 }}>No files selected</div>
                   <div style={{ fontSize: '12px', color: 'hsl(215, 16%, 47%)', marginTop: '4px' }}>
-                    Press Ctrl + V repeatedly to paste multiple files/scans here
+                    Drag & drop files here, or press Ctrl + V to paste scans
                   </div>
                 </>
               )}

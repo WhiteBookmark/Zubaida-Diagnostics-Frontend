@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button, Snackbar, Alert, IconButton, CircularProgress, Box, Typography, Tooltip } from '@mui/material';
 import { Badge, Description, LocalHospital, SwapHoriz, Visibility, Biotech } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -158,6 +158,7 @@ export default function EditDocument({ record, onBack, onSave }) {
   const [replacementFile, setReplacementFile] = useState(null);
   const [replacementPreviewUrl, setReplacementPreviewUrl] = useState(null);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
@@ -229,6 +230,71 @@ export default function EditDocument({ record, onBack, onSave }) {
     setReplacementFile(null);
     setReplacementPreviewUrl(null);
   };
+
+  /**
+   * Process a single dropped replacement file
+   */
+  const handleDroppedFile = useCallback(async (file) => {
+    if (!file) return;
+    setIsProcessingFile(true);
+    try {
+      const compressed = await compressImageFile(file);
+      if (replacementPreviewUrl) {
+        try { URL.revokeObjectURL(replacementPreviewUrl); } catch (err) { void err; }
+      }
+      const isImgOrPdf = compressed.type?.startsWith('image/') || compressed.type === 'application/pdf';
+      const previewUrl = isImgOrPdf ? URL.createObjectURL(compressed) : null;
+      setReplacementFile(compressed);
+      setReplacementPreviewUrl(previewUrl);
+      setToast({
+        open: true,
+        message: 'Replacement file selected and ready.',
+        severity: 'info',
+      });
+    } catch (err) {
+      console.error('[EditDocument] Error processing dropped file:', err);
+      setToast({
+        open: true,
+        message: 'Failed to process dropped file.',
+        severity: 'error',
+      });
+    } finally {
+      setIsProcessingFile(false);
+    }
+  }, [replacementPreviewUrl]);
+
+  /**
+   * Drag and drop handlers for replacement file
+   */
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading && !isProcessingFile) setIsDragOver(true);
+  }, [loading, isProcessingFile]);
+
+  const handleDragEnter = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!loading && !isProcessingFile) setIsDragOver(true);
+  }, [loading, isProcessingFile]);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    if (loading || isProcessingFile) return;
+    const droppedFiles = Array.from(e.dataTransfer.files || []);
+    if (droppedFiles.length > 0) {
+      // EditDocument only supports single-file replacement; take the first file
+      handleDroppedFile(droppedFiles[0]);
+    }
+  }, [loading, isProcessingFile, handleDroppedFile]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -477,9 +543,15 @@ export default function EditDocument({ record, onBack, onSave }) {
           <div className="input-group">
             <label className="input-label">Document File</label>
             <Box
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
               sx={{
-                background: 'hsl(215, 30%, 96%)',
-                border: '1px solid hsl(214, 32%, 91%)',
+                background: isDragOver ? 'hsl(217, 91%, 95%)' : 'hsl(215, 30%, 96%)',
+                border: isDragOver
+                  ? '2px dashed hsl(217, 91%, 60%)'
+                  : '1px solid hsl(214, 32%, 91%)',
                 borderRadius: '8px',
                 padding: '12px 14px',
                 display: 'flex',
@@ -489,8 +561,32 @@ export default function EditDocument({ record, onBack, onSave }) {
                 maxWidth: '100%',
                 boxSizing: 'border-box',
                 overflow: 'hidden',
+                position: 'relative',
+                transition: 'background 0.2s ease, border 0.2s ease',
+                cursor: isDragOver ? 'copy' : 'default',
               }}
             >
+              {isDragOver && (
+                <Box sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'hsla(217, 91%, 60%, 0.08)',
+                  borderRadius: '8px',
+                  zIndex: 5,
+                  pointerEvents: 'none',
+                }}>
+                  <Typography variant="body2" sx={{
+                    fontWeight: 700,
+                    color: 'hsl(217, 91%, 50%)',
+                    fontSize: '15px',
+                  }}>
+                    Drop file here to replace
+                  </Typography>
+                </Box>
+              )}
               {/* Existing File Info */}
               <Box
                 onClick={() => currentFileUrl && window.open(currentFileUrl, '_blank', 'noopener,noreferrer')}
@@ -623,7 +719,7 @@ export default function EditDocument({ record, onBack, onSave }) {
                     />
                   </Button>
                   <Typography variant="caption" sx={{ color: 'hsl(215, 16%, 47%)', lineHeight: 1.3, flex: 1, minWidth: '150px' }}>
-                    Optional — Leave untouched to keep current file
+                    Drag & drop a file here, or click Replace File
                   </Typography>
                 </Box>
               )}

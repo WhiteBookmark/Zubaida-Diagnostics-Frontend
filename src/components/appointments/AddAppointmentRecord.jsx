@@ -192,6 +192,7 @@ export default function AddAppointmentRecord({ onBack, onAdd, initialMrNumber = 
         <PatientNameField
           patientName={patientName}
           lookupStatus={patientLookupStatus}
+          showLabel={false}
         />
 
         <div className="input-group">

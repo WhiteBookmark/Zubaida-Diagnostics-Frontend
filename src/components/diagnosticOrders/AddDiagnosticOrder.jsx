@@ -7,7 +7,7 @@ import {
   Print,
   Add as AddIcon,
   DeleteOutline as DeleteIcon,
-  AttachMoney,
+  Payments,
   LocalOffer,
 } from '@mui/icons-material';
 import usePatientLookup from '../../hooks/usePatientLookup';
@@ -273,42 +273,47 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
 
     if (field === 'charges') {
       const val = parseInt(value, 10);
+      const currentOrder = orders.find((o) => o.id === orderId);
+      const currentDiscount = parseInt(currentOrder?.discount || '0', 10);
+
+      let chargesErr = null;
       if (value !== '' && (isNaN(val) || val < 0)) {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: { ...prev[orderId], charges: 'Charges Cannot Be Negative' },
-        }));
+        chargesErr = 'Charges Cannot Be Negative';
       } else if (value !== '' && val > 999999) {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: { ...prev[orderId], charges: 'Charges Cannot Exceed 999,999 PKR' },
-        }));
-      } else {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: { ...prev[orderId], charges: null },
-        }));
+        chargesErr = 'Charges Cannot Exceed 999,999 PKR';
       }
+
+      let discountErr = orderErrors[orderId]?.discount;
+      if (!isNaN(val) && !isNaN(currentDiscount) && currentDiscount > val) {
+        discountErr = 'Discount Cannot Be More Than Charges';
+      } else if (discountErr === 'Discount Cannot Be More Than Charges') {
+        discountErr = null;
+      }
+
+      setOrderErrors((prev) => ({
+        ...prev,
+        [orderId]: { ...prev[orderId], charges: chargesErr, discount: discountErr },
+      }));
     }
 
     if (field === 'discount') {
       const val = parseInt(value, 10);
+      const currentOrder = orders.find((o) => o.id === orderId);
+      const chargesVal = parseInt(currentOrder?.charges || '0', 10);
+
+      let discountErr = null;
       if (value !== '' && (isNaN(val) || val < 0)) {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: { ...prev[orderId], discount: 'Discount Cannot Be Negative' },
-        }));
+        discountErr = 'Discount Cannot Be Negative';
       } else if (value !== '' && val > 999999) {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: { ...prev[orderId], discount: 'Discount Cannot Exceed 999,999 PKR' },
-        }));
-      } else {
-        setOrderErrors((prev) => ({
-          ...prev,
-          [orderId]: { ...prev[orderId], discount: null },
-        }));
+        discountErr = 'Discount Cannot Exceed 999,999 PKR';
+      } else if (value !== '' && !isNaN(val) && !isNaN(chargesVal) && val > chargesVal) {
+        discountErr = 'Discount Cannot Be More Than Charges';
       }
+
+      setOrderErrors((prev) => ({
+        ...prev,
+        [orderId]: { ...prev[orderId], discount: discountErr },
+      }));
     }
   };
 
@@ -363,6 +368,11 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
       const parsedDiscount = parseInt(String(o.discount ?? '0').trim() || '0', 10);
       if (isNaN(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 999999) {
         setToast({ open: true, message: `Order #${i + 1}: Discount Must Be A Non-Negative Integer Up To 999,999 PKR.`, severity: 'error' });
+        return;
+      }
+
+      if (parsedDiscount > parsedCharges) {
+        setToast({ open: true, message: `Order #${i + 1}: Discount Cannot Be More Than Charges.`, severity: 'error' });
         return;
       }
     }
@@ -626,45 +636,48 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                 )}
               </div>
 
-              {/* 2-Column: Category & Diagnostic Test Name */}
-              <div className="two-column-row">
-                <div className="input-group" style={{ flex: 1 }}>
-                  <label className="input-label" htmlFor={`order-category-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
-                    Category
-                  </label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
-                    {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => handleOrderCategoryChange(order.id, cat)}
-                        disabled={loading}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: '20px',
-                          border: order.category === cat
-                            ? '2px solid hsl(217, 91%, 60%)'
-                            : '1px solid hsla(215, 25%, 80%, 0.6)',
-                          background: order.category === cat
-                            ? 'hsla(217, 91%, 60%, 0.15)'
-                            : 'hsla(0, 0%, 100%, 0.85)',
-                          color: order.category === cat
-                            ? 'hsl(217, 91%, 45%)'
-                            : 'hsl(222, 47%, 11%)',
-                          fontWeight: order.category === cat ? 700 : 500,
-                          fontSize: '14px',
-                          cursor: loading ? 'not-allowed' : 'pointer',
-                          fontFamily: 'var(--heading), Georgia, serif',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
+              {/* 1st Row: Category Chips horizontally in 1 line */}
+              <div className="input-group" style={{ width: '100%', marginBottom: '16px' }}>
+                <label className="input-label" htmlFor={`order-category-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+                  Category
+                </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+                  {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => handleOrderCategoryChange(order.id, cat)}
+                      disabled={loading}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        border: order.category === cat
+                          ? '2px solid hsl(217, 91%, 60%)'
+                          : '1px solid hsla(215, 25%, 80%, 0.6)',
+                        background: order.category === cat
+                          ? 'hsla(217, 91%, 60%, 0.15)'
+                          : 'hsla(0, 0%, 100%, 0.85)',
+                        color: order.category === cat
+                          ? 'hsl(217, 91%, 45%)'
+                          : 'hsl(222, 47%, 11%)',
+                        fontWeight: order.category === cat ? 700 : 500,
+                        fontSize: '14px',
+                        whiteSpace: 'nowrap',
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                        fontFamily: 'var(--heading), Georgia, serif',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                <div className="input-group" style={{ flex: 1 }}>
+              {/* 2nd Row: Diagnostic Test Name, Charges, Discount in 1 horizontal line (3 columns) */}
+              <div style={{ display: 'flex', gap: '12px', width: '100%', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '16px' }}>
+                {/* Diagnostic Test Name */}
+                <div className="input-group" style={{ flex: '1.6 1 200px', minWidth: '180px', margin: 0 }}>
                   <label className="input-label" htmlFor={`order-type-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                     Diagnostic Test Name
                     {typesState.loading && (
@@ -701,16 +714,89 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                     </select>
                   </div>
                 </div>
+
+                {/* Charges (Amount) */}
+                <div className="input-group" style={{ flex: '1 1 120px', minWidth: '110px', margin: 0 }}>
+                  <label className="input-label" htmlFor={`order-charges-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+                    Charges
+                  </label>
+                  <div className="input-with-icon">
+                    <Payments className="input-icon" />
+                    <input
+                      id={`order-charges-${order.id}`}
+                      name="charges"
+                      type="number"
+                      min="0"
+                      max="999999"
+                      step="1"
+                      value={order.charges}
+                      onChange={(e) => handleOrderFieldChange(order.id, 'charges', e.target.value)}
+                      required
+                      disabled={loading}
+                      placeholder="Enter charges"
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px 12px 42px',
+                        borderRadius: '8px',
+                        border: orderErr ? '1px solid hsl(0, 75%, 50%)' : '1px solid hsla(215, 25%, 80%, 0.6)',
+                        background: 'hsla(0, 0%, 100%, 0.85)',
+                        fontSize: '15px',
+                        color: 'hsl(222, 47%, 11%)',
+                      }}
+                    />
+                  </div>
+                  {orderErr && (
+                    <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      {orderErr}
+                    </span>
+                  )}
+                </div>
+
+                {/* Discount */}
+                <div className="input-group" style={{ flex: '1 1 120px', minWidth: '110px', margin: 0 }}>
+                  <label className="input-label" htmlFor={`order-discount-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+                    Discount
+                  </label>
+                  <div className="input-with-icon">
+                    <LocalOffer className="input-icon" />
+                    <input
+                      id={`order-discount-${order.id}`}
+                      name="discount"
+                      type="number"
+                      min="0"
+                      max={order.charges ? Math.min(parseInt(order.charges, 10) || 999999, 999999) : 999999}
+                      step="1"
+                      value={order.discount ?? '0'}
+                      onChange={(e) => handleOrderFieldChange(order.id, 'discount', e.target.value)}
+                      disabled={loading}
+                      placeholder="Enter discount"
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px 12px 42px',
+                        borderRadius: '8px',
+                        border: discountErr ? '1px solid hsl(0, 75%, 50%)' : '1px solid hsla(215, 25%, 80%, 0.6)',
+                        background: 'hsla(0, 0%, 100%, 0.85)',
+                        fontSize: '15px',
+                        color: 'hsl(222, 47%, 11%)',
+                      }}
+                    />
+                  </div>
+                  {discountErr && (
+                    <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                      {discountErr}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* 2-Column: Side & View (X-Ray only) */}
+              {/* 3rd Row: Side & View (X-Ray only) */}
               {order.category === 'X-Ray' && (
-                <div className="two-column-row" style={{ marginTop: '12px' }}>
-                  <div className="input-group" style={{ flex: 1 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
+                  <div className="input-group" style={{ flex: '1 1 240px', margin: 0 }}>
                     <label className="input-label" htmlFor={`order-side-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       Side
                     </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
                       {XRAY_SIDES.map((s) => (
                         <button
                           key={s}
@@ -731,6 +817,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                               : 'hsl(222, 47%, 11%)',
                             fontWeight: order.side === s ? 700 : 500,
                             fontSize: '14px',
+                            whiteSpace: 'nowrap',
                             cursor: loading ? 'not-allowed' : 'pointer',
                             fontFamily: 'var(--heading), Georgia, serif',
                             transition: 'all 0.15s ease',
@@ -742,11 +829,11 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                     </div>
                   </div>
 
-                  <div className="input-group" style={{ flex: 1 }}>
+                  <div className="input-group" style={{ flex: '1.2 1 280px', margin: 0 }}>
                     <label className="input-label" htmlFor={`order-view-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       View
                     </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
                       {XRAY_VIEWS.map((v) => (
                         <button
                           key={v}
@@ -767,6 +854,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                               : 'hsl(222, 47%, 11%)',
                             fontWeight: order.view === v ? 700 : 500,
                             fontSize: '14px',
+                            whiteSpace: 'nowrap',
                             cursor: loading ? 'not-allowed' : 'pointer',
                             fontFamily: 'var(--heading), Georgia, serif',
                             transition: 'all 0.15s ease',
@@ -779,79 +867,6 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                   </div>
                 </div>
               )}
-
-              {/* Charges Input Field */}
-              <div className="input-group" style={{ marginTop: '12px', width: '100%' }}>
-                <label className="input-label" htmlFor={`order-charges-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
-                  Charges (PKR)
-                </label>
-                <div className="input-with-icon">
-                  <AttachMoney className="input-icon" />
-                  <input
-                    id={`order-charges-${order.id}`}
-                    name="charges"
-                    type="number"
-                    min="0"
-                    max="999999"
-                    step="1"
-                    value={order.charges}
-                    onChange={(e) => handleOrderFieldChange(order.id, 'charges', e.target.value)}
-                    required
-                    disabled={loading}
-                    placeholder="Enter charges"
-                    style={{
-                      width: '100%',
-                      padding: '12px 14px 12px 42px',
-                      borderRadius: '8px',
-                      border: orderErr ? '1px solid hsl(0, 75%, 50%)' : '1px solid hsla(215, 25%, 80%, 0.6)',
-                      background: 'hsla(0, 0%, 100%, 0.85)',
-                      fontSize: '15px',
-                      color: 'hsl(222, 47%, 11%)',
-                    }}
-                  />
-                </div>
-                {orderErr && (
-                  <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                    {orderErr}
-                  </span>
-                )}
-              </div>
-
-              {/* Discount Input Field */}
-              <div className="input-group" style={{ marginTop: '12px', width: '100%' }}>
-                <label className="input-label" htmlFor={`order-discount-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
-                  Discount (PKR)
-                </label>
-                <div className="input-with-icon">
-                  <LocalOffer className="input-icon" />
-                  <input
-                    id={`order-discount-${order.id}`}
-                    name="discount"
-                    type="number"
-                    min="0"
-                    max="999999"
-                    step="1"
-                    value={order.discount ?? '0'}
-                    onChange={(e) => handleOrderFieldChange(order.id, 'discount', e.target.value)}
-                    disabled={loading}
-                    placeholder="Enter discount"
-                    style={{
-                      width: '100%',
-                      padding: '12px 14px 12px 42px',
-                      borderRadius: '8px',
-                      border: discountErr ? '1px solid hsl(0, 75%, 50%)' : '1px solid hsla(215, 25%, 80%, 0.6)',
-                      background: 'hsla(0, 0%, 100%, 0.85)',
-                      fontSize: '15px',
-                      color: 'hsl(222, 47%, 11%)',
-                    }}
-                  />
-                </div>
-                {discountErr && (
-                  <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                    {discountErr}
-                  </span>
-                )}
-              </div>
             </div>
           );
         })}

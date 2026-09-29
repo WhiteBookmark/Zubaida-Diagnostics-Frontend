@@ -79,14 +79,6 @@ export default function VoiceChatPanel({ username }) {
               Voice Chat
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span
-                className={`vc-status-pill ${
-                  isConnectedToServer ? '' : 'vc-status-pill--offline'
-                }`}
-                title={isConnectedToServer ? 'Connected to signaling server' : 'Disconnected from server'}
-              >
-                {isConnectedToServer ? 'Live' : 'Offline'}
-              </span>
               <button
                 type="button"
                 className="vc-close-button"
@@ -161,7 +153,6 @@ export default function VoiceChatPanel({ username }) {
                     />
                     <span className="vc-username-label">
                       {user}
-                      {isSelf && <span className="vc-self-tag">You</span>}
                       {isOtherSelf && <span className="vc-self-tag" style={{ background: 'hsla(217, 91%, 60%, 0.15)', color: 'hsl(217, 91%, 45%)' }}>Other PC</span>}
                     </span>
                   </div>

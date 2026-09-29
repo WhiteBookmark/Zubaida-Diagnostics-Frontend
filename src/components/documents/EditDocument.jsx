@@ -7,6 +7,7 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import ImageIcon from '@mui/icons-material/Image';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { buildApiUrl } from '../../config/api';
 import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES } from '../../constants/documentTypes';
 import usePatientLookup from '../../hooks/usePatientLookup';
@@ -362,6 +363,7 @@ export default function EditDocument({ record, onBack, onSave }) {
           <PatientNameField
             patientName={patientName}
             lookupStatus={patientLookupStatus}
+            showLabel={false}
           />
 
           {/* Document Type Dropdown */}
@@ -490,22 +492,36 @@ export default function EditDocument({ record, onBack, onSave }) {
               }}
             >
               {/* Existing File Info */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, overflow: 'hidden' }}>
+              <Box
+                onClick={() => currentFileUrl && window.open(currentFileUrl, '_blank', 'noopener,noreferrer')}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  cursor: currentFileUrl ? 'pointer' : 'default',
+                  '&:hover': currentFileUrl ? { color: 'var(--primary, hsl(221, 83%, 53%))' } : {},
+                }}
+                title={currentFileUrl ? "Click to open in new tab" : currentFileName || ''}
+              >
                 <InsertDriveFileIcon sx={{ color: 'hsl(215, 16%, 47%)', fontSize: 20, flexShrink: 0 }} />
                 <Typography
                   variant="body2"
                   sx={{
-                    color: 'hsl(222, 47%, 11%)',
+                    color: 'inherit',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     minWidth: 0,
                     flex: 1,
                   }}
-                  title={currentFileName || ''}
                 >
                   <span style={{ fontWeight: 600 }}>Current File:</span> {currentFileName || 'No file recorded'}
                 </Typography>
+                {currentFileUrl && (
+                  <OpenInNewIcon sx={{ fontSize: 16, color: 'var(--primary, hsl(221, 83%, 53%))', flexShrink: 0 }} />
+                )}
               </Box>
 
               {/* Replacement File Preview / Upload Trigger */}
@@ -651,15 +667,25 @@ export default function EditDocument({ record, onBack, onSave }) {
           >
             {replacementFile ? (
               <>
-                <Typography variant="caption" sx={{ 
-                  fontWeight: 600, 
-                  color: 'var(--primary, hsl(221, 83%, 53%))', 
-                  display: 'block', 
-                  mb: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
+                <Typography
+                  variant="caption"
+                  onClick={() => replacementPreviewUrl && window.open(replacementPreviewUrl, '_blank', 'noopener,noreferrer')}
+                  sx={{ 
+                    fontWeight: 600, 
+                    color: 'var(--primary, hsl(221, 83%, 53%))', 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    mb: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    '&:hover': { textDecoration: 'underline' }
+                  }}
+                  title="Click to open file in new tab"
+                >
+                  <OpenInNewIcon sx={{ fontSize: 13 }} />
                   {replacementFile.name} ({(replacementFile.size / 1024).toFixed(1)} KB)
                 </Typography>
 
@@ -667,6 +693,8 @@ export default function EditDocument({ record, onBack, onSave }) {
                   <img
                     src={replacementPreviewUrl}
                     alt={replacementFile.name}
+                    onClick={() => window.open(replacementPreviewUrl, '_blank', 'noopener,noreferrer')}
+                    title="Click to open in new tab"
                     style={{
                       width: '100%',
                       maxHeight: '65vh',
@@ -674,19 +702,48 @@ export default function EditDocument({ record, onBack, onSave }) {
                       borderRadius: '6px',
                       border: '1px solid hsl(214, 32%, 91%)',
                       display: 'block',
+                      cursor: 'pointer',
                     }}
                   />
                 ) : replacementFile.type === 'application/pdf' && replacementPreviewUrl ? (
-                  <iframe
-                    src={replacementPreviewUrl}
-                    title={replacementFile.name}
-                    style={{
-                      width: '100%',
-                      height: '65vh',
-                      borderRadius: '6px',
-                      border: '1px solid hsl(214, 32%, 91%)',
-                    }}
-                  />
+                  <div
+                    onClick={() => window.open(replacementPreviewUrl, '_blank', 'noopener,noreferrer')}
+                    style={{ position: 'relative', cursor: 'pointer', width: '100%' }}
+                    title="Click to open in new tab"
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 2,
+                        background: 'hsl(217, 91%, 60%)',
+                        color: '#ffffff',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        boxShadow: '0 2px 6px hsla(0, 0%, 0%, 0.25)',
+                        pointerEvents: 'auto',
+                      }}
+                    >
+                      <OpenInNewIcon sx={{ fontSize: 14 }} /> Open in New Tab
+                    </div>
+                    <iframe
+                      src={replacementPreviewUrl}
+                      title={replacementFile.name}
+                      style={{
+                        width: '100%',
+                        height: '65vh',
+                        borderRadius: '6px',
+                        border: '1px solid hsl(214, 32%, 91%)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </div>
                 ) : (
                   <Box sx={{
                     display: 'flex',
@@ -705,15 +762,25 @@ export default function EditDocument({ record, onBack, onSave }) {
               </>
             ) : currentFileName ? (
               <>
-                <Typography variant="caption" sx={{ 
-                  fontWeight: 600, 
-                  color: 'var(--text-h, hsl(222, 47%, 11%))', 
-                  display: 'block', 
-                  mb: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
+                <Typography
+                  variant="caption"
+                  onClick={() => currentFileUrl && window.open(currentFileUrl, '_blank', 'noopener,noreferrer')}
+                  sx={{ 
+                    fontWeight: 600, 
+                    color: 'var(--text-h, hsl(222, 47%, 11%))', 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    mb: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    cursor: currentFileUrl ? 'pointer' : 'default',
+                    '&:hover': currentFileUrl ? { color: 'var(--primary, hsl(221, 83%, 53%))', textDecoration: 'underline' } : {}
+                  }}
+                  title={currentFileUrl ? "Click to open in new tab" : currentFileName}
+                >
+                  {currentFileUrl && <OpenInNewIcon sx={{ fontSize: 13 }} />}
                   {currentFileName}
                 </Typography>
 
@@ -721,6 +788,8 @@ export default function EditDocument({ record, onBack, onSave }) {
                   <img
                     src={currentFileUrl}
                     alt={currentFileName}
+                    onClick={() => window.open(currentFileUrl, '_blank', 'noopener,noreferrer')}
+                    title="Click to open in new tab"
                     style={{
                       width: '100%',
                       maxHeight: '65vh',
@@ -728,19 +797,48 @@ export default function EditDocument({ record, onBack, onSave }) {
                       borderRadius: '6px',
                       border: '1px solid hsl(214, 32%, 91%)',
                       display: 'block',
+                      cursor: 'pointer',
                     }}
                   />
                 ) : isCurrentPdf && currentFileUrl ? (
-                  <iframe
-                    src={currentFileUrl}
-                    title={currentFileName}
-                    style={{
-                      width: '100%',
-                      height: '65vh',
-                      borderRadius: '6px',
-                      border: '1px solid hsl(214, 32%, 91%)',
-                    }}
-                  />
+                  <div
+                    onClick={() => window.open(currentFileUrl, '_blank', 'noopener,noreferrer')}
+                    style={{ position: 'relative', cursor: 'pointer', width: '100%' }}
+                    title="Click to open in new tab"
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 2,
+                        background: 'hsl(217, 91%, 60%)',
+                        color: '#ffffff',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        boxShadow: '0 2px 6px hsla(0, 0%, 0%, 0.25)',
+                        pointerEvents: 'auto',
+                      }}
+                    >
+                      <OpenInNewIcon sx={{ fontSize: 14 }} /> Open in New Tab
+                    </div>
+                    <iframe
+                      src={currentFileUrl}
+                      title={currentFileName}
+                      style={{
+                        width: '100%',
+                        height: '65vh',
+                        borderRadius: '6px',
+                        border: '1px solid hsl(214, 32%, 91%)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </div>
                 ) : (
                   <Box sx={{
                     display: 'flex',

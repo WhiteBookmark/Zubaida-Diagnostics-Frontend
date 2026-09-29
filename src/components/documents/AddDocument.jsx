@@ -424,6 +424,7 @@ export default function AddDocument({ onBack, onSave }) {
         <PatientNameField
           patientName={patientName}
           lookupStatus={patientLookupStatus}
+          showLabel={false}
         />
 
         <div className="input-group">

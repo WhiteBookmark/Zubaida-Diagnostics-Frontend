@@ -118,9 +118,7 @@
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  background: hsla(0, 0%, 100%, 0.45);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: hsl(0, 0%, 100%);
   border: 1px solid hsla(0, 0%, 100%, 0.7);
   box-shadow: var(--vc-elevation-4);
   display: flex;
@@ -136,7 +134,7 @@
 .vc-fab-button:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: var(--vc-elevation-5);
-  background: hsla(0, 0%, 100%, 0.65);
+  background: hsl(210, 40%, 96%);
 }
 
 .vc-fab-button:active {
@@ -216,10 +214,8 @@
   max-width: calc(100vw - 48px);
   max-height: 520px;
   border-radius: 18px;
-  background: hsla(0, 0%, 100%, 0.5);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid hsla(0, 0%, 100%, 0.7);
+  background: hsl(0, 0%, 100%);
+  border: 1px solid hsla(215, 25%, 80%, 0.5);
   box-shadow: var(--vc-elevation-5);
   display: flex;
   flex-direction: column;
@@ -245,8 +241,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid hsla(0, 0%, 100%, 0.5);
-  background: hsla(0, 0%, 100%, 0.25);
+  border-bottom: 1px solid hsla(215, 25%, 80%, 0.5);
+  background: hsl(210, 40%, 96%);
 }
 
 .vc-header-title {
@@ -334,15 +330,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 9px 12px;
-  background: hsla(0, 0%, 100%, 0.35);
-  border: 1px solid hsla(0, 0%, 100%, 0.5);
+  background: hsl(0, 0%, 98%);
+  border: 1px solid hsla(215, 25%, 80%, 0.5);
   border-radius: 10px;
   box-shadow: var(--vc-elevation-1);
   transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
 
 .vc-user-row:hover {
-  background: hsla(0, 0%, 100%, 0.6);
+  background: hsl(210, 40%, 96%);
   border-color: hsla(0, 0%, 100%, 0.8);
   transform: translateX(2px);
 }
@@ -485,8 +481,8 @@
 /* Bottom Controls Section */
 .vc-controls-footer {
   padding: 12px 16px;
-  background: hsla(0, 0%, 100%, 0.3);
-  border-top: 1px solid hsla(0, 0%, 100%, 0.5);
+  background: hsl(210, 40%, 96%);
+  border-top: 1px solid hsla(215, 25%, 80%, 0.5);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -514,7 +510,7 @@
   padding: 6px 12px;
   border-radius: 20px;
   border: 1px solid hsla(0, 0%, 100%, 0.6);
-  background: hsla(0, 0%, 100%, 0.4);
+  background: hsl(0, 0%, 97%);
   color: var(--vc-grey-10);
   font-family: var(--vc-font-heading);
   font-size: 12px;
@@ -526,7 +522,7 @@
 }
 
 .vc-toggle-btn:hover {
-  background: hsla(0, 0%, 100%, 0.7);
+  background: hsl(210, 40%, 94%);
   box-shadow: var(--vc-elevation-2);
 }
 

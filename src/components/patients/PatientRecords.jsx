@@ -12,6 +12,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import { buildApiUrl } from '../../config/api';
 import TodayToggle from '../common/TodayToggle';
 
@@ -162,6 +165,7 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
       {
         id: 'actions',
         header: 'Actions',
+        enableSorting: false,
         cell: ({ row }) => (
           <Box sx={{ display: 'flex', gap: '1px' }} onClick={(e) => e.stopPropagation()}>
             <Tooltip title="Add Appointment">
@@ -370,11 +374,36 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
             <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg, #f8fafc)' }}>
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <th key={header.id}>
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
+                  {headerGroup.headers.map(header => {
+                    const canSort = header.column.getCanSort();
+                    const isSorted = header.column.getIsSorted();
+                    return (
+                      <th
+                        key={header.id}
+                        onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                        style={{
+                          cursor: canSort ? 'pointer' : 'default',
+                          userSelect: 'none',
+                        }}
+                        title={canSort ? `Sort by ${header.column.columnDef.header}` : undefined}
+                      >
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {canSort && (
+                            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                              {isSorted === 'asc' ? (
+                                <ArrowUpwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : isSorted === 'desc' ? (
+                                <ArrowDownwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : (
+                                <UnfoldMoreIcon sx={{ fontSize: '16px', opacity: 0.4, color: 'var(--text)' }} />
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
@@ -415,11 +444,36 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
             <thead>
               {table.getHeaderGroups().map(headerGroup => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <th key={header.id}>
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
+                  {headerGroup.headers.map(header => {
+                    const canSort = header.column.getCanSort();
+                    const isSorted = header.column.getIsSorted();
+                    return (
+                      <th
+                        key={header.id}
+                        onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                        style={{
+                          cursor: canSort ? 'pointer' : 'default',
+                          userSelect: 'none',
+                        }}
+                        title={canSort ? `Sort by ${header.column.columnDef.header}` : undefined}
+                      >
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {canSort && (
+                            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                              {isSorted === 'asc' ? (
+                                <ArrowUpwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : isSorted === 'desc' ? (
+                                <ArrowDownwardIcon sx={{ fontSize: '16px', color: 'var(--primary)' }} />
+                              ) : (
+                                <UnfoldMoreIcon sx={{ fontSize: '16px', opacity: 0.4, color: 'var(--text)' }} />
+                              )}
+                            </Box>
+                          )}
+                        </Box>
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>

@@ -6,7 +6,9 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import {
+  Box,
   Button,
+  IconButton,
   Select,
   MenuItem,
   Tooltip,
@@ -29,6 +31,8 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   UnfoldMore as UnfoldMoreIcon,
+  KeyboardArrowDown as KeyboardArrowDownIcon,
+  KeyboardArrowRight as KeyboardArrowRightIcon,
 } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import TodayToggle from '../common/TodayToggle';
@@ -405,6 +409,20 @@ export default function DiagnosticOrderRecords({
         ),
       },
       {
+        id: 'discount',
+        header: 'Discount',
+        accessorKey: 'discount',
+        size: 130,
+        cell: ({ getValue }) => {
+          const val = Number(getValue() || 0);
+          return (
+            <span style={{ fontWeight: 700, color: val > 0 ? 'hsl(142, 71%, 40%)' : 'hsl(215, 16%, 60%)', fontVariantNumeric: 'tabular-nums' }}>
+              {val > 0 ? `Rs. ${val.toLocaleString()}` : '—'}
+            </span>
+          );
+        },
+      },
+      {
         id: 'side',
         header: 'Side',
         accessorKey: 'side',
@@ -456,6 +474,181 @@ export default function DiagnosticOrderRecords({
 
   const { rows } = table.getRowModel();
 
+  const [expandedMrNumbers, setExpandedMrNumbers] = useState(new Set());
+
+  // Reset expanded groups when data changes
+  useEffect(() => {
+    setExpandedMrNumbers(new Set());
+  }, [data]);
+
+  const toggleMrGroup = useCallback((mrNumber) => {
+    setExpandedMrNumbers((prev) => {
+      const next = new Set(prev);
+      if (next.has(mrNumber)) {
+        next.delete(mrNumber);
+      } else {
+        next.add(mrNumber);
+      }
+      return next;
+    });
+  }, []);
+
+  const groupedData = useMemo(() => {
+    const groups = new Map();
+
+    for (const row of rows) {
+      const mrNumber = row.original?.patient?.mrNumber || 'UNKNOWN';
+      if (!groups.has(mrNumber)) {
+        groups.set(mrNumber, { mrNumber, rows: [], firstRow: row });
+      }
+      groups.get(mrNumber).rows.push(row);
+    }
+
+    const result = [];
+    for (const [mrNumber, group] of groups) {
+      const isExpanded = expandedMrNumbers.has(mrNumber);
+      const isSingleRecord = group.rows.length === 1;
+
+      if (isSingleRecord) {
+        result.push({ type: 'single', row: group.rows[0], mrNumber });
+      } else {
+        result.push({
+          type: 'group-header',
+          mrNumber,
+          recordCount: group.rows.length,
+          firstRow: group.firstRow,
+          isExpanded,
+        });
+        if (isExpanded) {
+          for (const row of group.rows) {
+            result.push({ type: 'child', row, mrNumber });
+          }
+        }
+      }
+    }
+    return result;
+  }, [rows, expandedMrNumbers]);
+
+  const hasGroups = useMemo(() => {
+    return groupedData.some((item) => item.type === 'group-header');
+  }, [groupedData]);
+
+  const allGroupMrNumbers = useMemo(() => {
+    const set = new Set();
+    for (const item of groupedData) {
+      if (item.type === 'group-header') {
+        set.add(item.mrNumber);
+      }
+    }
+    return set;
+  }, [groupedData]);
+
+  const isAllExpanded = allGroupMrNumbers.size > 0 && expandedMrNumbers.size >= allGroupMrNumbers.size;
+
+  const handleToggleAll = useCallback(() => {
+    if (isAllExpanded) {
+      setExpandedMrNumbers(new Set());
+    } else {
+      setExpandedMrNumbers(new Set(allGroupMrNumbers));
+    }
+  }, [isAllExpanded, allGroupMrNumbers]);
+
+  const renderRowItem = (item) => {
+    if (!item) return null;
+
+    if (item.type === 'single') {
+      const row = item.row;
+      return (
+        <tr key={row.id}>
+          {row.getVisibleCells().map((cell) => (
+            <td key={cell.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          ))}
+        </tr>
+      );
+    }
+
+    if (item.type === 'group-header') {
+      return (
+        <tr
+          key={`group-${item.mrNumber}`}
+          onClick={() => toggleMrGroup(item.mrNumber)}
+          style={{
+            cursor: 'pointer',
+            backgroundColor: 'hsla(217, 91%, 60%, 0.08)',
+          }}
+        >
+          <td>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMrGroup(item.mrNumber);
+                }}
+                sx={{ color: 'hsl(217, 91%, 50%)' }}
+                aria-label={item.isExpanded ? "Collapse group" : "Expand group"}
+              >
+                {item.isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+              </IconButton>
+            </Box>
+          </td>
+          <td>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <span style={{ fontWeight: 600 }}>{item.mrNumber}</span>
+              <Box
+                component="span"
+                sx={{
+                  backgroundColor: 'hsl(217, 91%, 35%)',
+                  color: 'hsl(0, 0%, 100%)',
+                  borderRadius: '10px',
+                  padding: '2px 8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1.2,
+                }}
+              >
+                {item.recordCount} Records
+              </Box>
+            </Box>
+          </td>
+          <td>{item.firstRow.original?.patient?.name || 'N/A'}</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+          <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
+        </tr>
+      );
+    }
+
+    if (item.type === 'child') {
+      const row = item.row;
+      return (
+        <tr
+          key={row.id}
+          style={{
+            backgroundColor: 'hsla(217, 91%, 60%, 0.04)',
+          }}
+        >
+          {row.getVisibleCells().map((cell) => (
+            <td key={cell.id} style={{ borderBottom: '1px solid hsla(217, 91%, 60%, 0.08)' }}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          ))}
+        </tr>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div style={{ margin: '0 20px 40px 20px', width: 'calc(100% - 40px)', boxSizing: 'border-box', minWidth: 0 }}>
       {/* Unified Single Card */}
@@ -499,6 +692,23 @@ export default function DiagnosticOrderRecords({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            {hasGroups && (
+              <Tooltip title={isAllExpanded ? "Collapse All Groups" : "Expand All Groups"}>
+                <IconButton
+                  onClick={handleToggleAll}
+                  size="small"
+                  sx={{
+                    background: 'var(--glass-bg)',
+                    border: '1px solid var(--glass-border)',
+                    color: 'var(--primary)',
+                    p: 1,
+                  }}
+                  aria-label={isAllExpanded ? "Collapse all groups" : "Expand all groups"}
+                >
+                  {isAllExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
             <TodayToggle
               isActive={isTodayOnly}
               onToggle={() => setIsTodayOnly(!isTodayOnly)}
@@ -681,42 +891,40 @@ export default function DiagnosticOrderRecords({
 
         {/* Section 3: Records Table */}
         <div ref={tableContainerRef} style={{ overflowX: 'auto', maxHeight: '650px', width: '100%', minWidth: 0 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ position: 'sticky', top: 0, zIndex: 2, background: 'var(--bg, #f8fafc)' }}>
               {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id} style={{ borderBottom: '2px solid var(--glass-border)' }}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      style={{
-                        padding: '14px 18px',
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        color: 'var(--text-h, #0f172a)',
-                        fontFamily: 'var(--heading), Georgia, serif',
-                        cursor: header.column.getCanSort() ? 'pointer' : 'default',
-                        userSelect: 'none',
-                      }}
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {header.column.getCanSort() && (
-                          <span>
-                            {header.column.getIsSorted() === 'asc' ? (
-                              <ArrowUpwardIcon style={{ fontSize: '14px' }} />
-                            ) : header.column.getIsSorted() === 'desc' ? (
-                              <ArrowDownwardIcon style={{ fontSize: '14px' }} />
-                            ) : (
-                              <UnfoldMoreIcon style={{ fontSize: '14px', opacity: 0.4 }} />
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                  ))}
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    const canSort = header.column.getCanSort();
+                    const isSorted = header.column.getIsSorted();
+                    return (
+                      <th
+                        key={header.id}
+                        onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                        style={{
+                          cursor: canSort ? 'pointer' : 'default',
+                          userSelect: 'none',
+                        }}
+                        title={canSort ? `Sort by ${header.column.columnDef.header}` : undefined}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                          {canSort && (
+                            <span>
+                              {isSorted === 'asc' ? (
+                                <ArrowUpwardIcon style={{ fontSize: '14px', color: 'var(--primary)' }} />
+                              ) : isSorted === 'desc' ? (
+                                <ArrowDownwardIcon style={{ fontSize: '14px', color: 'var(--primary)' }} />
+                              ) : (
+                                <UnfoldMoreIcon style={{ fontSize: '14px', opacity: 0.4 }} />
+                              )}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    );
+                  })}
                 </tr>
               ))}
             </thead>
@@ -746,39 +954,7 @@ export default function DiagnosticOrderRecords({
                   </td>
                 </tr>
               ) : (
-                rows.map((row, index) => {
-                  const isEven = index % 2 === 0;
-                  return (
-                    <tr
-                      key={row.id}
-                      style={{
-                        background: isEven ? 'transparent' : 'hsla(215, 30%, 97%, 0.4)',
-                        borderBottom: '1px solid hsla(215, 25%, 85%, 0.5)',
-                        transition: 'background 0.15s ease',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'hsla(217, 91%, 60%, 0.05)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = isEven ? 'transparent' : 'hsla(215, 30%, 97%, 0.4)';
-                      }}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td
-                          key={cell.id}
-                          style={{
-                            padding: '12px 18px',
-                            fontSize: '14px',
-                            color: 'hsl(222, 47%, 11%)',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })
+                groupedData.map((item) => renderRowItem(item))
               )}
             </tbody>
           </table>

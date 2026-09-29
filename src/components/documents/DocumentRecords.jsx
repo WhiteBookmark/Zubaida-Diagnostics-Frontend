@@ -177,6 +177,7 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
     {
       id: 'actions',
       header: 'Actions',
+      enableSorting: false,
       cell: ({ row }) => (
         <Box sx={{ display: 'flex', gap: 1 }} onClick={(e) => e.stopPropagation()}>
           <Tooltip title="View Document">
@@ -197,12 +198,11 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
         </Box>
       ),
     },
-    { accessorKey: 'patient.mrNumber', header: 'MR Number', enableSorting: false },
-    { accessorKey: 'patient.name', header: 'Patient Name', enableSorting: false },
+    { accessorKey: 'patient.mrNumber', header: 'MR Number' },
+    { accessorKey: 'patient.name', header: 'Patient Name' },
     {
       accessorKey: 'type',
       header: 'Document Type',
-      enableSorting: false,
       cell: (info) => {
         const row = info.row.original;
         if (!row) return '—';
@@ -271,7 +271,6 @@ export default function DocumentRecords({ onAddDocument, onEditDocument, initial
     {
       accessorKey: 'fileName',
       header: 'File Path',
-      enableSorting: false,
       cell: info => {
         const fileName = info.getValue();
         if (!fileName) return 'N/A';

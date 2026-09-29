@@ -47,8 +47,21 @@ export default defineConfig({
       },
       workbox: {
         // Prevent the service worker from intercepting API/document/socket routes
-        // with the navigation fallback (which would serve index.html instead)
-        navigateFallbackDenylist: [/^\/api\//, /^\/document\//, /^\/socket\.io\//]
+        navigateFallbackDenylist: [/^\/api\//, /^\/document\//, /^\/socket\.io\//],
+        // Use NetworkOnly strategy for all requests so nothing is cached
+        runtimeCaching: [
+          {
+            urlPattern: () => true,
+            handler: 'NetworkOnly',
+          }
+        ],
+        // Don't precache any assets
+        globPatterns: [],
+        // Skip waiting and claim clients immediately for instant updates
+        skipWaiting: true,
+        clientsClaim: true,
+        // Disable navigation preload which can cause stale responses
+        navigationPreload: false,
       }
     })
   ],

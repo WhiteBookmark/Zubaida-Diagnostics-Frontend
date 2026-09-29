@@ -346,6 +346,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
     {
       id: 'actions',
       header: 'Actions',
+      enableSorting: false,
       cell: ({ row }) => {
         const isFinalized = row.original.isFinalized || row.original.isEdited;
         return (
@@ -382,12 +383,11 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         );
       }
     },
-    { accessorKey: 'patient.mrNumber', header: 'MR Number', enableSorting: false },
-    { accessorKey: 'patient.name', header: 'Patient Name', enableSorting: false },
+    { accessorKey: 'patient.mrNumber', header: 'MR Number' },
+    { accessorKey: 'patient.name', header: 'Patient Name' },
     {
       accessorKey: 'dateTime',
       header: 'Date/Time',
-      enableSorting: false,
       cell: info => info.getValue() ? new Date(info.getValue()).toLocaleString() : 'N/A'
     },
     {
@@ -400,7 +400,7 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
         return a - b;
       }
     },
-    { accessorKey: 'amountPaid', header: 'Paid (Rs)', enableSorting: false }
+    { accessorKey: 'amountPaid', header: 'Paid (Rs)' }
   ], [handlePrintToken, handlePrintTokenServer, isLinux]);
 
   const table = useReactTable({

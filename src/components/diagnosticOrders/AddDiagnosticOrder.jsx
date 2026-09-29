@@ -2,15 +2,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, IconButton, Snackbar, Alert, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
 import {
   Badge,
-  LocalHospital,
   Label,
-  MedicalServices,
-  Visibility,
   Close as CloseIcon,
   Print,
   Add as AddIcon,
   DeleteOutline as DeleteIcon,
   AttachMoney,
+  LocalOffer,
 } from '@mui/icons-material';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
@@ -28,6 +26,7 @@ const createNewOrder = () => ({
   category: 'X-Ray',
   type: '',
   charges: '',
+  discount: '0',
   side: 'N/A',
   view: 'N/A',
 });
@@ -291,6 +290,26 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
         }));
       }
     }
+
+    if (field === 'discount') {
+      const val = parseInt(value, 10);
+      if (value !== '' && (isNaN(val) || val < 0)) {
+        setOrderErrors((prev) => ({
+          ...prev,
+          [orderId]: { ...prev[orderId], discount: 'Discount Cannot Be Negative' },
+        }));
+      } else if (value !== '' && val > 999999) {
+        setOrderErrors((prev) => ({
+          ...prev,
+          [orderId]: { ...prev[orderId], discount: 'Discount Cannot Exceed 999,999 PKR' },
+        }));
+      } else {
+        setOrderErrors((prev) => ({
+          ...prev,
+          [orderId]: { ...prev[orderId], discount: null },
+        }));
+      }
+    }
   };
 
   /**
@@ -340,6 +359,12 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
         setToast({ open: true, message: `Order #${i + 1}: Charges Must Be A Non-Negative Integer Up To 999,999 PKR.`, severity: 'error' });
         return;
       }
+
+      const parsedDiscount = parseInt(String(o.discount ?? '0').trim() || '0', 10);
+      if (isNaN(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 999999) {
+        setToast({ open: true, message: `Order #${i + 1}: Discount Must Be A Non-Negative Integer Up To 999,999 PKR.`, severity: 'error' });
+        return;
+      }
     }
 
     setLoading(true);
@@ -351,6 +376,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
           category: o.category,
           type: o.type,
           charges: parseInt(String(o.charges).trim(), 10),
+          discount: parseInt(String(o.discount ?? '0').trim() || '0', 10),
           side: o.category === 'X-Ray' ? o.side : 'N/A',
           view: o.category === 'X-Ray' ? o.view : 'N/A',
         })),
@@ -538,6 +564,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
           const isLast = index === orders.length - 1;
           const typesState = orderTypesMap[order.id] || { types: [], loading: false };
           const orderErr = orderErrors[order.id]?.charges;
+          const discountErr = orderErrors[order.id]?.discount;
 
           return (
             <div
@@ -605,30 +632,35 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                   <label className="input-label" htmlFor={`order-category-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                     Category
                   </label>
-                  <div className="input-with-icon">
-                    <LocalHospital className="input-icon" />
-                    <select
-                      id={`order-category-${order.id}`}
-                      name="category"
-                      value={order.category}
-                      onChange={(e) => handleOrderCategoryChange(order.id, e.target.value)}
-                      required
-                      disabled={loading}
-                      style={{
-                        width: '100%',
-                        padding: '12px 14px 12px 42px',
-                        borderRadius: '8px',
-                        border: '1px solid hsla(215, 25%, 80%, 0.6)',
-                        background: 'hsla(0, 0%, 100%, 0.85)',
-                        fontSize: '15px',
-                        color: 'hsl(222, 47%, 11%)',
-                      }}
-                    >
-                      <option value="X-Ray">X-Ray</option>
-                      <option value="Ultrasound">Ultrasound</option>
-                      <option value="PFT">PFT</option>
-                      <option value="ECG">ECG</option>
-                    </select>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                    {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => handleOrderCategoryChange(order.id, cat)}
+                        disabled={loading}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          border: order.category === cat
+                            ? '2px solid hsl(217, 91%, 60%)'
+                            : '1px solid hsla(215, 25%, 80%, 0.6)',
+                          background: order.category === cat
+                            ? 'hsla(217, 91%, 60%, 0.15)'
+                            : 'hsla(0, 0%, 100%, 0.85)',
+                          color: order.category === cat
+                            ? 'hsl(217, 91%, 45%)'
+                            : 'hsl(222, 47%, 11%)',
+                          fontWeight: order.category === cat ? 700 : 500,
+                          fontSize: '14px',
+                          cursor: loading ? 'not-allowed' : 'pointer',
+                          fontFamily: 'var(--heading), Georgia, serif',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {cat}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -678,30 +710,35 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                     <label className="input-label" htmlFor={`order-side-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       Side
                     </label>
-                    <div className="input-with-icon">
-                      <MedicalServices className="input-icon" />
-                      <select
-                        id={`order-side-${order.id}`}
-                        name="side"
-                        value={order.side}
-                        onChange={(e) => handleOrderFieldChange(order.id, 'side', e.target.value)}
-                        disabled={loading}
-                        style={{
-                          width: '100%',
-                          padding: '12px 14px 12px 42px',
-                          borderRadius: '8px',
-                          border: '1px solid hsla(215, 25%, 80%, 0.6)',
-                          background: 'hsla(0, 0%, 100%, 0.85)',
-                          fontSize: '15px',
-                          color: 'hsl(222, 47%, 11%)',
-                        }}
-                      >
-                        {XRAY_SIDES.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                      {XRAY_SIDES.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => handleOrderFieldChange(order.id, 'side', s)}
+                          disabled={loading}
+                          style={{
+                            padding: '8px 16px',
+                            borderRadius: '20px',
+                            border: order.side === s
+                              ? '2px solid hsl(217, 91%, 60%)'
+                              : '1px solid hsla(215, 25%, 80%, 0.6)',
+                            background: order.side === s
+                              ? 'hsla(217, 91%, 60%, 0.15)'
+                              : 'hsla(0, 0%, 100%, 0.85)',
+                            color: order.side === s
+                              ? 'hsl(217, 91%, 45%)'
+                              : 'hsl(222, 47%, 11%)',
+                            fontWeight: order.side === s ? 700 : 500,
+                            fontSize: '14px',
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            fontFamily: 'var(--heading), Georgia, serif',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {s}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -709,30 +746,35 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                     <label className="input-label" htmlFor={`order-view-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       View
                     </label>
-                    <div className="input-with-icon">
-                      <Visibility className="input-icon" />
-                      <select
-                        id={`order-view-${order.id}`}
-                        name="view"
-                        value={order.view}
-                        onChange={(e) => handleOrderFieldChange(order.id, 'view', e.target.value)}
-                        disabled={loading}
-                        style={{
-                          width: '100%',
-                          padding: '12px 14px 12px 42px',
-                          borderRadius: '8px',
-                          border: '1px solid hsla(215, 25%, 80%, 0.6)',
-                          background: 'hsla(0, 0%, 100%, 0.85)',
-                          fontSize: '15px',
-                          color: 'hsl(222, 47%, 11%)',
-                        }}
-                      >
-                        {XRAY_VIEWS.map((v) => (
-                          <option key={v} value={v}>
-                            {v}
-                          </option>
-                        ))}
-                      </select>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                      {XRAY_VIEWS.map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => handleOrderFieldChange(order.id, 'view', v)}
+                          disabled={loading}
+                          style={{
+                            padding: '8px 16px',
+                            borderRadius: '20px',
+                            border: order.view === v
+                              ? '2px solid hsl(217, 91%, 60%)'
+                              : '1px solid hsla(215, 25%, 80%, 0.6)',
+                            background: order.view === v
+                              ? 'hsla(217, 91%, 60%, 0.15)'
+                              : 'hsla(0, 0%, 100%, 0.85)',
+                            color: order.view === v
+                              ? 'hsl(217, 91%, 45%)'
+                              : 'hsl(222, 47%, 11%)',
+                            fontWeight: order.view === v ? 700 : 500,
+                            fontSize: '14px',
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            fontFamily: 'var(--heading), Georgia, serif',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {v}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -771,6 +813,42 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                 {orderErr && (
                   <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
                     {orderErr}
+                  </span>
+                )}
+              </div>
+
+              {/* Discount Input Field */}
+              <div className="input-group" style={{ marginTop: '12px', width: '100%' }}>
+                <label className="input-label" htmlFor={`order-discount-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+                  Discount (PKR)
+                </label>
+                <div className="input-with-icon">
+                  <LocalOffer className="input-icon" />
+                  <input
+                    id={`order-discount-${order.id}`}
+                    name="discount"
+                    type="number"
+                    min="0"
+                    max="999999"
+                    step="1"
+                    value={order.discount ?? '0'}
+                    onChange={(e) => handleOrderFieldChange(order.id, 'discount', e.target.value)}
+                    disabled={loading}
+                    placeholder="Enter discount"
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px 12px 42px',
+                      borderRadius: '8px',
+                      border: discountErr ? '1px solid hsl(0, 75%, 50%)' : '1px solid hsla(215, 25%, 80%, 0.6)',
+                      background: 'hsla(0, 0%, 100%, 0.85)',
+                      fontSize: '15px',
+                      color: 'hsl(222, 47%, 11%)',
+                    }}
+                  />
+                </div>
+                {discountErr && (
+                  <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                    {discountErr}
                   </span>
                 )}
               </div>

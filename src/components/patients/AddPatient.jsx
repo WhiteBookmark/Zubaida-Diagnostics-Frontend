@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { mockData } from '../../utils/mockData';
 import { Button, IconButton, Snackbar, Alert, CircularProgress, Typography, Paper } from '@mui/material';
-import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices, Close as CloseIcon } from '@mui/icons-material';
+import { Person, SupervisorAccount, CalendarToday, Cake, Phone, Email, LocalHospital, MedicalServices, Close as CloseIcon, ArrowForward } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
-export default function AddPatient({ onBack, onAdd }) {
+export default function AddPatient({ onBack, onAdd, onNavigateToAppointment }) {
   const [formData, setFormData] = useState({
     name: '',
     fatherName: '',
@@ -353,6 +353,15 @@ export default function AddPatient({ onBack, onAdd }) {
               <Paper
                 key={patient.id}
                 elevation={0}
+                role="button"
+                tabIndex={0}
+                onClick={() => onNavigateToAppointment && onNavigateToAppointment(patient.mrNumber)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onNavigateToAppointment && onNavigateToAppointment(patient.mrNumber);
+                  }
+                }}
                 sx={{
                   p: 1.5,
                   mb: 1.25,
@@ -362,10 +371,20 @@ export default function AddPatient({ onBack, onAdd }) {
                   backdropFilter: 'var(--glass-blur)',
                   boxShadow: 'var(--shadow)',
                   color: 'var(--text-h, #0f172a)',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.15s ease, background 0.15s ease, transform 0.15s ease',
+                  '&:hover': {
+                    borderColor: 'var(--primary, hsl(217, 91%, 60%))',
+                    background: 'hsla(217, 91%, 60%, 0.08)',
+                    transform: 'translateY(-1px)',
+                  },
                 }}
               >
-                <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'inherit', lineHeight: 1.4 }}>
-                  MR# {patient.mrNumber}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'inherit', lineHeight: 1.4 }}>
+                    MR# {patient.mrNumber}
+                  </div>
+                  <ArrowForward sx={{ fontSize: '16px', color: 'var(--primary, hsl(217, 91%, 60%))' }} />
                 </div>
                 <div style={{ fontSize: '0.85rem', color: 'inherit', marginTop: '2px', lineHeight: 1.4 }}>
                   {patient.phone || 'N/A'}

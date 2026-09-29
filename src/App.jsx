@@ -245,6 +245,14 @@ function App() {
     window.history.pushState({ page: 'patients', view: 'addAppointment', newMrNumber: patient.mrNumber, _idx: nextIdx }, '');
   }, []);
 
+  const handleNavigateToAppointmentFromSearch = useCallback((mrNumber) => {
+    setNewMrNumber(mrNumber);
+    setPendingToast('');
+    setView('addAppointment');
+    const nextIdx = (window.history.state?._idx || 0) + 1;
+    window.history.pushState({ page: 'patients', view: 'addAppointment', newMrNumber: mrNumber, _idx: nextIdx }, '');
+  }, []);
+
   const handleAppointmentAdded = useCallback((newRecord, message, shouldPrintBrowser = true) => {
     setPendingAppointmentPrint(shouldPrintBrowser ? newRecord : null);
     setPendingAppointmentToast(message);
@@ -419,7 +427,7 @@ function App() {
     }
 
     if (view === 'addPatient') {
-      return <AddPatient onBack={handleBack} onAdd={handlePatientAdded} />
+      return <AddPatient onBack={handleBack} onAdd={handlePatientAdded} onNavigateToAppointment={handleNavigateToAppointmentFromSearch} />
     }
 
     if (view === 'addAppointment') {

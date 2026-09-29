@@ -2,13 +2,11 @@ import { useState, useEffect } from 'react';
 import { Button, IconButton, Snackbar, Alert, CircularProgress } from '@mui/material';
 import {
   Badge,
-  LocalHospital,
   Label,
   Payments,
-  MedicalServices,
-  Visibility,
   Close as CloseIcon,
   Print,
+  LocalOffer,
 } from '@mui/icons-material';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
@@ -22,6 +20,7 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
     category: record?.category || 'X-Ray',
     type: record?.type || '',
     charges: record?.charges !== undefined ? String(record.charges) : '',
+    discount: record?.discount !== undefined ? String(record.discount) : '0',
     side: record?.side || 'N/A',
     view: record?.view || 'N/A',
   }));
@@ -93,13 +92,12 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
     setToast((prev) => ({ ...prev, open: false }));
   };
 
-  const handleCategoryChange = (e) => {
-    const newCategory = e.target.value;
+  const handleCategoryChange = (newCategory) => {
     setFormData((prev) => ({
       ...prev,
       category: newCategory,
-      side: newCategory === 'X-Ray' ? 'N/A' : 'N/A',
-      view: newCategory === 'X-Ray' ? 'N/A' : 'N/A',
+      side: 'N/A',
+      view: 'N/A',
     }));
   };
 
@@ -125,6 +123,17 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
         setErrors((prev) => ({ ...prev, charges: 'Charges Cannot Exceed 999,999 PKR' }));
       } else {
         setErrors((prev) => ({ ...prev, charges: null }));
+      }
+    }
+
+    if (name === 'discount') {
+      const val = parseInt(value, 10);
+      if (value !== '' && (isNaN(val) || val < 0)) {
+        setErrors((prev) => ({ ...prev, discount: 'Discount Cannot Be Negative' }));
+      } else if (value !== '' && val > 999999) {
+        setErrors((prev) => ({ ...prev, discount: 'Discount Cannot Exceed 999,999 PKR' }));
+      } else {
+        setErrors((prev) => ({ ...prev, discount: null }));
       }
     }
 
@@ -185,6 +194,13 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
       return;
     }
 
+    const trimmedDiscount = String(formData.discount ?? '0').trim();
+    const parsedDiscount = parseInt(trimmedDiscount || '0', 10);
+    if (trimmedDiscount !== '' && (!/^\d+$/.test(trimmedDiscount) || isNaN(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 999999)) {
+      setToast({ open: true, message: 'Invalid Discount. Must Be An Integer Between 0 And 999,999.', severity: 'error' });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -193,6 +209,7 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
         category: formData.category,
         type: formData.type,
         charges: parsedCharges,
+        discount: parsedDiscount,
         side: formData.category === 'X-Ray' ? formData.side : 'N/A',
         view: formData.category === 'X-Ray' ? formData.view : 'N/A',
       };
@@ -294,35 +311,40 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
         {/* Patient Name (Read-Only via Lookup) */}
         <PatientNameField patientName={patientName} lookupStatus={patientLookupStatus} />
 
-        {/* Category Dropdown */}
+        {/* Category Chips */}
         <div className="input-group">
           <label className="input-label" htmlFor="edit-order-category" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
             Category
           </label>
-          <div className="input-with-icon">
-            <LocalHospital className="input-icon" />
-            <select
-              id="edit-order-category"
-              name="category"
-              value={formData.category}
-              onChange={handleCategoryChange}
-              required
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '12px 14px 12px 42px',
-                borderRadius: '8px',
-                border: '1px solid hsla(215, 25%, 80%, 0.6)',
-                background: 'hsla(0, 0%, 100%, 0.85)',
-                fontSize: '15px',
-                color: 'hsl(222, 47%, 11%)',
-              }}
-            >
-              <option value="X-Ray">X-Ray</option>
-              <option value="Ultrasound">Ultrasound</option>
-              <option value="PFT">PFT</option>
-              <option value="ECG">ECG</option>
-            </select>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+            {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => handleCategoryChange(cat)}
+                disabled={loading}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: formData.category === cat
+                    ? '2px solid hsl(217, 91%, 60%)'
+                    : '1px solid hsla(215, 25%, 80%, 0.6)',
+                  background: formData.category === cat
+                    ? 'hsla(217, 91%, 60%, 0.15)'
+                    : 'hsla(0, 0%, 100%, 0.85)',
+                  color: formData.category === cat
+                    ? 'hsl(217, 91%, 45%)'
+                    : 'hsl(222, 47%, 11%)',
+                  fontWeight: formData.category === cat ? 700 : 500,
+                  fontSize: '14px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontFamily: 'var(--heading), Georgia, serif',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -365,37 +387,42 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
           </div>
         </div>
 
-        {/* Side & View Dropdowns (X-Ray only) */}
+        {/* Side & View Chips (X-Ray only) */}
         {formData.category === 'X-Ray' && (
           <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
             <div className="input-group" style={{ flex: 1 }}>
               <label className="input-label" htmlFor="edit-order-side" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                 Side
               </label>
-              <div className="input-with-icon">
-                <MedicalServices className="input-icon" />
-                <select
-                  id="edit-order-side"
-                  name="side"
-                  value={formData.side}
-                  onChange={handleChange}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px 12px 42px',
-                    borderRadius: '8px',
-                    border: '1px solid hsla(215, 25%, 80%, 0.6)',
-                    background: 'hsla(0, 0%, 100%, 0.85)',
-                    fontSize: '15px',
-                    color: 'hsl(222, 47%, 11%)',
-                  }}
-                >
-                  {XRAY_SIDES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                {XRAY_SIDES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, side: s }))}
+                    disabled={loading}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      border: formData.side === s
+                        ? '2px solid hsl(217, 91%, 60%)'
+                        : '1px solid hsla(215, 25%, 80%, 0.6)',
+                      background: formData.side === s
+                        ? 'hsla(217, 91%, 60%, 0.15)'
+                        : 'hsla(0, 0%, 100%, 0.85)',
+                      color: formData.side === s
+                        ? 'hsl(217, 91%, 45%)'
+                        : 'hsl(222, 47%, 11%)',
+                      fontWeight: formData.side === s ? 700 : 500,
+                      fontSize: '14px',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      fontFamily: 'var(--heading), Georgia, serif',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -403,30 +430,35 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
               <label className="input-label" htmlFor="edit-order-view" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                 View
               </label>
-              <div className="input-with-icon">
-                <Visibility className="input-icon" />
-                <select
-                  id="edit-order-view"
-                  name="view"
-                  value={formData.view}
-                  onChange={handleChange}
-                  disabled={loading}
-                  style={{
-                    width: '100%',
-                    padding: '12px 14px 12px 42px',
-                    borderRadius: '8px',
-                    border: '1px solid hsla(215, 25%, 80%, 0.6)',
-                    background: 'hsla(0, 0%, 100%, 0.85)',
-                    fontSize: '15px',
-                    color: 'hsl(222, 47%, 11%)',
-                  }}
-                >
-                  {XRAY_VIEWS.map((v) => (
-                    <option key={v} value={v}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+                {XRAY_VIEWS.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, view: v }))}
+                    disabled={loading}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      border: formData.view === v
+                        ? '2px solid hsl(217, 91%, 60%)'
+                        : '1px solid hsla(215, 25%, 80%, 0.6)',
+                      background: formData.view === v
+                        ? 'hsla(217, 91%, 60%, 0.15)'
+                        : 'hsla(0, 0%, 100%, 0.85)',
+                      color: formData.view === v
+                        ? 'hsl(217, 91%, 45%)'
+                        : 'hsl(222, 47%, 11%)',
+                      fontWeight: formData.view === v ? 700 : 500,
+                      fontSize: '14px',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      fontFamily: 'var(--heading), Georgia, serif',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {v}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -465,6 +497,42 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
           {errors.charges && (
             <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
               {errors.charges}
+            </span>
+          )}
+        </div>
+
+        {/* Discount Input */}
+        <div className="input-group">
+          <label className="input-label" htmlFor="edit-order-discount" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+            Discount In PKR
+          </label>
+          <div className="input-with-icon">
+            <LocalOffer className="input-icon" />
+            <input
+              id="edit-order-discount"
+              name="discount"
+              type="number"
+              min="0"
+              max="999999"
+              step="1"
+              placeholder="e.g. 0, 100"
+              value={formData.discount ?? '0'}
+              onChange={handleChange}
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '12px 14px 12px 42px',
+                borderRadius: '8px',
+                border: errors.discount ? '1px solid hsl(0, 75%, 50%)' : '1px solid hsla(215, 25%, 80%, 0.6)',
+                background: 'hsla(0, 0%, 100%, 0.85)',
+                fontSize: '15px',
+                color: 'hsl(222, 47%, 11%)',
+              }}
+            />
+          </div>
+          {errors.discount && (
+            <span style={{ color: 'hsl(0, 75%, 50%)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+              {errors.discount}
             </span>
           )}
         </div>

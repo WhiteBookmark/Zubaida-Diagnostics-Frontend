@@ -789,10 +789,10 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                 </div>
               </div>
 
-              {/* 3rd Row: Side & View (X-Ray only) */}
+              {/* 3rd Row: Side & View (X-Ray only) - 1 Column Style */}
               {order.category === 'X-Ray' && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
-                  <div className="input-group" style={{ flex: '1 1 240px', margin: 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' }}>
+                  <div className="input-group" style={{ width: '100%', margin: 0 }}>
                     <label className="input-label" htmlFor={`order-side-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       Side
                     </label>
@@ -829,7 +829,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                     </div>
                   </div>
 
-                  <div className="input-group" style={{ flex: '1.2 1 280px', margin: 0 }}>
+                  <div className="input-group" style={{ width: '100%', margin: 0 }}>
                     <label className="input-label" htmlFor={`order-view-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       View
                     </label>

@@ -595,12 +595,23 @@ export default function EditDocument({ record, onBack, onSave }) {
               ) : (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap', minWidth: 0 }}>
                   <Button
-                    variant="outlined"
+                    variant="contained"
                     component="label"
                     size="small"
                     disabled={loading || isProcessingFile}
                     startIcon={<CloudUploadIcon />}
-                    sx={{ textTransform: 'none', borderRadius: '6px', flexShrink: 0 }}
+                    sx={{
+                      borderRadius: '8px',
+                      background: 'hsl(217, 91%, 60%)',
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      boxShadow: '0 4px 14px hsla(217, 91%, 60%, 0.35)',
+                      flexShrink: 0,
+                      '&:hover': {
+                        background: 'hsl(217, 91%, 50%)',
+                      },
+                    }}
                   >
                     Replace File
                     <input
@@ -626,7 +637,20 @@ export default function EditDocument({ record, onBack, onSave }) {
               fullWidth
               type="submit"
               disabled={loading || isProcessingFile}
-              sx={{ gap: 1 }}
+              sx={{
+                gap: 1,
+                background: 'hsl(222, 65%, 32%)',
+                color: 'hsl(0, 0%, 100%)',
+                fontWeight: 600,
+                fontSize: '16px',
+                textTransform: 'none',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 14px hsla(222, 65%, 32%, 0.35)',
+                '&:hover': {
+                  background: 'hsl(222, 65%, 25%)',
+                },
+              }}
             >
               {loading ? (
                 <>

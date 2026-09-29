@@ -8,10 +8,6 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      devOptions: {
-        enabled: true
-      },
-      includeAssets: ['favicon.svg', 'apple-touch-icon-180x180.png', 'pwa-64x64.png', 'pwa-192x192.png', 'pwa-512x512.png', 'maskable-icon-512x512.png'],
       manifest: {
         name: 'Zubaida Diagnostics',
         short_name: 'ZD',
@@ -46,22 +42,13 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Prevent the service worker from intercepting API/document/socket routes
-        navigateFallbackDenylist: [/^\/api\//, /^\/document\//, /^\/socket\.io\//],
-        // Use NetworkOnly strategy for all requests so nothing is cached
-        runtimeCaching: [
-          {
-            urlPattern: () => true,
-            handler: 'NetworkOnly',
-          }
-        ],
-        // Don't precache any assets
+        // Completely disable all precaching, fallbacks, and runtime interception
         globPatterns: [],
-        // Skip waiting and claim clients immediately for instant updates
+        navigateFallback: null,
+        runtimeCaching: [],
+        cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        // Disable navigation preload which can cause stale responses
-        navigationPreload: false,
       }
     })
   ],

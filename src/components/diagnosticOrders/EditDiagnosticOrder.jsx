@@ -328,20 +328,28 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
         {/* Patient Name (Read-Only via Lookup, No Label) */}
         <PatientNameField patientName={patientName} lookupStatus={patientLookupStatus} showLabel={false} />
 
-        {/* 1st Row: Category Chips horizontally in 1 line */}
+        {/* 1st Row: Category Chips horizontally stacked */}
         <div className="input-group" style={{ width: '100%', marginTop: '8px' }}>
           <label className="input-label" htmlFor="edit-order-category" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
             Category
           </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
             {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
               <button
                 key={cat}
                 type="button"
+                className="chip-btn"
                 onClick={() => handleCategoryChange(cat)}
                 disabled={loading}
                 style={{
-                  padding: '8px 16px',
+                  width: 'auto',
+                  minWidth: 'unset',
+                  flex: '0 0 auto',
+                  margin: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px 18px',
                   borderRadius: '20px',
                   border: formData.category === cat
                     ? '2px solid hsl(217, 91%, 60%)'
@@ -488,15 +496,23 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
               <label className="input-label" htmlFor="edit-order-side" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                 Side
               </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
                 {XRAY_SIDES.map((s) => (
                   <button
                     key={s}
                     type="button"
+                    className="chip-btn"
                     onClick={() => setFormData((prev) => ({ ...prev, side: s }))}
                     disabled={loading}
                     style={{
-                      padding: '8px 16px',
+                      width: 'auto',
+                      minWidth: 'unset',
+                      flex: '0 0 auto',
+                      margin: 0,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '8px 18px',
                       borderRadius: '20px',
                       border: formData.side === s
                         ? '2px solid hsl(217, 91%, 60%)'
@@ -525,15 +541,23 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
               <label className="input-label" htmlFor="edit-order-view" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                 View
               </label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
                 {XRAY_VIEWS.map((v) => (
                   <button
                     key={v}
                     type="button"
+                    className="chip-btn"
                     onClick={() => setFormData((prev) => ({ ...prev, view: v }))}
                     disabled={loading}
                     style={{
-                      padding: '8px 16px',
+                      width: 'auto',
+                      minWidth: 'unset',
+                      flex: '0 0 auto',
+                      margin: 0,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '8px 18px',
                       borderRadius: '20px',
                       border: formData.view === v
                         ? '2px solid hsl(217, 91%, 60%)'

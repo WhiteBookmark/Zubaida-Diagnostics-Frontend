@@ -636,20 +636,28 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                 )}
               </div>
 
-              {/* 1st Row: Category Chips horizontally in 1 line */}
+              {/* 1st Row: Category Chips horizontally stacked */}
               <div className="input-group" style={{ width: '100%', marginBottom: '16px' }}>
                 <label className="input-label" htmlFor={`order-category-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                   Category
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
                   {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
                     <button
                       key={cat}
                       type="button"
+                      className="chip-btn"
                       onClick={() => handleOrderCategoryChange(order.id, cat)}
                       disabled={loading}
                       style={{
-                        padding: '8px 16px',
+                        width: 'auto',
+                        minWidth: 'unset',
+                        flex: '0 0 auto',
+                        margin: 0,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '8px 18px',
                         borderRadius: '20px',
                         border: order.category === cat
                           ? '2px solid hsl(217, 91%, 60%)'
@@ -796,15 +804,23 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                     <label className="input-label" htmlFor={`order-side-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       Side
                     </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
                       {XRAY_SIDES.map((s) => (
                         <button
                           key={s}
                           type="button"
+                          className="chip-btn"
                           onClick={() => handleOrderFieldChange(order.id, 'side', s)}
                           disabled={loading}
                           style={{
-                            padding: '8px 16px',
+                            width: 'auto',
+                            minWidth: 'unset',
+                            flex: '0 0 auto',
+                            margin: 0,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '8px 18px',
                             borderRadius: '20px',
                             border: order.side === s
                               ? '2px solid hsl(217, 91%, 60%)'
@@ -833,15 +849,23 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                     <label className="input-label" htmlFor={`order-view-${order.id}`} style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
                       View
                     </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
                       {XRAY_VIEWS.map((v) => (
                         <button
                           key={v}
                           type="button"
+                          className="chip-btn"
                           onClick={() => handleOrderFieldChange(order.id, 'view', v)}
                           disabled={loading}
                           style={{
-                            padding: '8px 16px',
+                            width: 'auto',
+                            minWidth: 'unset',
+                            flex: '0 0 auto',
+                            margin: 0,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '8px 18px',
                             borderRadius: '20px',
                             border: order.view === v
                               ? '2px solid hsl(217, 91%, 60%)'

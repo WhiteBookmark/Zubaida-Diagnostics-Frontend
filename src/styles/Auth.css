@@ -57,13 +57,13 @@
   box-shadow: 0 0 0 3px hsla(221, 83%, 53%, 0.2);
 }
 
-.auth-form button:not(.MuiButton-root):not(.MuiIconButton-root) {
+.auth-form button:not(.MuiButton-root):not(.MuiIconButton-root):not(.chip-btn) {
   width: 100%;
   padding: 12px;
   margin-top: 10px;
-  background: rgba(37, 99, 235, 0.8);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: hsla(221, 83%, 53%, 0.8);
+  color: hsl(0, 0%, 100%);
+  border: 1px solid hsla(0, 0%, 100%, 0.4);
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
@@ -71,9 +71,24 @@
   transition: all 0.3s;
 }
 
-.auth-form button:not(.MuiButton-root):not(.MuiIconButton-root):hover {
-  background: rgba(37, 99, 235, 1);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+.auth-form button:not(.MuiButton-root):not(.MuiIconButton-root):not(.chip-btn):hover {
+  background: hsl(221, 83%, 53%);
+  box-shadow: 0 4px 12px hsla(221, 83%, 53%, 0.3);
+}
+
+/* Chip buttons for Category, Side, View - Horizontally stacked */
+.auth-form .chip-btn,
+.chip-btn {
+  width: auto !important;
+  max-width: fit-content !important;
+  margin: 0 !important;
+  margin-top: 0 !important;
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
 }
 
 .error {

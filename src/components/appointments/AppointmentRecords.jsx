@@ -21,6 +21,7 @@ import AddAppointmentRecord from './AddAppointmentRecord';
 import QRCode from 'qrcode';
 import { buildApiUrl } from '../../config/api';
 import TodayToggle from '../common/TodayToggle';
+import { PatientAlertBadge } from '../../utils/patientAlerts';
 
 export default function AppointmentRecords({ initialPrintRecord = null, initialToastMessage = null, clearPending = null, refreshKey, onViewFiles }) {
   const searchInputRef = useRef(null); // Added ref for search input
@@ -384,7 +385,16 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
       }
     },
     { accessorKey: 'patient.mrNumber', header: 'MR Number' },
-    { accessorKey: 'patient.name', header: 'Patient Name' },
+    {
+      accessorKey: 'patient.name',
+      header: 'Patient Name',
+      cell: ({ row }) => (
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          {row.original.patient?.name || 'N/A'}
+          <PatientAlertBadge patient={row.original.patient} />
+        </span>
+      ),
+    },
     {
       accessorKey: 'dateTime',
       header: 'Date/Time',
@@ -559,7 +569,12 @@ export default function AppointmentRecords({ initialPrintRecord = null, initialT
               </Box>
             </Box>
           </td>
-          <td>{item.firstRow.original?.patient?.name || 'N/A'}</td>
+          <td>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {item.firstRow.original?.patient?.name || 'N/A'}
+              <PatientAlertBadge patient={item.firstRow.original?.patient} />
+            </span>
+          </td>
           <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
           <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
           <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>

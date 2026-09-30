@@ -9,8 +9,11 @@ import {
   VolumeOff,
   Close,
   PhoneInTalk,
+  QrCodeScanner,
 } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
+import { Html5Qrcode } from 'html5-qrcode';
+import { useRef, useEffect } from 'react';
 import useVoiceChat from '../../hooks/useVoiceChat';
 import '../../styles/VoiceChat.css';
 
@@ -21,9 +24,91 @@ import '../../styles/VoiceChat.css';
  *
  * @param {object} props
  * @param {string} props.username - The authenticated logged-in username
+ * @param {Function} [props.onQrScanResult] - Callback when an MR number is scanned via QR
  */
-export default function VoiceChatPanel({ username }) {
+export default function VoiceChatPanel({ username, onQrScanResult }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+  const qrScannerRef = useRef(null);
+
+  const startQrScanner = () => {
+    setIsQrScannerOpen(true);
+    setIsOpen(false);
+    setTimeout(async () => {
+      try {
+        if (qrScannerRef.current) {
+          try {
+            await qrScannerRef.current.stop();
+          } catch {
+            // ignore
+          }
+          qrScannerRef.current = null;
+        }
+
+        const html5QrCode = new Html5Qrcode('qr-reader-container');
+        qrScannerRef.current = html5QrCode;
+
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          {
+            fps: 10,
+            qrbox: { width: 220, height: 220 },
+          },
+          (decodedText) => {
+            let extractedMr = null;
+            try {
+              const parsed = JSON.parse(decodedText);
+              extractedMr = parsed['MR Number'] || parsed['mrNumber'] || parsed['MR'] || parsed['mr'];
+            } catch {
+              const trimmed = String(decodedText || '').trim();
+              if (/^\d+$/.test(trimmed)) {
+                extractedMr = trimmed;
+              }
+            }
+
+            if (extractedMr) {
+              stopQrScanner();
+              if (onQrScanResult) {
+                onQrScanResult(String(extractedMr).trim());
+              }
+            }
+          },
+          () => {
+            // Silent ignore for frames without QR codes
+          }
+        );
+      } catch (err) {
+        console.error('Camera QR scanner failed to start:', err);
+      }
+    }, 150);
+  };
+
+  const stopQrScanner = () => {
+    if (qrScannerRef.current) {
+      qrScannerRef.current
+        .stop()
+        .then(() => {
+          try {
+            qrScannerRef.current?.clear?.();
+          } catch {
+            // ignore
+          }
+          qrScannerRef.current = null;
+        })
+        .catch(() => {
+          qrScannerRef.current = null;
+        });
+    }
+    setIsQrScannerOpen(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (qrScannerRef.current) {
+        qrScannerRef.current.stop().catch(() => {});
+      }
+    };
+  }, []);
 
   const {
     onlineUsers,
@@ -278,36 +363,83 @@ export default function VoiceChatPanel({ username }) {
         </section>
       )}
 
-      {/* Floating Action Button (Sticky Bottom-Left) */}
-      <button
-        type="button"
-        className={`vc-fab-button ${
-          activeCall ? 'vc-fab-button--in-call' : ''
-        } ${isConnecting ? 'vc-fab-button--connecting' : ''}`}
-        onClick={() => setIsOpen((prev) => !prev)}
-        title="Toggle Clinic Voice Chat"
-        aria-label="Toggle Clinic Voice Chat"
-      >
-        <span className="vc-icon-circle">
-          {activeCall ? (
-            <PhoneInTalk style={{ fontSize: 24 }} />
-          ) : (
-            <HeadsetMic style={{ fontSize: 24 }} />
-          )}
-        </span>
+      {/* QR Scanner Floating Card */}
+      {isQrScannerOpen && (
+        <div className="vc-qr-scanner-panel">
+          <div className="vc-header">
+            <h2 className="vc-header-title">
+              <QrCodeScanner style={{ fontSize: 20, color: 'var(--vc-grey-10)' }} />
+              Scan Patient QR Code
+            </h2>
+            <button
+              type="button"
+              className="vc-close-button"
+              onClick={stopQrScanner}
+              aria-label="Close QR Scanner"
+            >
+              <Close style={{ fontSize: 20 }} />
+            </button>
+          </div>
+          <div id="qr-reader-container" style={{ width: '100%', minHeight: '260px', padding: '8px', boxSizing: 'border-box' }} />
+          <div style={{ padding: '8px 14px', fontSize: '12px', color: 'var(--vc-grey-7)', textAlign: 'center', background: 'hsl(210, 40%, 96%)' }}>
+            Point camera at patient receipt QR code
+          </div>
+        </div>
+      )}
 
-        {/* Counter Badge for Online Users */}
-        <span
-          className={`vc-counter-badge ${
-            onlineOtherCount > 0 ? 'vc-counter-badge--active' : ''
-          }`}
-          title={`${onlineOtherCount} Online Staff Member${
-            onlineOtherCount === 1 ? '' : 's'
-          }`}
+      {/* Floating Action Buttons Row (Sticky Bottom-Left) */}
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'center' }}>
+        {/* QR Code Scanner FAB */}
+        <button
+          type="button"
+          className="vc-fab-button"
+          onClick={isQrScannerOpen ? stopQrScanner : startQrScanner}
+          title={isQrScannerOpen ? 'Close QR Scanner' : 'Scan Patient QR Code'}
+          aria-label={isQrScannerOpen ? 'Close QR Scanner' : 'Scan Patient QR Code'}
         >
-          {onlineOtherCount}
-        </span>
-      </button>
+          <span className="vc-icon-circle" style={{ background: isQrScannerOpen ? 'hsl(0, 84%, 48%)' : 'hsl(280, 65%, 42%)' }}>
+            {isQrScannerOpen ? (
+              <Close style={{ fontSize: 22 }} />
+            ) : (
+              <QrCodeScanner style={{ fontSize: 22 }} />
+            )}
+          </span>
+        </button>
+
+        {/* Clinic Voice Chat FAB */}
+        <button
+          type="button"
+          className={`vc-fab-button ${
+            activeCall ? 'vc-fab-button--in-call' : ''
+          } ${isConnecting ? 'vc-fab-button--connecting' : ''}`}
+          onClick={() => {
+            if (isQrScannerOpen) stopQrScanner();
+            setIsOpen((prev) => !prev);
+          }}
+          title="Toggle Clinic Voice Chat"
+          aria-label="Toggle Clinic Voice Chat"
+        >
+          <span className="vc-icon-circle">
+            {activeCall ? (
+              <PhoneInTalk style={{ fontSize: 24 }} />
+            ) : (
+              <HeadsetMic style={{ fontSize: 24 }} />
+            )}
+          </span>
+
+          {/* Counter Badge for Online Users */}
+          <span
+            className={`vc-counter-badge ${
+              onlineOtherCount > 0 ? 'vc-counter-badge--active' : ''
+            }`}
+            title={`${onlineOtherCount} Online Staff Member${
+              onlineOtherCount === 1 ? '' : 's'
+            }`}
+          >
+            {onlineOtherCount}
+          </span>
+        </button>
+      </div>
     </aside>
   );
 }

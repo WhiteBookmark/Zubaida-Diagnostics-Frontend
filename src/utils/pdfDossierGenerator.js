@@ -247,8 +247,62 @@ export async function generatePatientDossierPdf(patient, documents, onProgress =
     color: rgb(0.2, 0.25, 0.35),
   });
 
+  // Medical Alert Banner if patient has Fixed Allergies or Co-Morbid Factors
+  const allergy = patient.fixedAllergies && String(patient.fixedAllergies).trim() !== '' && String(patient.fixedAllergies).trim().toLowerCase() !== 'null'
+    ? String(patient.fixedAllergies).trim()
+    : '';
+  const comorbid = patient.coMorbidFactor && String(patient.coMorbidFactor).trim() !== '' && String(patient.coMorbidFactor).trim().toLowerCase() !== 'null'
+    ? String(patient.coMorbidFactor).trim()
+    : '';
+
+  if (allergy || comorbid) {
+    currentY -= 120;
+    const bannerHeight = 36 + (allergy ? 14 : 0) + (comorbid ? 14 : 0);
+    coverPage.drawRectangle({
+      x: MARGIN,
+      y: currentY - bannerHeight,
+      width: CONTENT_WIDTH,
+      height: bannerHeight,
+      color: rgb(0.98, 0.92, 0.92),
+      borderColor: rgb(0.85, 0.2, 0.2),
+      borderWidth: 1.5,
+    });
+
+    coverPage.drawText('MEDICAL ALERT — HIGH ATTENTION REQUIRED', {
+      x: MARGIN + 16,
+      y: currentY - 18,
+      size: 10,
+      font: fontBold,
+      color: rgb(0.8, 0.1, 0.1),
+    });
+
+    let alertLineY = currentY - 32;
+    if (allergy) {
+      coverPage.drawText(`Fixed Allergy: ${allergy}`, {
+        x: MARGIN + 16,
+        y: alertLineY,
+        size: 9,
+        font: fontBold,
+        color: rgb(0.7, 0.1, 0.1),
+      });
+      alertLineY -= 14;
+    }
+    if (comorbid) {
+      coverPage.drawText(`Co-Morbid Factor: ${comorbid}`, {
+        x: MARGIN + 16,
+        y: alertLineY,
+        size: 9,
+        font: fontBold,
+        color: rgb(0.7, 0.1, 0.1),
+      });
+    }
+
+    currentY -= (bannerHeight + 15);
+  } else {
+    currentY -= 135;
+  }
+
   // Document Summary Table Header
-  currentY -= 135;
   coverPage.drawText(`INCLUDED MEDICAL RECORDS (${sortedDocs.length} FILES)`, {
     x: MARGIN,
     y: currentY,
@@ -558,20 +612,6 @@ export async function generatePatientDossierPdf(patient, documents, onProgress =
   const sanitizedName = (patient.name || 'Patient').replace(/[^a-zA-Z0-9_-]/g, '_');
   const filename = `MR_${patient.mrNumber}_${sanitizedName}_Dossier.pdf`;
 
-  // Trigger browser download
-  const blobUrl = URL.createObjectURL(blob);
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.href = blobUrl;
-  downloadAnchor.download = filename;
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  document.body.removeChild(downloadAnchor);
-
-  // Clean up URL after delay
-  setTimeout(() => {
-    URL.revokeObjectURL(blobUrl);
-  }, 10000);
-
-  onProgress('Dossier download complete!', 100);
+  onProgress('Dossier ready!', 100);
   return { success: true, filename, blob };
 }

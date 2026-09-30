@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Button,
   IconButton,
@@ -29,12 +29,13 @@ import { buildApiUrl } from '../../config/api';
 import { generatePatientDossierPdf } from '../../utils/pdfDossierGenerator';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
+import { getPatientAlertStatus } from '../../utils/patientAlerts.js';
 import '../../styles/Auth.css';
 
 export default function PatientFiles({ initialMrNumber, onBack }) {
   const inputRef = useRef(null);
   const [mrNumber, setMrNumber] = useState(initialMrNumber ? String(initialMrNumber) : '');
-  const { patientName, lookupStatus: patientLookupStatus } = usePatientLookup(mrNumber);
+  const { patientName, lookupStatus: patientLookupStatus, patient: lookedUpPatient } = usePatientLookup(mrNumber);
   const [selectedTypes, setSelectedTypes] = useState({
     xray: true,
     ultrasound: true,
@@ -146,13 +147,22 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
 
   const isAnyTypeSelected = Object.values(selectedTypes).some(Boolean);
 
-  const handleOpenFile = async (e) => {
+  const handleOpenFile = useCallback(async (e) => {
     if (e && e.preventDefault) e.preventDefault();
+
+    // Open blank tab SYNCHRONOUSLY at user click to prevent browser popup blocking
+    let newTab = null;
+    try {
+      newTab = window.open('about:blank', '_blank');
+    } catch (popupErr) {
+      console.warn('Could not synchronously open new tab:', popupErr);
+    }
 
     const trimmedMr = String(mrNumber || '').trim();
     const parsedMr = parseInt(trimmedMr, 10);
 
     if (!trimmedMr || !/^\d+$/.test(trimmedMr) || isNaN(parsedMr) || parsedMr < 1 || parsedMr > 2147483647) {
+      if (newTab && !newTab.closed) newTab.close();
       setToast({
         open: true,
         message: 'Please enter a valid numeric MR Number (1 to 2,147,483,647).',
@@ -163,6 +173,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
     }
 
     if (!isAnyTypeSelected) {
+      if (newTab && !newTab.closed) newTab.close();
       setToast({
         open: true,
         message: 'Please select at least one document type checkbox.',
@@ -198,6 +209,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
       const allDocuments = data.documents || [];
 
       if (!allDocuments || allDocuments.length === 0) {
+        if (newTab && !newTab.closed) newTab.close();
         setToast({
           open: true,
           message: `Patient ${patient.name || `MR #${parsedMr}`} has no uploaded documents in the database.`,
@@ -221,6 +233,7 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
       });
 
       if (filteredDocuments.length === 0) {
+        if (newTab && !newTab.closed) newTab.close();
         setToast({
           open: true,
           message: `Found ${allDocuments.length} document(s) for MR #${parsedMr}, but none matched the selected document categories.`,
@@ -238,17 +251,42 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
       });
 
       // Generate the unified PDF dossier
-      await generatePatientDossierPdf(patient, filteredDocuments, (statusText, percent) => {
+      const result = await generatePatientDossierPdf(patient, filteredDocuments, (statusText, percent) => {
         setProgressStatus(statusText);
         setProgressPercent(percent);
       });
 
-      setToast({
-        open: true,
-        message: `Dossier with ${filteredDocuments.length} document(s) generated and downloaded for ${patient.name || `MR #${parsedMr}`}!`,
-        severity: 'success'
-      });
+      if (result && result.blob) {
+        const blobUrl = URL.createObjectURL(result.blob);
+        if (newTab && !newTab.closed) {
+          newTab.location.href = blobUrl;
+        } else {
+          const opened = window.open(blobUrl, '_blank');
+          if (!opened) {
+            setToast({
+              open: true,
+              message: `Dossier ready! Popup was blocked by browser. Please allow popups or click Open File again.`,
+              severity: 'info'
+            });
+            return;
+          }
+        }
+
+        setToast({
+          open: true,
+          message: `Dossier with ${filteredDocuments.length} document(s) opened in new tab for ${patient.name || `MR #${parsedMr}`}!`,
+          severity: 'success'
+        });
+      } else {
+        if (newTab && !newTab.closed) newTab.close();
+        setToast({
+          open: true,
+          message: 'Failed to generate PDF dossier.',
+          severity: 'error'
+        });
+      }
     } catch (err) {
+      if (newTab && !newTab.closed) newTab.close();
       console.error('[PatientFiles] Error processing dossier:', err);
       setToast({
         open: true,
@@ -260,7 +298,15 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
       setProgressStatus('');
       setProgressPercent(0);
     }
-  };
+  }, [mrNumber, isAnyTypeSelected, selectedTypes]);
+
+  const autoOpenedRef = useRef(false);
+  useEffect(() => {
+    if (initialMrNumber && availableTypes && !autoOpenedRef.current && !loading) {
+      autoOpenedRef.current = true;
+      handleOpenFile();
+    }
+  }, [initialMrNumber, availableTypes, loading, handleOpenFile]);
 
   return (
     <div className="add-patient-wrapper">
@@ -327,6 +373,71 @@ export default function PatientFiles({ initialMrNumber, onBack }) {
           lookupStatus={patientLookupStatus}
           showLabel={false}
         />
+
+        {/* Fixed Allergy / Co-Morbid Factor Red Banner */}
+        {patientLookupStatus === 'found' && lookedUpPatient && (() => {
+          const { hasAlert, allergy, comorbid } = getPatientAlertStatus(lookedUpPatient);
+          if (!hasAlert) return null;
+          return (
+            <div
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '10px',
+                background: 'hsl(0, 84%, 97%)',
+                border: '1.5px solid hsl(0, 84%, 60%)',
+                marginTop: '10px',
+                marginBottom: '4px',
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: 'hsl(0, 84%, 48%)',
+                    color: 'hsl(0, 0%, 100%)',
+                    fontWeight: 900,
+                    fontSize: '12px',
+                    flexShrink: 0,
+                  }}
+                >
+                  !
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--heading), Georgia, serif',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    color: 'hsl(0, 84%, 40%)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Medical Alert
+                </span>
+              </div>
+              {allergy && (
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'hsl(0, 84%, 32%)', marginLeft: '24px' }}>
+                  Fixed Allergy: <span style={{ fontWeight: 700, color: 'hsl(0, 84%, 25%)' }}>{allergy}</span>
+                </div>
+              )}
+              {comorbid && (
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'hsl(0, 84%, 32%)', marginLeft: '24px' }}>
+                  Co-Morbid Factor: <span style={{ fontWeight: 700, color: 'hsl(0, 84%, 25%)' }}>{comorbid}</span>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Checkboxes Section */}
         <div className="input-group" style={{ marginTop: '10px' }}>

@@ -563,6 +563,26 @@
   transform-origin: bottom left;
 }
 
+/* QR Scanner Floating Card (Immediate display without animations) */
+.vc-qr-scanner-panel {
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  border-radius: 18px;
+  background: hsl(0, 0%, 100%);
+  border: 1px solid hsla(215, 25%, 80%, 0.5);
+  box-shadow: var(--vc-elevation-5);
+  overflow: hidden;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+#qr-reader-container video {
+  border-radius: 12px;
+  object-fit: cover;
+  width: 100% !important;
+}
+
 /* Tablet & Mobile Responsiveness */
 @media (max-width: 768px) {
   .vc-floating-container {
@@ -570,7 +590,8 @@
     left: 16px;
   }
 
-  .vc-card-panel {
+  .vc-card-panel,
+  .vc-qr-scanner-panel {
     width: calc(100vw - 32px);
     max-height: 480px;
     border-radius: 14px;

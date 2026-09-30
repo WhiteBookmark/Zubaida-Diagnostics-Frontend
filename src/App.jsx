@@ -21,6 +21,7 @@ import EditDiagnosticOrder from './components/diagnosticOrders/EditDiagnosticOrd
 import useQrScanner from './hooks/useQrScanner'
 import VoiceChatPanel from './components/common/VoiceChatPanel'
 import ScrollToTopBottom from './components/common/ScrollToTopBottom'
+import { createQuickAppointmentAndPrint } from './utils/quickAppointment'
 import './styles/App.css'
 import './styles/Auth.css'
 
@@ -228,30 +229,55 @@ function App() {
     window.history.pushState({ page: 'patients', view: 'addPatient', _idx: nextIdx }, '');
   }, []);
 
-  const handlePatientAdded = useCallback((newPatient, toastMessage) => {
-    setNewMrNumber(newPatient.mrNumber);
-    setPendingToast(toastMessage || '');
-    setView('addAppointment');
-    setResetKey(prev => prev + 1);
-    const nextIdx = (window.history.state?._idx || 0) + 1;
-    window.history.pushState({ page: 'patients', view: 'addAppointment', newMrNumber: newPatient.mrNumber, pendingToast: toastMessage || '', _idx: nextIdx }, '');
+  const handlePatientAdded = useCallback(async (newPatient, toastMessage) => {
+    // 1-Click: Create appointment with current timestamp and trigger thermal print
+    const result = await createQuickAppointmentAndPrint(newPatient.mrNumber);
+    if (result.success) {
+      setPendingAppointmentToast(result.message);
+      setView('dashboard');
+      setCurrentPage('appointments');
+      setResetKey(prev => prev + 1);
+      const nextIdx = (window.history.state?._idx || 0) + 1;
+      window.history.pushState({ page: 'appointments', view: 'dashboard', _idx: nextIdx }, '');
+    } else {
+      setViewToast(result.message || toastMessage || 'Failed to print token');
+    }
   }, []);
 
-  const handleAddAppointmentForPatient = useCallback((patient) => {
-    setNewMrNumber(patient.mrNumber);
-    setPendingToast('');
-    setView('addAppointment');
-    const nextIdx = (window.history.state?._idx || 0) + 1;
-    window.history.pushState({ page: 'patients', view: 'addAppointment', newMrNumber: patient.mrNumber, _idx: nextIdx }, '');
+  const handleAddAppointmentForPatient = useCallback(async (patient) => {
+    const mr = patient.mrNumber ?? patient;
+    const result = await createQuickAppointmentAndPrint(mr);
+    if (result.success) {
+      setPendingAppointmentToast(result.message);
+      setView('dashboard');
+      setCurrentPage('appointments');
+      setResetKey(prev => prev + 1);
+      const nextIdx = (window.history.state?._idx || 0) + 1;
+      window.history.pushState({ page: 'appointments', view: 'dashboard', _idx: nextIdx }, '');
+    } else {
+      setViewToast(result.message || 'Failed to print token');
+    }
   }, []);
 
-  const handleNavigateToAppointmentFromSearch = useCallback((mrNumber) => {
-    setNewMrNumber(mrNumber);
-    setPendingToast('');
-    setView('addAppointment');
-    const nextIdx = (window.history.state?._idx || 0) + 1;
-    window.history.pushState({ page: 'patients', view: 'addAppointment', newMrNumber: mrNumber, _idx: nextIdx }, '');
+  const handleNavigateToAppointmentFromSearch = useCallback(async (mrNumber) => {
+    const result = await createQuickAppointmentAndPrint(mrNumber);
+    if (result.success) {
+      setPendingAppointmentToast(result.message);
+      setView('dashboard');
+      setCurrentPage('appointments');
+      setResetKey(prev => prev + 1);
+      const nextIdx = (window.history.state?._idx || 0) + 1;
+      window.history.pushState({ page: 'appointments', view: 'dashboard', _idx: nextIdx }, '');
+    } else {
+      setViewToast(result.message || 'Failed to print token');
+    }
   }, []);
+
+  const handleQrScanResult = useCallback((mrNumber) => {
+    if (mrNumber) {
+      handleViewFiles(mrNumber);
+    }
+  }, [handleViewFiles]);
 
   const handleAppointmentAdded = useCallback((newRecord, message, shouldPrintBrowser = true) => {
     setPendingAppointmentPrint(shouldPrintBrowser ? newRecord : null);
@@ -499,7 +525,7 @@ function App() {
     <>
       <Header currentPage={currentPage} setCurrentPage={handleNavigate} onLogout={handleLogout} username={username} />
       {renderContent()}
-      <VoiceChatPanel username={username} />
+      <VoiceChatPanel username={username} onQrScanResult={handleQrScanResult} />
       <ScrollToTopBottom />
       {isScanProcessing && (
         <Snackbar open anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>

@@ -36,6 +36,7 @@ import {
 } from '@mui/icons-material';
 import { buildApiUrl } from '../../config/api';
 import TodayToggle from '../common/TodayToggle';
+import { PatientAlertBadge } from '../../utils/patientAlerts';
 
 export default function DiagnosticOrderRecords({
   onAddOrder,
@@ -354,8 +355,9 @@ export default function DiagnosticOrderRecords({
         accessorFn: (row) => row.patient?.name || '',
         size: 180,
         cell: ({ row }) => (
-          <span style={{ fontWeight: 600, color: 'hsl(222, 47%, 11%)' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', fontWeight: 600, color: 'hsl(222, 47%, 11%)' }}>
             {row.original.patient?.name || 'N/A'}
+            <PatientAlertBadge patient={row.original.patient} />
           </span>
         ),
       },
@@ -616,7 +618,12 @@ export default function DiagnosticOrderRecords({
               </Box>
             </Box>
           </td>
-          <td>{item.firstRow.original?.patient?.name || 'N/A'}</td>
+          <td>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              {item.firstRow.original?.patient?.name || 'N/A'}
+              <PatientAlertBadge patient={item.firstRow.original?.patient} />
+            </span>
+          </td>
           <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
           <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>
           <td style={{ color: 'var(--text)', opacity: 0.6 }}>—</td>

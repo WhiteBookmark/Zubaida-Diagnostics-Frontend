@@ -679,6 +679,36 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                       {cat}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={addOrderCard}
+                    disabled={loading}
+                    style={{
+                      width: 'auto',
+                      minWidth: 'unset',
+                      flex: '0 0 auto',
+                      margin: 0,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '8px 18px',
+                      borderRadius: '20px',
+                      border: '1px dashed hsl(217, 91%, 50%)',
+                      background: 'hsla(217, 91%, 60%, 0.12)',
+                      color: 'hsl(217, 91%, 45%)',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      whiteSpace: 'nowrap',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      fontFamily: 'var(--heading), Georgia, serif',
+                      transition: 'all 0.15s ease',
+                    }}
+                    title="Add New Order"
+                  >
+                    <AddIcon sx={{ fontSize: '18px !important' }} />
+                    Add New Order
+                  </button>
                 </div>
               </div>
 
@@ -895,32 +925,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
           );
         })}
 
-        {/* ======================================================== */}
-        {/* PLUS BUTTON: Adds another order card at the bottom       */}
-        {/* ======================================================== */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '4px', marginBottom: '8px' }}>
-          <Button
-            variant="contained"
-            onClick={addOrderCard}
-            disabled={loading}
-            startIcon={<AddIcon />}
-            sx={{
-              background: 'hsl(217, 91%, 60%)',
-              color: 'hsl(0, 0%, 100%)',
-              fontWeight: 600,
-              fontSize: '14px',
-              textTransform: 'none',
-              padding: '10px 22px',
-              borderRadius: '24px',
-              boxShadow: '0 4px 12px hsla(217, 91%, 60%, 0.3)',
-              '&:hover': {
-                background: 'hsl(217, 91%, 50%)',
-              },
-            }}
-          >
-            Add Another Test
-          </Button>
-        </div>
+
 
         {/* ======================================================== */}
         {/* STICKY SAVE BUTTON: Centered at bottom of viewport       */}

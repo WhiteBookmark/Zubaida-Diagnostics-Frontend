@@ -9,6 +9,7 @@ import { buildApiUrl } from '../../config/api';
 import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES } from '../../constants/documentTypes';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
+import { extractMrNumberFromImage } from '../../utils/qrImageScanner';
 import '../../styles/Auth.css';
 
 /**
@@ -193,8 +194,23 @@ export default function AddDocument({ onBack, onSave }) {
 
     try {
       const newEntries = [];
+      let detectedMr = null;
+
       for (let i = 0; i < incomingList.length; i++) {
         const rawFile = incomingList[i];
+
+        // Background QR check for MR Number extraction from image
+        if (!detectedMr) {
+          try {
+            const mr = await extractMrNumberFromImage(rawFile);
+            if (mr) {
+              detectedMr = mr;
+            }
+          } catch (qrErr) {
+            console.warn('[AddDocument] QR scan attempt ignored:', qrErr);
+          }
+        }
+
         const compressed = await compressImageFile(rawFile);
         const isImgOrPdf = compressed.type?.startsWith('image/') || compressed.type === 'application/pdf';
         const previewUrl = isImgOrPdf ? URL.createObjectURL(compressed) : null;
@@ -207,11 +223,24 @@ export default function AddDocument({ onBack, onSave }) {
       }
 
       setFileEntries(prev => [...prev, ...newEntries]);
-      setToast({
-        open: true,
-        message: `${incomingList.length} file(s) ready for upload!`,
-        severity: 'success'
-      });
+
+      if (detectedMr) {
+        setFormData(prev => ({
+          ...prev,
+          mrNumber: detectedMr,
+        }));
+        setToast({
+          open: true,
+          message: `QR code detected! MR #${detectedMr} automatically filled (${incomingList.length} file(s) ready).`,
+          severity: 'success'
+        });
+      } else {
+        setToast({
+          open: true,
+          message: `${incomingList.length} file(s) ready for upload!`,
+          severity: 'success'
+        });
+      }
     } catch (err) {
       console.error('[AddDocument] Error processing files:', err);
       setToast({

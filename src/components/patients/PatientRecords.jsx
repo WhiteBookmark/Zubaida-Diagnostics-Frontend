@@ -17,6 +17,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import { buildApiUrl } from '../../config/api';
 import TodayToggle from '../common/TodayToggle';
+import { PatientAlertBadge } from '../../utils/patientAlerts';
 
 export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment, onViewFiles, initialToastMessage, clearPending, refreshKey }) {
   const searchInputRef = useRef(null); // Added ref for search input
@@ -190,7 +191,16 @@ export default function PatientRecords({ onEdit, onAddPatient, onAddAppointment,
         ),
       },
       { accessorKey: 'mrNumber', header: 'MR Number' },
-      { accessorKey: 'name', header: 'Name' },
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: ({ row }) => (
+          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+            {row.original.name || 'N/A'}
+            <PatientAlertBadge patient={row.original} />
+          </span>
+        ),
+      },
       {
         accessorKey: 'age',
         header: 'Age',

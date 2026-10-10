@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
-import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES } from '../../constants/documentTypes';
+import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES, LAB_TYPES } from '../../constants/documentTypes';
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
@@ -29,6 +29,7 @@ const createNewOrder = () => ({
   discount: '0',
   side: 'N/A',
   view: 'N/A',
+  labSubtypeFilter: 'All',
 });
 
 export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = '' }) {
@@ -86,6 +87,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
             value: item.value || item.name,
             label: item.label || item.name,
             charges: item.charges !== undefined ? item.charges : 600,
+            subtype: item.subtype || null,
           }));
         }
       }
@@ -95,13 +97,15 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
 
     if (!loadedList || loadedList.length === 0) {
       if (category === 'X-Ray') {
-        loadedList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+        loadedList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges, subtype: null }));
       } else if (category === 'Ultrasound') {
-        loadedList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+        loadedList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges, subtype: null }));
       } else if (category === 'PFT') {
-        loadedList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000 }];
+        loadedList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000, subtype: null }];
       } else if (category === 'ECG') {
-        loadedList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500 }];
+        loadedList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500, subtype: null }];
+      } else if (category === 'Lab') {
+        loadedList = LAB_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges, subtype: t.subtype }));
       } else {
         loadedList = [];
       }
@@ -239,6 +243,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
             category: newCategory,
             side: 'N/A',
             view: 'N/A',
+            labSubtypeFilter: 'All',
           }
           : o
       )
@@ -266,9 +271,30 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
   };
 
   /**
-   * Handle field updates (side, view, charges) for a specific card.
+   * Handle field updates (side, view, charges, labSubtypeFilter) for a specific card.
    */
   const handleOrderFieldChange = (orderId, field, value) => {
+    if (field === 'labSubtypeFilter') {
+      const currentTypes = orderTypesMap[orderId]?.types || [];
+      const filteredTypes = value === 'All'
+        ? currentTypes
+        : currentTypes.filter((t) => t.subtype === value);
+
+      setOrders((prev) =>
+        prev.map((o) => {
+          if (o.id !== orderId) return o;
+          const first = filteredTypes.length > 0 ? filteredTypes[0] : null;
+          return {
+            ...o,
+            labSubtypeFilter: value,
+            type: first ? (first.value || first.name) : o.type,
+            charges: first && first.charges !== undefined ? String(first.charges) : o.charges,
+          };
+        })
+      );
+      return;
+    }
+
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, [field]: value } : o)));
 
     if (field === 'charges') {
@@ -642,7 +668,7 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                   Category
                 </label>
                 <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
-                  {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
+                  {['X-Ray', 'Ultrasound', 'PFT', 'ECG', 'Lab'].map((cat) => (
                     <button
                       key={cat}
                       type="button"
@@ -712,6 +738,53 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                 </div>
               </div>
 
+              {/* Lab Subtype Filter Chips (Lab category only) */}
+              {order.category === 'Lab' && (
+                <div className="input-group" style={{ width: '100%', marginBottom: '16px' }}>
+                  <label className="input-label" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+                    Test Type Filter
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+                    {['All', 'Routine', 'Special', 'No Discount'].map((st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        onClick={() => handleOrderFieldChange(order.id, 'labSubtypeFilter', st)}
+                        disabled={loading}
+                        style={{
+                          width: 'auto',
+                          minWidth: 'unset',
+                          flex: '0 0 auto',
+                          margin: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '6px 14px',
+                          borderRadius: '20px',
+                          border: (order.labSubtypeFilter || 'All') === st
+                            ? '2px solid hsl(340, 75%, 45%)'
+                            : '1px solid hsla(215, 25%, 80%, 0.6)',
+                          background: (order.labSubtypeFilter || 'All') === st
+                            ? 'hsla(340, 75%, 45%, 0.15)'
+                            : 'hsla(0, 0%, 100%, 0.85)',
+                          color: (order.labSubtypeFilter || 'All') === st
+                            ? 'hsl(340, 75%, 40%)'
+                            : 'hsl(222, 47%, 11%)',
+                          fontWeight: (order.labSubtypeFilter || 'All') === st ? 700 : 500,
+                          fontSize: '13px',
+                          whiteSpace: 'nowrap',
+                          cursor: loading ? 'not-allowed' : 'pointer',
+                          fontFamily: 'var(--heading), Georgia, serif',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* 2nd Row: Diagnostic Test Name, Charges, Discount in 1 horizontal line (3 columns) */}
               <div style={{ display: 'flex', gap: '12px', width: '100%', alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: '16px' }}>
                 {/* Diagnostic Test Name */}
@@ -743,7 +816,10 @@ export default function AddDiagnosticOrder({ onBack, onAdd, initialMrNumber = ''
                         color: 'hsl(222, 47%, 11%)',
                       }}
                     >
-                      {typesState.types.map((t) => (
+                      {(order.category === 'Lab' && (order.labSubtypeFilter || 'All') !== 'All'
+                        ? typesState.types.filter((t) => t.subtype === order.labSubtypeFilter)
+                        : typesState.types
+                      ).map((t) => (
                         <option key={t.value || t.name} value={t.value || t.name}>
                           {t.label || t.name}
                           {t.charges !== undefined ? ` (Rs. ${t.charges})` : ''}

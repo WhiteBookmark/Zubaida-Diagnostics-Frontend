@@ -27,3 +27,6 @@ export function getPatientAlertStatus(patient) {
 
   return { hasAllergy, hasCoMorbid, hasAlert, allergy, comorbid, tooltipText };
 }
+
+export { default as PatientAlertBadge } from '../components/common/PatientAlertBadge';
+

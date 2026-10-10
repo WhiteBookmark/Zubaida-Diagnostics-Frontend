@@ -22,6 +22,7 @@ export default function EditCharge({ record, onBack, onSave }) {
     category: record?.category || 'X-Ray',
     name: record?.name || '',
     charges: record?.charges !== undefined ? String(record.charges) : '',
+    subtype: record?.subtype || 'Routine',
   }));
   const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
   const [loading, setLoading] = useState(false);
@@ -70,6 +71,7 @@ export default function EditCharge({ record, onBack, onSave }) {
         category: formData.category,
         name: sanitizedName,
         charges: parsedCharges,
+        subtype: formData.category === 'Lab' ? formData.subtype : null,
       };
 
       const response = await fetch(buildApiUrl(`/api/charges/${record.id}`), {
@@ -156,9 +158,48 @@ export default function EditCharge({ record, onBack, onSave }) {
               <option value="Ultrasound">Ultrasound</option>
               <option value="PFT">PFT</option>
               <option value="ECG">ECG</option>
+              <option value="Lab">Lab</option>
             </select>
           </div>
         </div>
+
+        {/* Subtype Selector (Lab only) */}
+        {formData.category === 'Lab' && (
+          <div className="input-group">
+            <label className="input-label" htmlFor="edit-charge-subtype" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+              Test Type
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '6px' }}>
+              {['Routine', 'Special', 'No Discount'].map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, subtype: st })}
+                  disabled={loading}
+                  style={{
+                    padding: '8px 18px',
+                    borderRadius: '20px',
+                    border: formData.subtype === st
+                      ? '2px solid hsl(217, 91%, 60%)'
+                      : '1px solid hsla(215, 25%, 80%, 0.6)',
+                    background: formData.subtype === st
+                      ? 'hsla(217, 91%, 60%, 0.15)'
+                      : 'hsla(0, 0%, 100%, 0.85)',
+                    color: formData.subtype === st
+                      ? 'hsl(217, 91%, 45%)'
+                      : 'hsl(222, 47%, 11%)',
+                    fontWeight: formData.subtype === st ? 700 : 500,
+                    fontSize: '14px',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    fontFamily: 'var(--heading), Georgia, serif',
+                  }}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Test Name Input */}
         <div className="input-group">

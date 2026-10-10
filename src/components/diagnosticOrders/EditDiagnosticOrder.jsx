@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import usePatientLookup from '../../hooks/usePatientLookup';
 import PatientNameField from '../common/PatientNameField';
-import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES } from '../../constants/documentTypes';
+import { XRAY_TYPES, XRAY_SIDES, XRAY_VIEWS, ULTRASOUND_TYPES, LAB_TYPES } from '../../constants/documentTypes';
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
@@ -27,6 +27,7 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
 
   const [availableTypes, setAvailableTypes] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(false);
+  const [labSubtypeFilter, setLabSubtypeFilter] = useState('All');
   const [isReprinting, setIsReprinting] = useState(false);
 
   const { patientName, lookupStatus: patientLookupStatus } = usePatientLookup(
@@ -51,7 +52,12 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
           if (response.ok) {
             const list = await response.json();
             if (!isCancelled && Array.isArray(list) && list.length > 0) {
-              setAvailableTypes(list);
+              setAvailableTypes(list.map((item) => ({
+                value: item.value || item.name,
+                label: item.label || item.name,
+                charges: item.charges !== undefined ? item.charges : 600,
+                subtype: item.subtype || null,
+              })));
               loaded = true;
             }
           }
@@ -63,13 +69,15 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
         if (!loaded && !isCancelled) {
           let fallbackList = [];
           if (formData.category === 'X-Ray') {
-            fallbackList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+            fallbackList = XRAY_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges, subtype: null }));
           } else if (formData.category === 'Ultrasound') {
-            fallbackList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges }));
+            fallbackList = ULTRASOUND_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges, subtype: null }));
           } else if (formData.category === 'PFT') {
-            fallbackList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000 }];
+            fallbackList = [{ value: 'PFT Standard', label: 'PFT Standard', charges: 1000, subtype: null }];
           } else if (formData.category === 'ECG') {
-            fallbackList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500 }];
+            fallbackList = [{ value: 'ECG Standard', label: 'ECG Standard', charges: 500, subtype: null }];
+          } else if (formData.category === 'Lab') {
+            fallbackList = LAB_TYPES.map((t) => ({ value: t.value, label: t.label, charges: t.defaultCharges, subtype: t.subtype }));
           }
           setAvailableTypes(fallbackList);
         }
@@ -99,6 +107,7 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
       side: 'N/A',
       view: 'N/A',
     }));
+    setLabSubtypeFilter('All');
   };
 
   const handleTypeChange = (e) => {
@@ -334,7 +343,7 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
             Category
           </label>
           <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center', width: '100%' }}>
-            {['X-Ray', 'Ultrasound', 'PFT', 'ECG'].map((cat) => (
+            {['X-Ray', 'Ultrasound', 'PFT', 'ECG', 'Lab'].map((cat) => (
               <button
                 key={cat}
                 type="button"
@@ -374,6 +383,65 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
           </div>
         </div>
 
+        {/* Lab Subtype Filter Chips (Lab category only) */}
+        {formData.category === 'Lab' && (
+          <div className="input-group" style={{ width: '100%', marginTop: '8px' }}>
+            <label className="input-label" style={{ fontFamily: 'var(--heading), Georgia, serif' }}>
+              Test Type Filter
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', marginTop: '6px', alignItems: 'center' }}>
+              {['All', 'Routine', 'Special', 'No Discount'].map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => {
+                    setLabSubtypeFilter(st);
+                    const filtered = st === 'All'
+                      ? availableTypes
+                      : availableTypes.filter((t) => t.subtype === st);
+                    if (filtered.length > 0) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        type: filtered[0].value || filtered[0].name,
+                        charges: String(filtered[0].charges !== undefined ? filtered[0].charges : prev.charges),
+                      }));
+                    }
+                  }}
+                  disabled={loading}
+                  style={{
+                    width: 'auto',
+                    minWidth: 'unset',
+                    flex: '0 0 auto',
+                    margin: 0,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    border: labSubtypeFilter === st
+                      ? '2px solid hsl(340, 75%, 45%)'
+                      : '1px solid hsla(215, 25%, 80%, 0.6)',
+                    background: labSubtypeFilter === st
+                      ? 'hsla(340, 75%, 45%, 0.15)'
+                      : 'hsla(0, 0%, 100%, 0.85)',
+                    color: labSubtypeFilter === st
+                      ? 'hsl(340, 75%, 40%)'
+                      : 'hsl(222, 47%, 11%)',
+                    fontWeight: labSubtypeFilter === st ? 700 : 500,
+                    fontSize: '13px',
+                    whiteSpace: 'nowrap',
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    fontFamily: 'var(--heading), Georgia, serif',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 2nd Row: Diagnostic Test Name, Charges, Discount in 1 horizontal line (3 columns) */}
         <div style={{ display: 'flex', gap: '12px', width: '100%', alignItems: 'flex-start', flexWrap: 'wrap', marginTop: '8px' }}>
           {/* Diagnostic Test Name */}
@@ -405,7 +473,10 @@ export default function EditDiagnosticOrder({ record, onBack, onSave }) {
                   color: 'hsl(222, 47%, 11%)',
                 }}
               >
-                {availableTypes.map((t) => (
+                {(formData.category === 'Lab' && labSubtypeFilter !== 'All'
+                  ? availableTypes.filter((t) => t.subtype === labSubtypeFilter)
+                  : availableTypes
+                ).map((t) => (
                   <option key={t.value || t.name} value={t.value || t.name}>
                     {t.label || t.name}
                     {t.charges !== undefined ? ` (Rs. ${t.charges})` : ''}

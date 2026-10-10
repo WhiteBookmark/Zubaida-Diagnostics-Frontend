@@ -19,7 +19,7 @@ import DiagnosticOrderRecords from './components/diagnosticOrders/DiagnosticOrde
 import AddDiagnosticOrder from './components/diagnosticOrders/AddDiagnosticOrder'
 import EditDiagnosticOrder from './components/diagnosticOrders/EditDiagnosticOrder'
 import useQrScanner from './hooks/useQrScanner'
-import VoiceChatPanel from './components/common/VoiceChatPanel'
+// import VoiceChatPanel from './components/common/VoiceChatPanel'
 import ScrollToTopBottom from './components/common/ScrollToTopBottom'
 import { createQuickAppointmentAndPrint } from './utils/quickAppointment'
 import './styles/App.css'
@@ -273,6 +273,7 @@ function App() {
     }
   }, []);
 
+  // eslint-disable-next-line no-unused-vars
   const handleQrScanResult = useCallback((mrNumber) => {
     if (mrNumber) {
       handleViewFiles(mrNumber);
@@ -525,7 +526,7 @@ function App() {
     <>
       <Header currentPage={currentPage} setCurrentPage={handleNavigate} onLogout={handleLogout} username={username} />
       {renderContent()}
-      <VoiceChatPanel username={username} onQrScanResult={handleQrScanResult} />
+      {/* <VoiceChatPanel username={username} onQrScanResult={handleQrScanResult} /> */}
       <ScrollToTopBottom />
       {isScanProcessing && (
         <Snackbar open anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>

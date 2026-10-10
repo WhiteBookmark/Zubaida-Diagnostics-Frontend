@@ -22,7 +22,7 @@ import {
 import { buildApiUrl } from '../../config/api';
 import '../../styles/Auth.css';
 
-const CATEGORIES = ['All', 'X-Ray', 'Ultrasound', 'PFT', 'ECG'];
+const CATEGORIES = ['All', 'X-Ray', 'Ultrasound', 'PFT', 'ECG', 'Lab'];
 
 /**
  * ChargesPage Component.
@@ -97,7 +97,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
 
   // Compute category counts for tab badges
   const categoryCounts = useMemo(() => {
-    const counts = { All: chargesList.length, 'X-Ray': 0, Ultrasound: 0, PFT: 0, ECG: 0 };
+    const counts = { All: chargesList.length, 'X-Ray': 0, Ultrasound: 0, PFT: 0, ECG: 0, Lab: 0 };
     chargesList.forEach((item) => {
       if (counts[item.category] !== undefined) {
         counts[item.category] += 1;
@@ -115,7 +115,8 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
         !trimmedQuery ||
         item.name.toLowerCase().includes(trimmedQuery) ||
         item.category.toLowerCase().includes(trimmedQuery) ||
-        String(item.charges).includes(trimmedQuery);
+        String(item.charges).includes(trimmedQuery) ||
+        (item.subtype && item.subtype.toLowerCase().includes(trimmedQuery));
       return matchesCategory && matchesSearch;
     });
   }, [chargesList, selectedCategory, searchTerm]);
@@ -404,6 +405,20 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
                     backgroundColor: 'transparent',
                   }}
                 >
+                  Subtype
+                </th>
+                <th
+                  style={{
+                    padding: '12px 18px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    color: 'var(--text-h, #0f172a)',
+                    fontFamily: 'var(--heading), Georgia, serif',
+                    backgroundColor: 'transparent',
+                  }}
+                >
                   Diagnostic Test Name
                 </th>
                 <th
@@ -442,7 +457,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} style={{ padding: '60px 20px', textAlign: 'center' }}>
+                  <td colSpan={5} style={{ padding: '60px 20px', textAlign: 'center' }}>
                     <div
                       style={{
                         display: 'flex',
@@ -461,7 +476,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
                 </tr>
               ) : filteredCharges.length === 0 ? (
                 <tr>
-                  <td colSpan={4} style={{ padding: '60px 20px', textAlign: 'center' }}>
+                  <td colSpan={5} style={{ padding: '60px 20px', textAlign: 'center' }}>
                     <div
                       style={{
                         display: 'flex',
@@ -492,6 +507,7 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
                     Ultrasound: { bg: 'hsl(142, 70%, 35%)', text: 'hsl(0, 0%, 100%)' },
                     PFT: { bg: 'hsl(280, 65%, 42%)', text: 'hsl(0, 0%, 100%)' },
                     ECG: { bg: 'hsl(25, 90%, 42%)', text: 'hsl(0, 0%, 100%)' },
+                    Lab: { bg: 'hsl(340, 75%, 45%)', text: 'hsl(0, 0%, 100%)' },
                   };
 
                   const badge = badgeColors[item.category] || {
@@ -532,6 +548,31 @@ export default function ChargesPage({ onAddCharge, onEditCharge }) {
                         >
                           {item.category}
                         </span>
+                      </td>
+
+                      {/* Subtype Badge */}
+                      <td style={{ padding: '14px 20px', whiteSpace: 'nowrap' }}>
+                        {item.subtype ? (
+                          <span
+                            style={{
+                              display: 'inline-block',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              background: item.subtype === 'Routine'
+                                ? 'hsl(142, 70%, 35%)'
+                                : item.subtype === 'Special'
+                                  ? 'hsl(25, 90%, 42%)'
+                                  : 'hsl(0, 75%, 45%)',
+                              color: 'hsl(0, 0%, 100%)',
+                            }}
+                          >
+                            {item.subtype}
+                          </span>
+                        ) : (
+                          <span style={{ color: 'hsl(215, 16%, 60%)', fontSize: '12px' }}>—</span>
+                        )}
                       </td>
 
                       {/* Test Name */}

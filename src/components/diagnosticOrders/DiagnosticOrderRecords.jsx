@@ -373,6 +373,7 @@ export default function DiagnosticOrderRecords({
             Ultrasound: { bg: 'hsl(142, 70%, 35%)', text: 'hsl(0, 0%, 100%)' },
             PFT: { bg: 'hsl(280, 65%, 42%)', text: 'hsl(0, 0%, 100%)' },
             ECG: { bg: 'hsl(25, 90%, 42%)', text: 'hsl(0, 0%, 100%)' },
+            Lab: { bg: 'hsl(340, 75%, 45%)', text: 'hsl(0, 0%, 100%)' },
           };
           const style = badgeStyles[cat] || { bg: 'hsl(215, 25%, 40%)', text: 'hsl(0, 0%, 100%)' };
           return (
